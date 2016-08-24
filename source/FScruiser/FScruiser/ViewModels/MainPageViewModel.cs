@@ -10,11 +10,7 @@ namespace FScruiser.ViewModels
 {
     public class MainPageViewModel : PropertyChangedBase
     {
-        Xamarin.Forms.Page _view;
-
         string name;
-
-        public event EventHandler<ViewAttachedEventArgs> ViewAttached;
 
         public string Name
         {
