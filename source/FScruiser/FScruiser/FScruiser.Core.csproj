@@ -54,6 +54,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Backpack\Backpack.Core\Backpack.Core.csproj">
+      <Project>{8B614307-F66F-4134-8CAA-3C1D02846F9B}</Project>
+      <Name>Backpack.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Backpack\Backpack.SQLite.Core\Backpack.SQLite.Core.csproj">
       <Project>{6a6dff5f-2f68-4ffd-94b6-9a52b4ab641e}</Project>
       <Name>Backpack.SQLite.Core</Name>
