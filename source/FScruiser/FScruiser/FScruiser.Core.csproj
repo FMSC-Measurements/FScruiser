@@ -38,7 +38,11 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ViewModels\MainPageViewModel.cs" />
+    <Compile Include="ViewModelLocator.cs" />
+    <Compile Include="ViewModels\CuttingUnitListViewModel.cs" />
+    <Compile Include="Views\CuttingUnitList.xaml.cs">
+      <DependentUpon>CuttingUnitList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -62,6 +66,12 @@
       <Project>{6a6dff5f-2f68-4ffd-94b6-9a52b4ab641e}</Project>
       <Name>Backpack.SQLite.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\CuttingUnitList.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

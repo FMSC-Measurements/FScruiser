@@ -4,7 +4,6 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Caliburn.Micro;
 using System;
 using Xamarin.Forms.Platform.Android;
 
@@ -18,7 +17,7 @@ namespace FScruiser.Droid
             base.OnCreate(bundle);
 
             Xamarin.Forms.Forms.Init(this, bundle);
-            LoadApplication(IoC.Get<App>());
+            LoadApplication(new App());
         }
     }
 }

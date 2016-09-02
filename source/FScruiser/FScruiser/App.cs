@@ -1,6 +1,4 @@
-﻿using Caliburn.Micro;
-using Caliburn.Micro.Xamarin.Forms;
-using FScruiser.ViewModels;
+﻿using FScruiser.ViewModels;
 using FScruiser.Views;
 using System;
 using System.Collections.Generic;
@@ -11,24 +9,21 @@ using Xamarin.Forms;
 
 namespace FScruiser
 {
-    public class App : FormsApplication
+    public class App : Xamarin.Forms.Application
     {
-        readonly SimpleContainer _container;
+        private static ViewModelLocator _locator;
 
-        public App(SimpleContainer container)
+        public static ViewModelLocator Locator
         {
-            _container = container;
-
-            _container.PerRequest<MainPageViewModel>();
-
-            Initialize();
-
-            DisplayRootView<MainPage>();
+            get
+            {
+                return _locator ?? (_locator = new ViewModelLocator());
+            }
         }
 
-        protected override void PrepareViewFirst(NavigationPage navigationPage)
+        public App()
         {
-            _container.Instance<INavigationService>(new NavigationPageAdapter(navigationPage));
+            MainPage = new CuttingUnitList();
         }
 
         protected override void OnStart()
