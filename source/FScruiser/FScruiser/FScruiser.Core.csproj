@@ -38,10 +38,17 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\ICollectionExtentions.cs" />
     <Compile Include="ViewModelLocator.cs" />
     <Compile Include="ViewModels\CuttingUnitListViewModel.cs" />
     <Compile Include="Views\CuttingUnitList.xaml.cs">
       <DependentUpon>CuttingUnitList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CuttingUnitListItem.xaml.cs">
+      <DependentUpon>CuttingUnitListItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DataEntryPage.xaml.cs">
+      <DependentUpon>DataEntryPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -69,6 +76,18 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Views\CuttingUnitList.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\CuttingUnitListItem.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\DataEntryPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
