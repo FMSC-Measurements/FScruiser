@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Xamarin.Forms;
 
 namespace FScruiser.ViewModels
@@ -44,11 +45,29 @@ namespace FScruiser.ViewModels
         }
 
         public IEnumerable<StratumModel> Strata { get; set; }
+
+        Command<CuttingUnitModel> _showDataEntryCommand;
+
+        public ICommand ShowDataEntryCommand
+        {
+            get
+            {
+                return _showDataEntryCommand ?? (_showDataEntryCommand = new Command<CuttingUnitModel>((unit) => ShowDataEntry(unit)));
+            }
+        }
+
+        public void ShowDataEntry(CuttingUnitModel unit)
+        {
+            var page = new DataEntryPage(unit.CuttingUnitCode);
+            Application.Current.MainPage.Navigation.PushModalAsync(page);
+        }
     }
 
     public class CuttingUnitListViewModel : Xamarin.Forms.BindableObject
     {
         FMSC.ORM.Core.DatastoreRedux Datastore { get; set; }
+
+        public string Test { get; set; } = "Test2";
 
         public CuttingUnitListViewModel()
         {
@@ -61,22 +80,6 @@ namespace FScruiser.ViewModels
             //CuttingUnits = datastore.From<CuttingUnitModel>().Query();
         }
 
-        Command<CuttingUnitModel> _showDataEntryCommand;
-
-        public Command<CuttingUnitModel> ShowDataEntryCommand
-        {
-            get
-            {
-                return _showDataEntryCommand ?? (_showDataEntryCommand = new Command<CuttingUnitModel>((unit) => ShowDataEntry(unit)));
-            }
-        }
-
         public ObservableCollection<CuttingUnitModel> CuttingUnits { get; set; } = new ObservableCollection<CuttingUnitModel>();
-
-        public void ShowDataEntry(CuttingUnitModel unit)
-        {
-            var page = new DataEntryPage(unit.CuttingUnitCode);
-            Application.Current.MainPage.Navigation.PushModalAsync(page);
-        }
     }
 }

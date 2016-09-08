@@ -4,7 +4,7 @@
              xmlns:views="clr-namespace:FScruiser.Views"
              x:Class="FScruiser.Views.CuttingUnitList">
     <StackLayout>
-        <Label Text="{Binding Test}" VerticalOptions="Center" HorizontalOptions="Center" />
+        <Label Text="{Binding Test}" HorizontalOptions="Center" />
 
         <ListView
             ItemsSource ="{Binding CuttingUnits}">
