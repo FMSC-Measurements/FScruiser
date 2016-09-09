@@ -2,13 +2,16 @@
 <ViewCell xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FScruiser.Views.CuttingUnitListItem">
-    <ViewCell.ContextActions>
+    <!--<ViewCell.ContextActions>
         <MenuItem Text="Data Entry1" />
-    </ViewCell.ContextActions>
+    </ViewCell.ContextActions>-->
     <StackLayout Orientation="Horizontal">
-        <Label Text ="{Binding CuttingUnitCode}" HorizontalOptions="FillAndExpand" />
+        <Label Text ="{Binding CuttingUnitCode}"
+               FontSize="Large"
+               HorizontalOptions="FillAndExpand"
+               Margin="20,0,20,0" />
         <Button
-            Text = "Data Entry2"
+            Text = "Data Entry"
             Command="{Binding ShowDataEntryCommand}"
             CommandParameter="{Binding .}" />
     </StackLayout>
