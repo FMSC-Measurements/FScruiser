@@ -4,14 +4,23 @@
              x:Class="FScruiser.Views.DataEntryPage">
 
     <MasterDetailPage.Master>
-        <TableView>
-            <TableRoot>
-                <TextCell Text="Trees" />
-                <TextCell Text="Tallies" />
-                <TableSection Title="Stratum 01">
-                    <TextCell Text="Plots" />
-                </TableSection>
-            </TableRoot>
-        </TableView>
+        <ContentPage Title="Details" Icon="ic_menu_white_24dp.png">
+            <TableView VerticalOptions="FillAndExpand">
+                <TableRoot>
+                    <TableSection>
+                        <TextCell Text="Trees" />
+                        <TextCell Text="Tallies" />
+                    </TableSection>
+                    <TableSection Title="Stratum 01">
+                        <TextCell Text="Plots" />
+                    </TableSection>
+                </TableRoot>
+            </TableView>
+        </ContentPage>
     </MasterDetailPage.Master>
+    <MasterDetailPage.Detail>
+        <ContentPage Title="Hello">
+            <Label>Hello</Label>
+        </ContentPage>
+    </MasterDetailPage.Detail>
 </MasterDetailPage>
