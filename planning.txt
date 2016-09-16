@@ -1,0 +1,8 @@
+FScruiser:
+- viewModel first using ninject
+	- navigation service
+- 
+
+Backpack:
+- DataService - getDataContext
+- DataContext 
