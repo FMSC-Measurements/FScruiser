@@ -17,7 +17,12 @@ namespace FScruiser.Droid
             base.OnCreate(savedInstanceState);
 
             Xamarin.Forms.Forms.Init(this, savedInstanceState);
-            LoadApplication(new App());
+
+            App.FolderService = new FolderService();
+
+            var app = new App();
+
+            LoadApplication(app);
         }
     }
 }

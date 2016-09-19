@@ -37,10 +37,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
+    <Compile Include="IFolderService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\ICollectionExtentions.cs" />
     <Compile Include="ViewModelLocator.cs" />
     <Compile Include="ViewModels\CuttingUnitListViewModel.cs" />
+    <Compile Include="ViewModels\MainPageViewModel.cs" />
     <Compile Include="Views\CuttingUnitList.xaml.cs">
       <DependentUpon>CuttingUnitList.xaml</DependentUpon>
     </Compile>

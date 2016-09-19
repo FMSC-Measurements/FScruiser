@@ -21,9 +21,11 @@ namespace FScruiser
             }
         }
 
+        public static IFolderService FolderService { get; set; }
+
         public App()
         {
-            MainPage = new CuttingUnitList();
+            MainPage = new MainPage();
         }
 
         protected override void OnStart()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FScruiser.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,8 @@ namespace FScruiser.Views
     {
         public MainPage()
         {
+            this.BindingContext = new MainPageViewModel();
+
             InitializeComponent();
         }
     }
