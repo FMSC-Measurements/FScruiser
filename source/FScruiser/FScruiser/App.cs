@@ -21,7 +21,7 @@ namespace FScruiser
             }
         }
 
-        public static IFolderService FolderService { get; set; }
+        public static ICruiseFolderService FolderService { get; set; }
 
         public App()
         {

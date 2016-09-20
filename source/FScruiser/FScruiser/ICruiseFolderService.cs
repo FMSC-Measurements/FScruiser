@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser
 {
-    public interface IFolderService
+    public interface ICruiseFolderService
     {
         IEnumerable<string> CruiseFolders { get; }
     }

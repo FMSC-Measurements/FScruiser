@@ -37,7 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
-    <Compile Include="IFolderService.cs" />
+    <Compile Include="ICruiseFolderService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\ICollectionExtentions.cs" />
     <Compile Include="ViewModelLocator.cs" />
@@ -55,11 +55,11 @@
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TreeListView.xaml.cs">
-      <DependentUpon>TreeListView.xaml</DependentUpon>
+    <Compile Include="Views\TreeListPage.xaml.cs">
+      <DependentUpon>TreeListPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TreeListViewItem.xaml.cs">
-      <DependentUpon>TreeListViewItem.xaml</DependentUpon>
+    <Compile Include="Views\TreeListItem.xaml.cs">
+      <DependentUpon>TreeListItem.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -101,13 +101,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\TreeListView.xaml">
+    <EmbeddedResource Include="Views\TreeListPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\TreeListViewItem.xaml">
+    <EmbeddedResource Include="Views\TreeListItem.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>

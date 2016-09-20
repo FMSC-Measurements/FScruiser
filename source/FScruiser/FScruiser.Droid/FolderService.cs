@@ -12,7 +12,7 @@ using System.Text;
 
 namespace FScruiser.Droid
 {
-    public class FolderService : IFolderService
+    public class FolderService : ICruiseFolderService
     {
         public IEnumerable<string> CruiseFolders
         {
