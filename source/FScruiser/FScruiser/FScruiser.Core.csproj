@@ -38,11 +38,12 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="ICruiseFolderService.cs" />
-    <Compile Include="ViewModels\CruiseViewModel.cs" />
+    <Compile Include="Models\CruiseModel.cs" />
     <Compile Include="Models\CuttingUnitModel.cs" />
     <Compile Include="Models\StratumModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\ICollectionExtentions.cs" />
+    <Compile Include="ViewModels\CruiseViewModel.cs" />
     <Compile Include="ViewModels\DataEntryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Pages\CruisePage.xaml.cs">

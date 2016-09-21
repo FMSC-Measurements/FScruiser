@@ -1,10 +1,7 @@
 ﻿using FMSC.ORM.Core;
-using FMSC.ORM.SQLite;
 using FScruiser.Models;
-using FScruiser.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,51 +12,33 @@ namespace FScruiser.ViewModels
 {
     public class CruiseViewModel : FreshMvvm.FreshBasePageModel
     {
-        IList<CuttingUnitModel> _cuttingUnits;
-        FileInfo _fileInfo;
+        public DatastoreRedux Datastore { get; set; }
 
-        public CruiseViewModel(FileInfo fileInfo)
+        public IList<CuttingUnitModel> CuttingUnits { get; set; }
+
+        //public IList<StratumModel> Strata { get; set; }
+
+        public CruiseViewModel(DatastoreRedux dataStore)
         {
-            _fileInfo = fileInfo;
+            Datastore = dataStore;
         }
 
-        public IList<CuttingUnitModel> CuttingUnits
+        public override void Init(object initData)
         {
-            get
-            {
-                if (_cuttingUnits == null)
-                {
-                    _cuttingUnits = Datastore?.From<CuttingUnitModel>().Read().ToList();
-                }
-                return _cuttingUnits;
-            }
-            set
-            {
-                if (_cuttingUnits == value) { return; }
-                _cuttingUnits = value;
-                RaisePropertyChanged();
-            }
+            CuttingUnits = Datastore.From<CuttingUnitModel>().Read().ToList();
+
+            base.Init(initData);
         }
 
-        public DatastoreRedux Datastore { get; protected set; }
-        public string FileName => _fileInfo?.Name;
+        public ICommand ShowDataEntryCommand =>
+            new Command<CuttingUnitModel>
+            (
+                unit => ShowDataEntry(unit)
+            );
 
-        public string Path => _fileInfo?.FullName;
-
-        public ICommand ShowCruiseCommand =>
-                            new Command<CruiseViewModel>(
-                x => { ShowCruise(); },
-                x =>
-                {
-                    return _fileInfo.Exists && _fileInfo.Extension.ToLower() == ".cruise";
-                });
-
-        void ShowCruise()
+        public void ShowDataEntry(CuttingUnitModel unit)
         {
-            Datastore = new SQLiteDatastore(this.Path);
-            FreshMvvm.FreshIOC.Container.Register<DatastoreRedux>(Datastore);
-
-            CoreMethods.PushPageModel<CruiseViewModel>();
+            CoreMethods.PushPageModel<DataEntryViewModel>(unit);
         }
     }
 }

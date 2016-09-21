@@ -14,7 +14,7 @@ namespace FScruiser
 
         public App()
         {
-            MainPage = FreshMvvm.FreshPageModelResolver.ResolvePageModel<MainViewModel>();
+            MainPage = new FreshMvvm.FreshNavigationContainer(FreshMvvm.FreshPageModelResolver.ResolvePageModel<MainViewModel>());
         }
 
         protected override void OnStart()

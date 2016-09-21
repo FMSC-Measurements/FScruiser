@@ -15,15 +15,28 @@ namespace FScruiser.ViewModels
 {
     public class MainViewModel : FreshMvvm.FreshBasePageModel
     {
-        public IEnumerable<CruiseViewModel> CruiseFiles => FindCruiseFiles();
+        public IEnumerable<CruiseModel> CruiseFiles => FindCruiseFiles();
 
-        IEnumerable<CruiseViewModel> FindCruiseFiles()
+        IEnumerable<CruiseModel> FindCruiseFiles()
         {
             foreach (var path in App.FolderService.CruiseFolders)
             {
                 var fi = new FileInfo(path);
-                yield return new CruiseViewModel(fi);
+                yield return new CruiseModel(fi);
             }
+        }
+
+        public ICommand ShowCruiseCommand =>
+                            new Command<CruiseModel>(
+                file => { ShowCruise(file); });
+
+        void ShowCruise(CruiseModel cruise)
+        {
+            var datastore = new SQLiteDatastore(cruise.Path);
+            FreshMvvm.FreshIOC.Container.Register<DatastoreRedux>(datastore);
+
+            Task t = CoreMethods.PushPageModel<CruiseViewModel>(cruise);
+            var ex = t.Exception;
         }
     }
 }

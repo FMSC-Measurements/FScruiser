@@ -11,7 +11,7 @@ using Xamarin.Forms;
 namespace FScruiser.Models
 {
     [EntitySource(SourceName = "CuttingUnit")]
-    public class CuttingUnitModel : FreshMvvm.FreshBasePageModel
+    public class CuttingUnitModel
     {
         [Field(Name = "CuttingUnit_CN")]
         public long? CuttingUnit_CN { get; set; }
@@ -23,21 +23,6 @@ namespace FScruiser.Models
             set;
         }
 
-        public CuttingUnitModel()
-        {
-        }
-
         public IEnumerable<StratumModel> Strata { get; set; }
-
-        public ICommand ShowDataEntryCommand =>
-            new Command<CuttingUnitModel>
-            (
-                unit => ShowDataEntry(unit)
-            );
-
-        public void ShowDataEntry(CuttingUnitModel unit)
-        {
-            CoreMethods.PushPageModel<DataEntryViewModel>(unit);
-        }
     }
 }

@@ -3,14 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:FScruiser.Pages"
              x:Class="FScruiser.Pages.CruisePage"
-             Title="Cutting Units">
+             Title="Cutting Units"
+             x:Name="TopPage">
     <StackLayout>
         <Label Text="Cutting Units" FontSize="Large" HorizontalOptions="Center" />
         <ListView
             ItemsSource ="{Binding CuttingUnits}">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <views:CuttingUnitListItem />
+                    <TextCell Text="{Binding CuttingUnitCode}"
+                        Command="{Binding BindingContext.ShowDataEntryCommand, Source={x:Reference TopPage}}"
+                        CommandParameter="{Binding .}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
