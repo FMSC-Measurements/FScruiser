@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms;
 
-namespace FScruiser.Views
+namespace FScruiser.Pages
 {
-    public partial class TreeListViewItem : TextCell
+    public partial class CruisePage : ContentPage
     {
-        public TreeListViewItem()
+        public CruisePage()
         {
             InitializeComponent();
         }

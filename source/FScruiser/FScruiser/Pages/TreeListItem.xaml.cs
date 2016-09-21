@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms;
 
-namespace FScruiser.Views
+namespace FScruiser.Pages
 {
-    public partial class CuttingUnitList : ContentPage
+    public partial class TreeListViewItem : TextCell
     {
-        public CuttingUnitList()
+        public TreeListViewItem()
         {
             InitializeComponent();
-            BindingContext = App.Locator.CuttingUnitList;
         }
     }
 }

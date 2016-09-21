@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms;
 
-namespace FScruiser.Views
+namespace FScruiser.Pages
 {
     public partial class TreeListView : ContentPage
     {

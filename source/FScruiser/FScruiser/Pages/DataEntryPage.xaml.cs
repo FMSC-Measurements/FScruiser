@@ -7,14 +7,12 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms;
 
-namespace FScruiser.Views
+namespace FScruiser.Pages
 {
-    public partial class MainPage : ContentPage
+    public partial class DataEntryPage : MasterDetailPage
     {
-        public MainPage()
+        public DataEntryPage()
         {
-            this.BindingContext = new MainPageViewModel();
-
             InitializeComponent();
         }
     }

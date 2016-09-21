@@ -38,27 +38,29 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="ICruiseFolderService.cs" />
+    <Compile Include="ViewModels\CruiseViewModel.cs" />
+    <Compile Include="Models\CuttingUnitModel.cs" />
+    <Compile Include="Models\StratumModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\ICollectionExtentions.cs" />
-    <Compile Include="ViewModelLocator.cs" />
-    <Compile Include="ViewModels\CuttingUnitListViewModel.cs" />
-    <Compile Include="ViewModels\MainPageViewModel.cs" />
-    <Compile Include="Views\CuttingUnitList.xaml.cs">
-      <DependentUpon>CuttingUnitList.xaml</DependentUpon>
+    <Compile Include="ViewModels\DataEntryViewModel.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="Pages\CruisePage.xaml.cs">
+      <DependentUpon>CruisePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CuttingUnitListItem.xaml.cs">
+    <Compile Include="Pages\CuttingUnitListItem.xaml.cs">
       <DependentUpon>CuttingUnitListItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\DataEntryPage.xaml.cs">
+    <Compile Include="Pages\DataEntryPage.xaml.cs">
       <DependentUpon>DataEntryPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MainPage.xaml.cs">
+    <Compile Include="Pages\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TreeListPage.xaml.cs">
+    <Compile Include="Pages\TreeListPage.xaml.cs">
       <DependentUpon>TreeListPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TreeListItem.xaml.cs">
+    <Compile Include="Pages\TreeListItem.xaml.cs">
       <DependentUpon>TreeListItem.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -67,7 +69,7 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\MainPage.xaml">
+    <EmbeddedResource Include="Pages\MainPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -83,31 +85,31 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\CuttingUnitList.xaml">
+    <EmbeddedResource Include="Pages\CruisePage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\CuttingUnitListItem.xaml">
+    <EmbeddedResource Include="Pages\CuttingUnitListItem.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\DataEntryPage.xaml">
+    <EmbeddedResource Include="Pages\DataEntryPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\TreeListPage.xaml">
+    <EmbeddedResource Include="Pages\TreeListPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Views\TreeListItem.xaml">
+    <EmbeddedResource Include="Pages\TreeListItem.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
