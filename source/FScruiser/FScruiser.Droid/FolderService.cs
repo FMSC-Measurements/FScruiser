@@ -18,11 +18,34 @@ namespace FScruiser.Droid
         {
             get
             {
-                var docDir = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments);
-                var downloadDir = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads);
+                File docDir = null;
+                File downloadDir = null;
+                try
+                {
+                    docDir = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDocuments);
+                }
+                catch (Exception) { }
+                try
+                {
+                    downloadDir = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads);
+                }
+                catch (Exception) { }
 
+                foreach (var path in ListCruiseFilePaths(docDir))
+                { yield return path; }
+
+                foreach (var path in ListCruiseFilePaths(downloadDir))
+                { yield return path; }
+            }
+        }
+
+        IEnumerable<string> ListCruiseFilePaths(File folder)
+        {
+            if (folder == null) { return new string[0]; }
+            else
+            {
                 return (from file in
-                        (docDir.ListFiles() ?? new File[] { }).Union(downloadDir.ListFiles() ?? new File[] { })
+                            folder.ListFiles() ?? new File[0]
                         where (file.IsFile && System.IO.Path.GetExtension(file.AbsolutePath) == ".cruise")
                         select file.AbsolutePath);
             }

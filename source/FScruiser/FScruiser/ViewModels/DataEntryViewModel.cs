@@ -25,7 +25,9 @@ namespace FScruiser.ViewModels
         {
             Unit = initData as CuttingUnitModel;
 
-            Strata = Datastore.From<StratumModel>().Where("CuttingUnit_CN = ?")
+            Strata = Datastore.From<StratumModel>()
+                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
+                .Where("CuttingUnit_CN = ?1")
                 .Read(Unit.CuttingUnit_CN).ToList();
 
             base.Init(initData);
