@@ -10,8 +10,6 @@ namespace FScruiser
 {
     public class App : Xamarin.Forms.Application
     {
-        public static ICruiseFolderService FolderService { get; set; }
-
         public App()
         {
             MainPage = new FreshMvvm.FreshNavigationContainer(FreshMvvm.FreshPageModelResolver.ResolvePageModel<MainViewModel>());

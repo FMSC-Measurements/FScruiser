@@ -1,5 +1,6 @@
 ﻿{
   "dependencies": {
+    "FreshMvvm": "2.2.0",
     "Xamarin.Forms": "2.3.1.114"
   },
   "frameworks": {

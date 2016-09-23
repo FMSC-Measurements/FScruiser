@@ -1,7 +1,6 @@
 ﻿using FMSC.ORM.Core;
 using FMSC.ORM.SQLite;
 using FScruiser.Models;
-using FScruiser.Pages;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,9 +16,16 @@ namespace FScruiser.ViewModels
     {
         public IEnumerable<CruiseModel> CruiseFiles => FindCruiseFiles();
 
+        ICruiseFolderService FolderService { get; set; }
+
+        public MainViewModel(ICruiseFolderService folderService)
+        {
+            FolderService = folderService;
+        }
+
         IEnumerable<CruiseModel> FindCruiseFiles()
         {
-            foreach (var path in App.FolderService.CruiseFolders)
+            foreach (var path in FolderService.CruiseFolders)
             {
                 var fi = new FileInfo(path);
                 yield return new CruiseModel(fi);

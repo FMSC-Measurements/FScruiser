@@ -18,7 +18,7 @@ namespace FScruiser.Droid
 
             Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            App.FolderService = new FolderService();
+            FreshMvvm.FreshIOC.Container.Register<ICruiseFolderService, CruiseFolderService>();
 
             var app = new App();
 
