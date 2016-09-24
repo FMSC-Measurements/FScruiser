@@ -38,7 +38,19 @@ namespace FScruiser.ViewModels
 
         public void ShowDataEntry(CuttingUnitModel unit)
         {
-            CoreMethods.PushPageModel<DataEntryViewModel>(unit);
+            var masterDetail = new MasterDetailPage();
+            var strataList = FreshMvvm.FreshPageModelResolver.ResolvePageModel<StratumListViewModel>(unit);
+            strataList.Title = "Strata";
+
+            masterDetail.Master = strataList;
+
+            var detailArea = new FreshMvvm.FreshNavigationContainer(new ContentPage());
+
+            masterDetail.Detail = detailArea;
+
+            base.CurrentPage.Navigation.PushAsync(masterDetail);
+
+            //CoreMethods.PushPageModel<DataEntryViewModel>(unit);
         }
     }
 }
