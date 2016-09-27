@@ -26,7 +26,7 @@ namespace FScruiser.ViewModels
             Stratum = initData as UnitStratum;
 
             Counts = Datastore.From<CountTree>()
-                .Where($"CuttingUnit_CN = {Stratum.CuttingUnit_CN} AND Statum_CN = {Stratum.Stratum_CN}")
+                .Where($"CuttingUnit_CN = {Stratum.CuttingUnit_CN} AND Stratum_CN = {Stratum.Stratum_CN}")
                 .Read().ToList();
 
             base.Init(initData);

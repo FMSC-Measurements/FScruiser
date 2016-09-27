@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("CountTree")]
+    [EntitySource("CountTree", JoinCommands = "JOIN SampleGroup USING (SampleGroup_CN) JOIN Tally USING (Tally_CN)")]
     public class CountTree
     {
         [Field("CuttingUnit_CN")]
@@ -19,7 +19,7 @@ namespace FScruiser.Models
         [Field("TreeCount")]
         public int TreeCount { get; set; }
 
-        [Field("Description")]
+        [Field(SQLExpression = "Tally.Description", Alias = "Description")]
         public string Description { get; set; }
     }
 }

@@ -1,12 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FScruiser.Pages.StratumTalliesPage">
-    <ListView x:Name="ListView"
-              ItemsSource="{Binding Counts}">
+             x:Class="FScruiser.Pages.StratumTalliesPage"
+             x:Name="Self">
+    <ListView ItemsSource="{Binding Counts}">
         <ListView.ItemTemplate>
             <DataTemplate>
-                <TextCell Text="{Binding Description}" />
+                <TextCell Text="{Binding Description}"
+                          Command="{Binding Path=BindingContext.ShowTalliesCommand, Source={x:Reference Self}}" />
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>
