@@ -1,0 +1,4 @@
+[submodule "source/Backpack"]
+	path = source/Backpack
+	url = https://github.com/FMSC-BenC/Backpack.git
+	branch = master
