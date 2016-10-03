@@ -37,11 +37,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
+    <Compile Include="Cells\TreeCell.xaml.cs">
+      <DependentUpon>TreeCell.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ICruiseFolderService.cs" />
     <Compile Include="Models\CountTree.cs" />
     <Compile Include="Models\CruiseModel.cs" />
     <Compile Include="Models\CuttingUnitModel.cs" />
+    <Compile Include="Models\Sale.cs" />
     <Compile Include="Models\StratumModel.cs" />
+    <Compile Include="Models\Tree.cs" />
+    <Compile Include="Models\TreeSampleGroup.cs" />
+    <Compile Include="Models\TreeSpecies.cs" />
     <Compile Include="Models\UnitStratum.cs" />
     <Compile Include="Pages\StratumListPage.xaml.cs">
       <DependentUpon>StratumListPage.xaml</DependentUpon>
@@ -74,6 +81,7 @@
     </Compile>
     <Compile Include="ViewModels\StratumListViewModel.cs" />
     <Compile Include="ViewModels\StratumTalliesViewModel.cs" />
+    <Compile Include="ViewModels\UnitLevelTreeListViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GettingStarted.Xamarin" />
@@ -84,16 +92,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Backpack\Backpack.Core\Backpack.Core.csproj">
-      <Project>{8B614307-F66F-4134-8CAA-3C1D02846F9B}</Project>
-      <Name>Backpack.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\Backpack\Backpack.SQLite.Core\Backpack.SQLite.Core.csproj">
-      <Project>{6a6dff5f-2f68-4ffd-94b6-9a52b4ab641e}</Project>
-      <Name>Backpack.SQLite.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\CruisePage.xaml">
@@ -133,6 +131,22 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\StratumTalliesPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Backpack\source\Backpack.Core\Backpack.PCL.csproj">
+      <Project>{8b614307-f66f-4134-8caa-3c1d02846f9b}</Project>
+      <Name>Backpack.PCL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Backpack\source\Backpack.SQLite\Backpack.SQLite.csproj">
+      <Project>{6a6dff5f-2f68-4ffd-94b6-9a52b4ab641e}</Project>
+      <Name>Backpack.SQLite</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Cells\TreeCell.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>

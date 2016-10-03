@@ -15,8 +15,7 @@
         </ContentPage>
     </MasterDetailPage.Master>
     <MasterDetailPage.Detail>
-        <ContentPage Title="Hello">
-            <Label>Hello</Label>
-        </ContentPage>
+        <NavigationPage>
+        </NavigationPage>
     </MasterDetailPage.Detail>
 </MasterDetailPage>

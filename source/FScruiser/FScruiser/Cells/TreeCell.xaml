@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="FScruiser.Cells.TreeCell">
+    <StackLayout Orientation="Horizontal">
+        <StackLayout.Resources>
+            <Style TargetType="Label">
+                <Setter Property="FontSize" Value="Large" />
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="FontSize" Value="Picker" />
+            </Style>
+        </StackLayout.Resources>
+        <Label x:Name="TreeNumber"
+               Text="{Binding TreeNumber}"
+               FontSize="Large" />
+        <Picker x:Name="SampleGroup" SelectedIndex="{Binding SampleGroupIndex}" />
+        <Picker x:Name="Species" SelectedIndex="{Binding SpeciesIndex}" />
+        <Entry x:Name="DBH" Text="{Binding Diameter}" />
+        <Entry x:Name="Height" Text="{Binding Height}" />
+        <Picker x:Name="LiveDead" />
+    </StackLayout>
+</ViewCell>

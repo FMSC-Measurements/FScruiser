@@ -1,4 +1,4 @@
-﻿using FMSC.ORM.Core;
+﻿using Backpack;
 using FScruiser.Models;
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,8 @@ namespace FScruiser.ViewModels
     public class CruiseViewModel : FreshMvvm.FreshBasePageModel
     {
         public DatastoreRedux Datastore { get; set; }
+
+        public Sale Sale { get; set; }
 
         public IList<CuttingUnitModel> CuttingUnits { get; set; }
 

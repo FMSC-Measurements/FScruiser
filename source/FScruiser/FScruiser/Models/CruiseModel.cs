@@ -1,6 +1,4 @@
-﻿using FMSC.ORM.Core;
-using FMSC.ORM.SQLite;
-using FScruiser.Models;
+﻿using FScruiser.Models;
 using FScruiser.ViewModels;
 using System;
 using System.Collections.Generic;
