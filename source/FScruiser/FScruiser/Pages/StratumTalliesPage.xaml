@@ -6,8 +6,7 @@
     <ListView ItemsSource="{Binding Counts}">
         <ListView.ItemTemplate>
             <DataTemplate>
-                <TextCell Text="{Binding Description}"
-                          Command="{Binding Path=BindingContext.ShowTalliesCommand, Source={x:Reference Self}}" />
+                <TextCell Text="{Binding Description}" />
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>

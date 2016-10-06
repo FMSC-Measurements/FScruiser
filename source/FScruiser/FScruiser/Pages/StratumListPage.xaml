@@ -2,7 +2,9 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FScruiser.Pages.StratumListPage"
-             x:Name="Self">
+             x:Name="Self"
+             Title="Strata"
+             Icon="ic_menu_white_36dp.png">
     <ListView x:Name="ListView" ItemsSource="{Binding Strata}">
         <ListView.ItemTemplate>
             <DataTemplate>

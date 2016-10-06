@@ -15,32 +15,32 @@ namespace FScruiser.Cells
         {
             InitializeComponent();
 
-            LiveDead.Items.Add(String.Empty);
-            LiveDead.Items.Add("L");
-            LiveDead.Items.Add("D");
+            //LiveDead.Items.Add(String.Empty);
+            //LiveDead.Items.Add("L");
+            //LiveDead.Items.Add("D");
         }
 
-        protected override void OnBindingContextChanged()
-        {
-            base.OnBindingContextChanged();
+        //protected override void OnBindingContextChanged()
+        //{
+        //    base.OnBindingContextChanged();
 
-            var tree = BindingContext as Tree;
-            if (tree != null)
-            {
-                foreach (var sp in tree.SpeciesOptions)
-                { this.Species.Items.Add(sp.SpeciesCode); }
+        //    var tree = BindingContext as Tree;
+        //    if (tree != null)
+        //    {
+        //        foreach (var sp in tree.SpeciesOptions)
+        //        { this.Species.Items.Add(sp.SpeciesCode); }
 
-                foreach (var sg in tree.SampleGroupOptions)
-                { this.SampleGroup.Items.Add(sg.SampleGroupCode); }
+        //        foreach (var sg in tree.SampleGroupOptions)
+        //        { this.SampleGroup.Items.Add(sg.SampleGroupCode); }
 
-                LiveDead.SelectedIndex = LiveDead.Items.IndexOf(tree.LiveDead);
-            }
-            else
-            {
-                Species.Items.Clear();
+        //        LiveDead.SelectedIndex = LiveDead.Items.IndexOf(tree.LiveDead);
+        //    }
+        //    else
+        //    {
+        //        Species.Items.Clear();
 
-                SampleGroup.Items.Clear();
-            }
-        }
+        //        SampleGroup.Items.Clear();
+        //    }
+        //}
     }
 }
