@@ -25,8 +25,8 @@ namespace FScruiser.Models
         [Field(SQLExpression = "max(TotalHeight, MerchHeightPrimary)", Alias = "Height")]
         public double Height { get; set; }
 
-        [Field(SQLExpression = "max(DBH, DRC)", Alias = "Diameiter")]
-        public double Diameiter { get; set; }
+        [Field(SQLExpression = "max(DBH, DRC)", Alias = "Diameter")]
+        public double Diameter { get; set; }
 
         [Field("Stratum_CN")]
         public long? Stratum_CN { get; set; }

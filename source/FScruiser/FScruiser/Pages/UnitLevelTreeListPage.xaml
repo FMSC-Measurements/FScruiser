@@ -6,7 +6,7 @@
              x:Name="Page"
              Title="">
     <ScrollView>
-        <ListView ItemsSource="{Binding Trees}">
+        <ListView ItemsSource="{Binding Trees}" HasUnevenRows="True">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Cells:TreeCell />
