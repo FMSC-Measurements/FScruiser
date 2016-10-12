@@ -6,10 +6,12 @@
              x:Name="Page"
              Title="">
     <ScrollView>
-        <ListView ItemsSource="{Binding Trees}" HasUnevenRows="True">
+        <ListView x:Name="ListView"  ItemsSource="{Binding Trees}" HasUnevenRows="True">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Cells:TreeCell />
+                    <Cells:TreeCell
+                        EditCommand="{Binding Path=BindingContext.EditTreeCommand, Source={x:Reference Page}}">
+                    </Cells:TreeCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

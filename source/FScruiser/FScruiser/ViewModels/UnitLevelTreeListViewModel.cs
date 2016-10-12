@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace FScruiser.ViewModels
 {
@@ -13,6 +15,9 @@ namespace FScruiser.ViewModels
         public DatastoreRedux Datastore { get; set; }
 
         public IList<Tree> Trees { get; protected set; }
+
+        public ICommand EditTreeCommand =>
+            new Command<Tree>((x) => EditTree(x));
 
         public UnitLevelTreeListViewModel(DatastoreRedux dataStore)
         {
@@ -27,6 +32,11 @@ namespace FScruiser.ViewModels
 
             Trees = Datastore.From<Tree>().Where($"CuttingUnit_CN = {unit.CuttingUnit_CN}")
                 .Read().ToList();
+        }
+
+        protected void EditTree(Tree tree)
+        {
+            CoreMethods.PushPageModel<TreeEditViewModel>(tree);
         }
     }
 }

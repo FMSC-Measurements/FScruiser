@@ -10,6 +10,9 @@ namespace FScruiser.Models
     [EntitySource(SourceName = "Tree", JoinCommands = "JOIN Stratum USING (Stratum_CN) JOIN SampleGroup USING (SampleGroup_CN)")]
     public class Tree
     {
+        [Field("Tree_GUID")]
+        public Guid Tree_GUID { get; set; }
+
         [Field("TreeNumber")]
         public int TreeNumber { get; set; }
 

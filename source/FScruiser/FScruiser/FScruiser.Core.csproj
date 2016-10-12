@@ -47,6 +47,8 @@
     <Compile Include="Models\Sale.cs" />
     <Compile Include="Models\StratumModel.cs" />
     <Compile Include="Models\Tree.cs" />
+    <Compile Include="Models\TreeEx.cs" />
+    <Compile Include="Models\TreeField.cs" />
     <Compile Include="Models\TreeSampleGroup.cs" />
     <Compile Include="Models\TreeSpecies.cs" />
     <Compile Include="Models\UnitStratum.cs" />
@@ -55,6 +57,9 @@
     </Compile>
     <Compile Include="Pages\StratumTalliesPage.xaml.cs">
       <DependentUpon>StratumTalliesPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\TreeEditPage.xaml.cs">
+      <DependentUpon>TreeEditPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\UnitLevelTreeListPage.xaml.cs">
       <DependentUpon>UnitLevelTreeListPage.xaml</DependentUpon>
@@ -84,6 +89,7 @@
     </Compile>
     <Compile Include="ViewModels\StratumListViewModel.cs" />
     <Compile Include="ViewModels\StratumTalliesViewModel.cs" />
+    <Compile Include="ViewModels\TreeEditViewModel.cs" />
     <Compile Include="ViewModels\UnitLevelTreeListViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +162,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\UnitLevelTreeListPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\TreeEditPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>

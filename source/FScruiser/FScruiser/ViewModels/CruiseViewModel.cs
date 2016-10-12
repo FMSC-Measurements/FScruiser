@@ -40,18 +40,18 @@ namespace FScruiser.ViewModels
 
         public void ShowDataEntry(CuttingUnitModel unit)
         {
-            var masterDetail = new MasterDetailPage();
-            masterDetail.Title = unit.CuttingUnitCode;
+            //var masterDetail = new MasterDetailPage();
+            //masterDetail.Title = unit.CuttingUnitCode;
 
-            masterDetail.Master = FreshMvvm.FreshPageModelResolver.ResolvePageModel<StratumListViewModel>(unit);
+            //masterDetail.Master = FreshMvvm.FreshPageModelResolver.ResolvePageModel<StratumListViewModel>(unit);
 
-            var treePage = FreshMvvm.FreshPageModelResolver.ResolvePageModel<UnitLevelTreeListViewModel>(unit);
+            //var treePage = FreshMvvm.FreshPageModelResolver.ResolvePageModel<UnitLevelTreeListViewModel>(unit);
 
-            masterDetail.Detail = new NavigationPage(treePage);
+            //masterDetail.Detail = new NavigationPage(treePage);
 
-            this.CurrentPage.Navigation.PushModalAsync(masterDetail);
+            //this.CurrentPage.Navigation.PushModalAsync(masterDetail);
 
-            //CoreMethods.PushPageModel<DataEntryViewModel>(unit);
+            CoreMethods.PushPageModel<UnitLevelTreeListViewModel>(unit);
         }
     }
 }
