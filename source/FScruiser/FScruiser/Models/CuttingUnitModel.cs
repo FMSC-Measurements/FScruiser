@@ -23,6 +23,7 @@ namespace FScruiser.Models
             set;
         }
 
+        [IgnoreField]
         public IEnumerable<StratumModel> Strata { get; set; }
     }
 }

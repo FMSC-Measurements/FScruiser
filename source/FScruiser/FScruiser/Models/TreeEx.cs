@@ -14,25 +14,18 @@ namespace FScruiser.Models
 
         public Guid Tree_GUID { get; set; }
 
-        [Field("Species")]
-        public string SpeciesCode { get; set; }
+        public string Species { get; set; }
 
-        [Field("TreeNumber")]
         public int TreeNumber { get; set; }
 
-        [Field("SampleGroup_CN")]
         public long? SampleGroup_CN { get; set; }
 
-        [Field("Stratum_CN")]
         public long? Stratum_CN { get; set; }
 
-        [Field("TreeDefaultValue_CN")]
         public long? TreeDefaultValue_CN { get; set; }
 
-        [Field("CuttingUnit_CN")]
         public long? CuttingUnit_CN { get; set; }
 
-        [Field("Plot_CN")]
         public long? Plot_CN { get; set; }
 
         #endregion keyFields

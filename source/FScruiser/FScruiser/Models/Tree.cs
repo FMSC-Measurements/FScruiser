@@ -7,16 +7,14 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource(SourceName = "Tree", JoinCommands = "JOIN Stratum USING (Stratum_CN) JOIN SampleGroup USING (SampleGroup_CN)")]
+    [EntitySource(SourceName = "Tree", JoinCommands = "JOIN Stratum USING (Stratum_CN) JOIN SampleGroup USING (SampleGroup_CN) JOIN TreeDefaultValue USING (TreeDefaultValue_CN)")]
     public class Tree
     {
-        [Field("Tree_GUID")]
         public Guid Tree_GUID { get; set; }
 
-        [Field("TreeNumber")]
         public int TreeNumber { get; set; }
 
-        [Field("Species")]
+        [Field(SQLExpression = "TreeDefaultValue.Species", Alias = "SpeciesCode")]
         public string SpeciesCode { get; set; }
 
         [Field(SQLExpression = "Stratum.Code", Alias = "StratumCode")]
@@ -31,19 +29,14 @@ namespace FScruiser.Models
         [Field(SQLExpression = "max(DBH, DRC)", Alias = "Diameter")]
         public double Diameter { get; set; }
 
-        [Field("Stratum_CN")]
         public long? Stratum_CN { get; set; }
 
-        [Field("SampleGroup_CN")]
         public long? SampleGroup_CN { get; set; }
 
-        [Field("TreeDefaultValue_CN")]
         public long? TreeDefaultValue_CN { get; set; }
 
-        [Field("CuttingUnit_CN")]
         public long? CuttingUnit_CN { get; set; }
 
-        [Field("Plot_CN")]
         public long? Plot_CN { get; set; }
 
         //public string CountOrMeasure { get; set; }
