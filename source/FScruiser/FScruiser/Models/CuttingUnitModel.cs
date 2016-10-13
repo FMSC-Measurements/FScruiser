@@ -13,7 +13,6 @@ namespace FScruiser.Models
     [EntitySource(SourceName = "CuttingUnit")]
     public class CuttingUnitModel
     {
-        [Field(Name = "CuttingUnit_CN")]
         public long? CuttingUnit_CN { get; set; }
 
         [Field(Name = "Code")]

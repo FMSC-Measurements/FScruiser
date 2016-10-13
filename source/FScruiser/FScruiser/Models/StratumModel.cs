@@ -13,7 +13,6 @@ namespace FScruiser.Models
         [Field(Name = "Code")]
         public string StratumCode { get; set; }
 
-        [Field(Name = "Method")]
         public string Method { get; set; }
     }
 }

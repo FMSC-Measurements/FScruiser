@@ -16,13 +16,10 @@ namespace FScruiser.Models
         [Field("Number")]
         public string SaleNumber { get; set; }
 
-        [Field("Region")]
         public string Region { get; set; }
 
-        [Field("Forest")]
         public string Forest { get; set; }
 
-        [Field("District")]
         public string District { get; set; }
     }
 }

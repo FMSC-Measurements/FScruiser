@@ -14,13 +14,11 @@ namespace FScruiser.Models
         [Field(Alias = "CuttingUnitCode", SQLExpression = "CuttingUnit.Code")]
         public string CuttingUnitCode { get; set; }
 
-        [Field("CuttingUnit_CN")]
         public long? CuttingUnit_CN { get; set; }
 
         [Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
         public string StratumCode { get; set; }
 
-        [Field("Stratum_CN")]
         public long? Stratum_CN { get; set; }
     }
 }
