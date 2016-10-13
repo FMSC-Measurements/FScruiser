@@ -30,7 +30,7 @@ namespace FScruiser.ViewModels
                 .Where($"Stratum_CN = {treeProxy.Stratum_CN}")
                 .OrderBy("FieldOrder").Read().ToList();
 
-            Tree = Datastore.From<TreeEx>().Where($"Tree_GUID = {treeProxy.Tree_GUID}").Read().FirstOrDefault();
+            Tree = Datastore.From<TreeEx>().Where($"Tree_GUID = ?1").Read(treeProxy.Tree_GUID).FirstOrDefault();
         }
     }
 }

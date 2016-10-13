@@ -19,18 +19,22 @@ namespace FScruiser.Pages
 
         protected override void OnBindingContextChanged()
         {
-            base.OnBindingContextChanged();
-
             var model = BindingContext as TreeEditViewModel;
-
-            var stackLayout = new StackLayout { BindingContext = model.Tree };
-
-            foreach (var field in model.TreeFields)
+            if (model != null)
             {
-                stackLayout.Children.Add(MakeCell(field));
+                var stackLayout = new StackLayout();
+
+                foreach (var field in model.TreeFields)
+                {
+                    var cell = MakeCell(field);
+                    cell.BindingContext = model.Tree;
+                    stackLayout.Children.Add(cell);
+                }
+
+                this.Content = new ScrollView { Content = stackLayout };
             }
 
-            this.Content = new ScrollView { Content = stackLayout };
+            base.OnBindingContextChanged();
         }
 
         protected View MakeCell(TreeField field)

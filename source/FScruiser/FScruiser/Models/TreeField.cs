@@ -10,7 +10,10 @@ namespace FScruiser.Models
     [EntitySource("TreeFieldSetup")]
     public class TreeField
     {
+        [Field("Field")]
         public string Field { get; set; }
+
+        [Field("Heading")]
         public string Heading { get; set; }
     }
 }
