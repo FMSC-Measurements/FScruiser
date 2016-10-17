@@ -2,43 +2,43 @@
 <ViewCell xmlns="http://xamarin.com/schemas/2014/forms"
           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
           x:Class="FScruiser.Cells.TreeCell">
+    <ViewCell.ContextActions>
+        <MenuItem x:Name="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding .}" Text="Delete" />
+    </ViewCell.ContextActions>
     <StackLayout Orientation="Horizontal">
         <StackLayout.Resources>
             <ResourceDictionary>
-                <Style TargetType="Label">
-                    <Setter Property="FontSize" Value="Large" />
+                <Style x:Key="HeadingText"  TargetType="Label">
+                    <Setter Property="FontSize" Value="Small" />
                 </Style>
-                <Style TargetType="Entry">
+                <Style x:Key="ValueText"  TargetType="Label">
                     <Setter Property="FontSize" Value="Large" />
                 </Style>
             </ResourceDictionary>
         </StackLayout.Resources>
         <StackLayout Orientation="Vertical">
-            <Label Text="Tree #" />
-            <Label x:Name="TreeNumber"
-               Text="{Binding TreeNumber}" />
+            <Label Text="Tree #" Style="{StaticResource HeadingText}" />
+            <Label x:Name="TreeNumber" Text="{Binding TreeNumber}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
-            <Label Text="Stratum" />
-            <Entry x:Name="Stratum" Text="{Binding StratumCode}" />
+            <Label Text="Stratum" Style="{StaticResource HeadingText}" />
+            <Label x:Name="Stratum" Text="{Binding StratumCode}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
-            <Label Text="SampleGroup" />
-            <Entry x:Name="SampleGroup" Text="{Binding SampleGroupCode}" />
+            <Label Text="SampleGroup" Style="{StaticResource HeadingText}" />
+            <Label x:Name="SampleGroup" Text="{Binding SampleGroupCode}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
-            <Label Text="Species" />
-            <Entry x:Name="Species" Text="{Binding SpeciesCode}" />
+            <Label Text="Species" Style="{StaticResource HeadingText}" />
+            <Label x:Name="Species" Text="{Binding SpeciesCode}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
-            <Label Text="Diameter" />
-            <Entry x:Name="Diameiter" Text="{Binding Diameter}" />
+            <Label Text="Diameter" Style="{StaticResource HeadingText}" />
+            <Label x:Name="Diameiter" Text="{Binding Diameter}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
-            <Label Text="Height" />
-            <Entry x:Name="Height" Text="{Binding Height}" />
+            <Label Text="Height" Style="{StaticResource HeadingText}" />
+            <Label x:Name="Height" Text="{Binding Height}" Style="{StaticResource ValueText}" />
         </StackLayout>
-        <Button x:Name="Edit" x:FieldModifier="pubilc" Text="Edit" Clicked="Edit_Clicked" />
-        <Button x:Name="Delete" x:FieldModifier="public" Text="Delete" Clicked="Delete_Clicked" />
     </StackLayout>
 </ViewCell>

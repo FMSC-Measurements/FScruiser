@@ -10,9 +10,8 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Cells:TreeCell
-                        EditCommand="{Binding Path=BindingContext.EditTreeCommand, Source={x:Reference Page}}"
-                        EditCommandParameter="{Binding .}">
-                    </Cells:TreeCell>
+                        Command="{Binding Path=BindingContext.EditTreeCommand, Source={x:Reference Page}}"
+                        CommandParameter="{Binding .}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

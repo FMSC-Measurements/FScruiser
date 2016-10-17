@@ -11,53 +11,51 @@ namespace FScruiser.Cells
 {
     public partial class TreeCell : ViewCell
     {
-        #region EditCommand
+        #region Command
 
-        /// <summary>
-        /// Identifies the <see cref="EditCommand"/> bindable property.
-        /// </summary>
-        public static readonly BindableProperty EditCommandProperty =
-            BindableProperty.Create(nameof(EditCommand),
-              typeof(ICommand),
-              typeof(TreeCell),
-              defaultValue: default(ICommand),
-              defaultBindingMode: BindingMode.OneWay,
-              propertyChanged: (bindable, oldValue, newValue) => ((TreeCell)bindable).OnEditCommandChanged());
-
-        protected void OnEditCommandChanged()
-        {
-            if (EditCommand != null)
+        public static readonly BindableProperty CommandProperty = BindableProperty.Create("Command", typeof(ICommand), typeof(TextCell), default(ICommand),
+            propertyChanging: (bindable, oldvalue, newvalue) =>
             {
-                EditCommand.CanExecuteChanged += EditCommand_CanExecuteChanged;
-                EditCommand_CanExecuteChanged(this, EventArgs.Empty);
-            }
-            else
-            { }
-        }
+                var cell = (TreeCell)bindable;
+                var oldcommand = (ICommand)oldvalue;
+                if (oldcommand != null)
+                    oldcommand.CanExecuteChanged -= cell.OnCommandCanExecuteChanged;
+            }, propertyChanged: (bindable, oldvalue, newvalue) =>
+            {
+                var cell = (TreeCell)bindable;
+                var newcommand = (ICommand)newvalue;
+                if (newcommand != null)
+                {
+                    newcommand.CanExecuteChanged += cell.OnCommandCanExecuteChanged;
+                    cell.OnCommandCanExecuteChanged(cell, EventArgs.Empty);
+                }
+            });
 
-        private void Edit_Clicked(object sender, EventArgs e)
+        private void OnCommandCanExecuteChanged(object sender, EventArgs e)
         {
-            EditCommand?.Execute(EditCommandParameter);
+            IsEnabled = Command?.CanExecute(CommandParameter) ?? false;
         }
 
-        private void EditCommand_CanExecuteChanged(object sender, EventArgs e)
+        public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create("CommandParameter", typeof(object), typeof(TextCell), default(object),
+            propertyChanged: (bindable, oldvalue, newvalue) =>
+            {
+                var cell = (TreeCell)bindable;
+                cell.OnCommandCanExecuteChanged(cell, EventArgs.Empty);
+            });
+
+        public ICommand Command
         {
-            Edit.IsEnabled = EditCommand?.CanExecute(EditCommandParameter) ?? false;
+            get { return (ICommand)GetValue(CommandProperty); }
+            set { SetValue(CommandProperty, value); }
         }
 
-        /// <summary>
-        /// Gets or sets the <see cref="EditCommand" /> property. This is a bindable property.
-        /// </summary>
-        /// <value>
-        ///
-        /// </value>
-        public ICommand EditCommand
+        public object CommandParameter
         {
-            get { return (ICommand)GetValue(EditCommandProperty); }
-            set { SetValue(EditCommandProperty, value); }
+            get { return GetValue(CommandParameterProperty); }
+            set { SetValue(CommandParameterProperty, value); }
         }
 
-        #endregion EditCommand
+        #endregion Command
 
         #region DeleteCommand
 
@@ -69,32 +67,7 @@ namespace FScruiser.Cells
               typeof(ICommand),
               typeof(TreeCell),
               defaultValue: default(ICommand),
-              defaultBindingMode: BindingMode.OneWay,
-              propertyChanged: (bindable, oldValue, newValue) => ((TreeCell)bindable).OnDeleteCommandChanged());
-
-        /// <summary>
-        /// Invoked before changes are applied to the <see cref="DeleteCommand"/> property.
-        /// </summary>
-        protected virtual void OnDeleteCommandChanged()
-        {
-            if (DeleteCommand != null)
-            {
-                DeleteCommand.CanExecuteChanged += DeleteCommand_CanExecuteChanged;
-                DeleteCommand_CanExecuteChanged(this, EventArgs.Empty);
-            }
-            else
-            { }
-        }
-
-        protected void DeleteCommand_CanExecuteChanged(object sender, EventArgs e)
-        {
-            Delete.IsEnabled = DeleteCommand?.CanExecute(DeleteCommandParameter) ?? false;
-        }
-
-        private void Delete_Clicked(object sender, EventArgs e)
-        {
-            DeleteCommand?.Execute(DeleteCommandParameter);
-        }
+              defaultBindingMode: BindingMode.OneWay);
 
         /// <summary>
         /// Gets or sets the <see cref="DeleteCommand" /> property. This is a bindable property.
@@ -110,66 +83,20 @@ namespace FScruiser.Cells
 
         #endregion DeleteCommand
 
-        #region EditCommandParameter
-
-        /// <summary>
-        /// Identifies the <see cref="EditCommandParameterProperty"/> bindable property.
-        /// </summary>
-        public static readonly BindableProperty EditCommandParameterProperty =
-            BindableProperty.Create(nameof(EditCommandParameter), typeof(object), typeof(TreeCell),
-              propertyChanged: (bo, o, n) => ((TreeCell)bo).EditCommand_CanExecuteChanged(bo, EventArgs.Empty));
-
-        /// <summary>
-        /// Gets or sets the <see cref="EditCommandParameterProperty" /> property. This is a bindable property.
-        /// </summary>
-        /// <value>
-        ///
-        /// </value>
-        public object EditCommandParameter
-        {
-            get { return (object)GetValue(EditCommandParameterProperty); }
-            set { SetValue(EditCommandParameterProperty, value); }
-        }
-
-        #endregion EditCommandParameter
-
-        #region DeleteCommandParameter
-
-        /// <summary>
-        /// Identifies the <see cref="DeleteCommandParameter"/> bindable property.
-        /// </summary>
-        public static readonly BindableProperty DeleteCommandParameterProperty =
-            BindableProperty.Create(nameof(DeleteCommandParameter),
-              typeof(object),
-              typeof(TreeCell),
-              defaultValue: default(object),
-              defaultBindingMode: BindingMode.OneWay,
-              propertyChanged: (bindable, oldValue, newValue) => ((TreeCell)bindable).DeleteCommand_CanExecuteChanged(bindable, EventArgs.Empty));
-
-        /// <summary>
-        /// Gets or sets the <see cref="DeleteCommandParameter" /> property. This is a bindable property.
-        /// </summary>
-        /// <value>
-        ///
-        /// </value>
-        public object DeleteCommandParameter
-        {
-            get { return (object)GetValue(DeleteCommandParameterProperty); }
-            set { SetValue(DeleteCommandParameterProperty, value); }
-        }
-
-        #endregion DeleteCommandParameter
-
         public TreeCell()
         {
             InitializeComponent();
+            base.Tapped += TreeCell_Tapped;
+        }
+
+        private void TreeCell_Tapped(object sender, EventArgs e)
+        {
+            Command?.Execute(CommandParameter);
         }
 
         protected override void OnBindingContextChanged()
         {
             base.OnBindingContextChanged();
-            Edit.CommandParameter = BindingContext;
-            Delete.CommandParameter = BindingContext;
         }
     }
 }
