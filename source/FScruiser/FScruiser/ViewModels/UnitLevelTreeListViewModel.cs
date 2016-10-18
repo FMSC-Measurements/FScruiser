@@ -36,9 +36,7 @@ namespace FScruiser.ViewModels
 
         protected void EditTree(Tree tree)
         {
-            var page = FreshMvvm.FreshPageModelResolver.ResolvePageModel<TreeEditViewModel>(tree);
-            base.CurrentPage.Navigation.PushAsync(page);
-            //CoreMethods.PushPageModel<TreeEditViewModel>(tree);
+            CoreMethods.PushPageModel<TreeEditViewModel>(tree);
         }
     }
 }

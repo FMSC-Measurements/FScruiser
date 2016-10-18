@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace FScruiser.ViewModels
 {
@@ -15,6 +17,9 @@ namespace FScruiser.ViewModels
         public UnitStratum Stratum { get; set; }
 
         public IList<CountTree> Counts { get; set; }
+
+        public ICommand TallyCommand =>
+            new Command<CountTree>((x) => Tally(x));
 
         public StratumTalliesViewModel(DatastoreRedux datastore)
         {
@@ -30,6 +35,11 @@ namespace FScruiser.ViewModels
                 .Read().ToList();
 
             base.Init(initData);
+        }
+
+        protected void Tally(CountTree tally)
+        {
+            tally.TreeCount += 1;
         }
     }
 }

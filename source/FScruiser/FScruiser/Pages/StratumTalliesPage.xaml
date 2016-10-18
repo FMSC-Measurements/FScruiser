@@ -1,12 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Cells="clr-namespace:FScruiser.Cells"
              x:Class="FScruiser.Pages.StratumTalliesPage"
-             x:Name="Self">
+             x:Name="Page">
     <ListView ItemsSource="{Binding Counts}">
         <ListView.ItemTemplate>
             <DataTemplate>
-                <TextCell Text="{Binding Description}" />
+                <Cells:TallyCell Command="{Binding Path=BindingContext.TallyCommand, Source={x:Reference Page}}"
+                                 CommandParameter="{Binding .}" />
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>
