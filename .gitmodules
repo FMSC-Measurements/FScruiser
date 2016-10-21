@@ -2,3 +2,6 @@
 	path = source/Backpack
 	url = https://github.com/FMSC-BenC/Backpack.git
 	branch = master
+[submodule "source/FMSC.Sampling"]
+	path = source/FMSC.Sampling
+	url = https://github.com/FMSC-Measurements/FMSC.Sampling.git
