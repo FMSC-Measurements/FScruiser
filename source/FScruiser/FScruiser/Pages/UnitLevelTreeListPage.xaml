@@ -6,12 +6,22 @@
              x:Name="Page"
              Title="">
     <ScrollView>
-        <ListView x:Name="ListView"  ItemsSource="{Binding Trees}" HasUnevenRows="True">
+        <ListView x:Name="ListView"
+                  ItemsSource="{Binding Trees}"
+                  HasUnevenRows="True"
+                  ItemSelected="ListView_ItemSelected">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Cells:TreeCell
                         Command="{Binding Path=BindingContext.EditTreeCommand, Source={x:Reference Page}}"
-                        CommandParameter="{Binding .}" />
+                        CommandParameter="{Binding .}">
+                        <Cells:TreeCell.ContextActions>
+                            <MenuItem x:Name="Delete"
+                                      Text="Delete"
+                                      Command="{Binding Path=BindingContext.DeleteTreeCommand, Source={x:Reference Page}}"
+                                      CommandParameter="{Binding .}" />
+                        </Cells:TreeCell.ContextActions>
+                    </Cells:TreeCell>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

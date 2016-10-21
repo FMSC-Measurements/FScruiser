@@ -57,32 +57,6 @@ namespace FScruiser.Cells
 
         #endregion Command
 
-        #region DeleteCommand
-
-        /// <summary>
-        /// Identifies the <see cref="DeleteCommand"/> bindable property.
-        /// </summary>
-        public static readonly BindableProperty DeleteCommandProperty =
-            BindableProperty.Create(nameof(DeleteCommand),
-              typeof(ICommand),
-              typeof(TreeCell),
-              defaultValue: default(ICommand),
-              defaultBindingMode: BindingMode.OneWay);
-
-        /// <summary>
-        /// Gets or sets the <see cref="DeleteCommand" /> property. This is a bindable property.
-        /// </summary>
-        /// <value>
-        ///
-        /// </value>
-        public ICommand DeleteCommand
-        {
-            get { return (ICommand)GetValue(DeleteCommandProperty); }
-            set { SetValue(DeleteCommandProperty, value); }
-        }
-
-        #endregion DeleteCommand
-
         public TreeCell()
         {
             InitializeComponent();

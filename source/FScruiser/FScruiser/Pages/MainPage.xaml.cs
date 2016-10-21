@@ -21,5 +21,10 @@ namespace FScruiser.Pages
             //    ((ListView)sender).SelectedItem = null;
             //};
         }
+
+        private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
+        {
+            ((ListView)sender).SelectedItem = null;
+        }
     }
 }

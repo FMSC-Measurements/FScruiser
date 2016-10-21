@@ -8,7 +8,9 @@
     <StackLayout>
         <Label Text="Cutting Units" FontSize="Large" HorizontalOptions="Center" />
         <ListView
-            ItemsSource ="{Binding CuttingUnits}">
+            x:Name="CuttingUnitList"
+            ItemsSource ="{Binding CuttingUnits}"
+            ItemSelected="ListView_ItemSelected">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextCell Text="{Binding CuttingUnitCode}"

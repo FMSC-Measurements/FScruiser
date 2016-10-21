@@ -5,7 +5,7 @@
             Tapped="ViewCell_Tapped">
     <StackLayout>
         <Label Text="{Binding Description}" FontSize="Large" HorizontalOptions="Center" />
-        <StackLayout>
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Fill">
             <Label Text="{Binding TreeCount}" FontSize="Medium" HorizontalOptions="StartAndExpand" />
             <Button Text="i" FontSize="Medium" />
         </StackLayout>

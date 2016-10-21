@@ -51,7 +51,7 @@ namespace FScruiser.ViewModels
 
             //this.CurrentPage.Navigation.PushModalAsync(masterDetail);
 
-            CoreMethods.PushPageModel<UnitLevelTreeListViewModel>(unit);
+            CoreMethods.PushPageModel<UnitLevelNavigationViewModel>(unit);
         }
     }
 }

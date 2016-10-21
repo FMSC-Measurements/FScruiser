@@ -4,12 +4,22 @@
              xmlns:Cells="clr-namespace:FScruiser.Cells"
              x:Class="FScruiser.Pages.StratumTalliesPage"
              x:Name="Page">
-    <ListView ItemsSource="{Binding Counts}">
-        <ListView.ItemTemplate>
-            <DataTemplate>
-                <Cells:TallyCell Command="{Binding Path=BindingContext.TallyCommand, Source={x:Reference Page}}"
+    <StackLayout>
+        <ScrollView>
+            <ListView ItemsSource="{Binding Counts}"
+                      HasUnevenRows="True"
+                      ItemSelected="ListView_ItemSelected">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Cells:TallyCell Command="{Binding Path=BindingContext.TallyCommand, Source={x:Reference Page}}"
                                  CommandParameter="{Binding .}" />
-            </DataTemplate>
-        </ListView.ItemTemplate>
-    </ListView>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </ScrollView>
+        <StackLayout Orientation="Horizontal">
+            <Button Text="Trees" HorizontalOptions="Start" />
+            <Button Text="TallyHistory" HorizontalOptions="End" />
+        </StackLayout>
+    </StackLayout>
 </ContentPage>

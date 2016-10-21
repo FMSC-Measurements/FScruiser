@@ -7,7 +7,7 @@
     <StackLayout>
         <Label>FScruiser</Label>
         <Label>Cruise Files:</Label>
-        <ListView x:Name="ListView" ItemsSource="{Binding CruiseFiles}">
+        <ListView x:Name="ListView" ItemsSource="{Binding CruiseFiles}" ItemSelected="ListView_ItemSelected">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextCell Text="{Binding FileName}"

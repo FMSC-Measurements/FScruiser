@@ -14,6 +14,8 @@ namespace FScruiser.ViewModels
     {
         public DatastoreRedux Datastore { get; set; }
 
+        public CuttingUnitModel Unit { get; set; }
+
         public IList<Tree> Trees { get; protected set; }
 
         public ICommand EditTreeCommand =>
@@ -28,9 +30,9 @@ namespace FScruiser.ViewModels
         {
             base.Init(initData);
 
-            var unit = initData as CuttingUnitModel;
+            Unit = initData as CuttingUnitModel;
 
-            Trees = Datastore.From<Tree>().Where($"CuttingUnit_CN = {unit.CuttingUnit_CN}")
+            Trees = Datastore.From<Tree>().Where($"CuttingUnit_CN = {Unit.CuttingUnit_CN}")
                 .Read().ToList();
         }
 
