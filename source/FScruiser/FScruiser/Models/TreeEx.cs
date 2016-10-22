@@ -35,6 +35,9 @@ namespace FScruiser.Models
         public string ClearFace { get; set; }
 
         public double CrownRatio { get; set; }
+
+        public string CountMeasure { get; set; }
+
         public double DBH { get; set; }
 
         public double DBHDoubleBarkThickness { get; set; }
@@ -55,29 +58,38 @@ namespace FScruiser.Models
 
         public bool IsFallBuckScale { get; set; }
 
+        public int KPI { get; set; }
+
         public string LiveDead { get; set; }
 
         public double MerchHeightPrimary { get; set; }
 
         public double MerchHeightSecondary { get; set; }
+
         public double PoleLength { get; set; }
 
         public double RecoverablePrimary { get; set; }
 
         public string Remarks { get; set; }
+
         public double SeenDefectPrimary { get; set; }
 
         public double SeenDefectSecondary { get; set; }
 
+        public bool STM { get; set; }
+
         public double Slope { get; set; }
+
         public double TopDIBPrimary { get; set; }
 
         public double TopDIBSecondary { get; set; }
 
         public double TotalHeight { get; set; }
+
         public double UpperStemDOB { get; set; }
 
         public double UpperStemHeight { get; set; }
+
         public double VoidPercent { get; set; }
     }
 }

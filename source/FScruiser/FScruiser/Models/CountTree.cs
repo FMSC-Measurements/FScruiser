@@ -13,11 +13,11 @@ namespace FScruiser.Models
     public class CountTree : INotifyPropertyChanged
     {
         //[PrimaryKeyField]
-        public long? CountTree_CN { get; set; }
+        public long CountTree_CN { get; set; }
 
-        public long? CuttingUnit_CN { get; set; }
+        public long CuttingUnit_CN { get; set; }
 
-        public long? SampleGroup_CN { get; set; }
+        public long SampleGroup_CN { get; set; }
 
         int _treeCount;
 
@@ -30,6 +30,8 @@ namespace FScruiser.Models
                 OnPropertyChanged();
             }
         }
+
+        public int SumKPI { get; set; }
 
         [Field(SQLExpression = "Tally.Description", Alias = "Description")]
         public string Description { get; set; }

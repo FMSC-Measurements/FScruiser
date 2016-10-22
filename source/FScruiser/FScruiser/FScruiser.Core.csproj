@@ -130,6 +130,10 @@
       <Project>{6a6dff5f-2f68-4ffd-94b6-9a52b4ab641e}</Project>
       <Name>Backpack.SQLite</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\FMSC.Sampling\src\FMSC.Sampling.PCL\FMSC.Sampling.PCL.csproj">
+      <Project>{b2cb186c-9319-43d0-a694-fb566e083c58}</Project>
+      <Name>FMSC.Sampling.PCL</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Cells\TreeCell.xaml">
