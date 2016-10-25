@@ -12,7 +12,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextCell Text="{Binding StratumCode}"
-                              Detail="{Binding Method}"
+                              Detail="{Binding CruiseMethod}"
                           Command="{Binding BindingContext.ShowTalliesCommand, Source={x:Reference Self}}"
                           CommandParameter="{Binding .}" />
                 </DataTemplate>

@@ -5,8 +5,17 @@
              x:Class="FScruiser.Pages.StratumTalliesPage"
              x:Name="Page">
     <StackLayout>
+        <StackLayout x:Name="PlotNavBar"
+                     Orientation="Horizontal"
+                     BackgroundColor="Green"
+                     HorizontalOptions="Fill">
+            <Label Text="Plot" FontSize="Large" />
+            <Picker x:Name="PlotPicker"  SelectedIndexChanged="PlotPicker_SelectedIndexChanged" HorizontalOptions="CenterAndExpand" />
+            <Button HorizontalOptions="End" Command="{Binding ShowPlotInfoCommand}">info</Button>
+            <Button HorizontalOptions="End" Command="{Binding AddPlotCommand}">Add</Button>
+        </StackLayout>
         <ScrollView>
-            <ListView ItemsSource="{Binding Counts}"
+            <ListView ItemsSource="{Binding TallyPopulations}"
                       HasUnevenRows="True"
                       ItemSelected="ListView_ItemSelected">
                 <ListView.ItemTemplate>

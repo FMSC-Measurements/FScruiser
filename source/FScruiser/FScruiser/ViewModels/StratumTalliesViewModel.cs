@@ -17,10 +17,42 @@ namespace FScruiser.ViewModels
 
         public UnitStratum Stratum { get; set; }
 
+        IList<PlotProxy> _plots;
+
+        public IList<PlotProxy> Plots
+        {
+            get { return _plots; }
+            set { _plots = value; }
+        }
+
+        public PlotProxy CurrentPlot { get; set; }
+
         public IList<TallyPopulation> TallyPopulations { get; set; }
 
         public ICommand TallyCommand =>
             new Command<TallyPopulation>((x) => Tally(x));
+
+        public ICommand ShowPlotInfoCommand =>
+            new Command(() => ShowPlotInfo(), () => CurrentPlot != null);
+
+        public ICommand AddPlotCommand =>
+            new Command(() => ShowAddPlot());
+
+        private void ShowAddPlot()
+        {
+            if (Stratum.IsPlotStratum)
+            {
+                CoreMethods.PushPageModel<PlotInfoViewModel>(null);
+            }
+        }
+
+        private void ShowPlotInfo()
+        {
+            if (Stratum.IsPlotStratum && CurrentPlot != null)
+            {
+                CoreMethods.PushPageModel<PlotInfoViewModel>(CurrentPlot);
+            }
+        }
 
         public StratumTalliesViewModel(DatastoreRedux datastore)
         {
@@ -42,11 +74,32 @@ namespace FScruiser.ViewModels
                     .Read().FirstOrDefault();
             }
 
+            if (Stratum.IsPlotStratum)
+            {
+                Plots = Datastore.From<PlotProxy>()
+                    .Where($"CuttingUnit_CN = {Stratum.CuttingUnit_CN} AND Stratum_CN = {Stratum.Stratum_CN}")
+                    .Read().ToList();
+            }
+
             base.Init(initData);
+        }
+
+        bool EnsurePlotSelected()
+        {
+            if (CurrentPlot != null) { return true; }
+            else
+            {
+                CoreMethods.DisplayAlert("Alert", "No Plot Selected", "OK");
+                return false;
+            }
         }
 
         protected void Tally(TallyPopulation tally)
         {
+            if (Stratum.IsPlotStratum)
+            {
+            }
+
             var sampler = tally.Sampler;
 
             if (sampler.CruiseMethod == "3P")
@@ -86,7 +139,7 @@ namespace FScruiser.ViewModels
                 }
                 else
                 {
-                    LogTreeEstimate(kpi);
+                    LogTreeEstimate(tally, kpi);
                     tally.SumKPI += kpi;
 
                     ThreePItem item = (ThreePItem)((ThreePSelecter)selector).NextItem();
@@ -97,8 +150,17 @@ namespace FScruiser.ViewModels
 
                         if (selector.IsSelectingITrees && selector.InsuranceCounter.Next())
                         {
-                            tree.CountMeasure = "I";
+                            tree.CountOrMeasure = "I";
                         }
+                        else
+                        {
+                            tree.CountOrMeasure = "M";
+                        }
+                    }
+                    else if (Stratum.IsPlotStratum)
+                    {
+                        tree = CreateTree(tally);
+                        tree.CountOrMeasure = "C";
                     }
                 }
                 return tree;
@@ -118,13 +180,19 @@ namespace FScruiser.ViewModels
 
                 if (result.IsInsuranceItem)
                 {
-                    tree.CountMeasure = "I";
+                    tree.CountOrMeasure = "I";
                 }
                 else
                 {
-                    tree.CountMeasure = "M";
+                    tree.CountOrMeasure = "M";
                 }
 
+                return tree;
+            }
+            else if (Stratum.IsPlotStratum)
+            {
+                var tree = CreateTree(tally);
+                tree.CountOrMeasure = "C";
                 return tree;
             }
             else
@@ -132,7 +200,12 @@ namespace FScruiser.ViewModels
         }
 
         bool AskKPI(int min, int max, out int kpi, out bool stm)
-        { throw new NotImplementedException(); }
+        {
+            var rand = new Random();
+            kpi = rand.Next(min, max);
+            stm = false;
+            return true;
+        }
 
         Tree CreateTree(TallyPopulation tally)
         {
@@ -144,10 +217,24 @@ namespace FScruiser.ViewModels
                 TreeDefaultValue_CN = tally.TreeDefaultValue_CN
             };
 
+            if (Stratum.IsPlotStratum)
+            {
+                tree.Plot_CN = CurrentPlot.Plot_CN;
+                tree.TreeCount = 1;
+            }
+
             return tree;
         }
 
-        void LogTreeEstimate(int kpi)
-        { throw new NotImplementedException(); }
+        void LogTreeEstimate(TallyPopulation tally, int kpi)
+        {
+            var treeEstimate = new TreeEstimate
+            {
+                CountTree_CN = tally.CountTree_CN,
+                KPI = kpi
+            };
+
+            Datastore.Insert(treeEstimate, Backpack.SQL.OnConflictOption.Default);
+        }
     }
 }

@@ -36,7 +36,7 @@ namespace FScruiser.Models
 
         public double CrownRatio { get; set; }
 
-        public string CountMeasure { get; set; }
+        public string CountOrMeasure { get; set; }
 
         public double DBH { get; set; }
 
@@ -86,10 +86,15 @@ namespace FScruiser.Models
 
         public double TotalHeight { get; set; }
 
+        public int TreeCount { get; set; }
+
         public double UpperStemDOB { get; set; }
 
         public double UpperStemHeight { get; set; }
 
         public double VoidPercent { get; set; }
+
+        [CreatedByField]
+        public string CreatedBy { get; set; }
     }
 }

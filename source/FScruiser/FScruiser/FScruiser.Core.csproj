@@ -44,12 +44,15 @@
       <DependentUpon>TreeCell.xaml</DependentUpon>
     </Compile>
     <Compile Include="ICruiseFolderService.cs" />
+    <Compile Include="Models\CruiseMethods.cs" />
+    <Compile Include="Models\PlotProxy.cs" />
     <Compile Include="Models\TallyPopulation.cs" />
     <Compile Include="Models\CruiseModel.cs" />
     <Compile Include="Models\CuttingUnitModel.cs" />
     <Compile Include="Models\Sale.cs" />
     <Compile Include="Models\Sampler.cs" />
     <Compile Include="Models\StratumModel.cs" />
+    <Compile Include="Models\TreeEstimate.cs" />
     <Compile Include="Models\TreeProxy.cs" />
     <Compile Include="Models\Tree.cs" />
     <Compile Include="Models\TreeField.cs" />
@@ -80,6 +83,7 @@
     <Compile Include="Pages\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\PlotInfoViewModel.cs" />
     <Compile Include="ViewModels\UnitLevelNavigationViewModel.cs" />
     <Compile Include="ViewModels\StratumTalliesViewModel.cs" />
     <Compile Include="ViewModels\TreeEditViewModel.cs" />

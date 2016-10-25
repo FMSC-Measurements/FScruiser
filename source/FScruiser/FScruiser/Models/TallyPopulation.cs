@@ -38,6 +38,7 @@ namespace FScruiser.Models
 
         public int SumKPI { get; set; }
 
+        [IgnoreField]
         public Sampler Sampler { get; set; }
 
         [Field(SQLExpression = "Tally.Description", Alias = "Description")]

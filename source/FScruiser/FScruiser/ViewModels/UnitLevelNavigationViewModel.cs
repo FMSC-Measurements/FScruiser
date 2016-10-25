@@ -13,7 +13,7 @@ namespace FScruiser.ViewModels
     public class UnitLevelNavigationViewModel : FreshMvvm.FreshBasePageModel
     {
         public CuttingUnitModel Unit { get; set; }
-        public IList<StratumModel> Strata { get; set; }
+        public IList<UnitStratum> Strata { get; set; }
 
         DatastoreRedux Datastore { get; set; }
 
@@ -26,15 +26,14 @@ namespace FScruiser.ViewModels
         {
             Unit = initData as CuttingUnitModel;
 
-            Strata = Datastore.From<StratumModel>()
-                .Join("CuttingUnitStratum", "Using (Stratum_CN)")
+            Strata = Datastore.From<UnitStratum>()
                 .Where($"CuttingUnit_CN = {Unit.CuttingUnit_CN}").Read().ToList();
 
             base.Init(initData);
         }
 
         public ICommand ShowTalliesCommand =>
-            new Command<StratumModel>(s => ShowTallies(s));
+            new Command<UnitStratum>(s => ShowTallies(s));
 
         public ICommand ShowTreesCommand =>
             new Command(() => ShowTrees());
@@ -44,15 +43,9 @@ namespace FScruiser.ViewModels
             CoreMethods.PushPageModel<UnitLevelTreeListViewModel>(Unit);
         }
 
-        public void ShowTallies(StratumModel stratum)
+        public void ShowTallies(UnitStratum stratum)
         {
-            var unitStratum = new UnitStratum
-            {
-                CuttingUnit_CN = Unit.CuttingUnit_CN,
-                Stratum_CN = stratum.Stratum_CN
-            };
-
-            CoreMethods.PushPageModel<StratumTalliesViewModel>(unitStratum);
+            CoreMethods.PushPageModel<StratumTalliesViewModel>(stratum);
         }
     }
 }
