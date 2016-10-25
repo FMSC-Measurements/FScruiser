@@ -35,7 +35,7 @@
         </StackLayout>
         <StackLayout Orientation="Vertical">
             <Label Text="Height" Style="{StaticResource HeadingText}" />
-            <Label x:Name="Height" Text="{Binding Height}" Style="{StaticResource ValueText}" />
+            <Label x:Name="TreeHeight" Text="{Binding Height}" Style="{StaticResource ValueText}" />
         </StackLayout>
     </StackLayout>
 </ViewCell>
