@@ -107,7 +107,7 @@ namespace FScruiser.Models
                 case "PNT":
                 case "FIXCNT":
                     { return null; }
-                case "ThreeP":
+                case "3P":
                     {
                         return new ThreePSelecter(KZ, 10000, InsuranceFrequency);
                     }

@@ -13,5 +13,7 @@ namespace FScruiser.Models
         public string Field { get; set; }
 
         public string Heading { get; set; }
+
+        public int FieldOrder { get; set; }
     }
 }

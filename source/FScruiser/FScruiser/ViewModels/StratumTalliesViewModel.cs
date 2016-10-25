@@ -17,12 +17,10 @@ namespace FScruiser.ViewModels
 
         public UnitStratum Stratum { get; set; }
 
-        public IList<CountTree> Counts { get; set; }
-
-        Dictionary<long, Sampler> _samplers { get; set; }
+        public IList<TallyPopulation> TallyPopulations { get; set; }
 
         public ICommand TallyCommand =>
-            new Command<CountTree>((x) => Tally(x));
+            new Command<TallyPopulation>((x) => Tally(x));
 
         public StratumTalliesViewModel(DatastoreRedux datastore)
         {
@@ -33,30 +31,45 @@ namespace FScruiser.ViewModels
         {
             Stratum = (UnitStratum)initData;
 
-            Counts = Datastore.From<CountTree>()
+            TallyPopulations = Datastore.From<TallyPopulation>()
                 .Where($"CuttingUnit_CN = {Stratum.CuttingUnit_CN} AND Stratum_CN = {Stratum.Stratum_CN}")
                 .Read().ToList();
 
-            var samplers = Datastore.From<Sampler>().Where($"Stratum_CN = {Stratum.Stratum_CN}").Read();
-            foreach (var smplr in samplers)
+            foreach (var population in TallyPopulations)
             {
-                if (!_samplers.ContainsKey(smplr.SampleGroup_CN))
-                {
-                    _samplers.Add(smplr.SampleGroup_CN, smplr);
-                }
+                population.Sampler = Datastore.From<Sampler>()
+                    .Where($"Stratum_CN = {population.Stratum_CN} AND SampleGroup_CN = {population.SampleGroup_CN}")
+                    .Read().FirstOrDefault();
             }
 
             base.Init(initData);
         }
 
-        protected void Tally(CountTree tally)
+        protected void Tally(TallyPopulation tally)
         {
-            tally.TreeCount += 1;
+            var sampler = tally.Sampler;
 
-            var sampler = _samplers[tally.SampleGroup_CN];
+            if (sampler.CruiseMethod == "3P")
+            {
+                var tree = TallyThreeP(tally, sampler);
+                if (tree != null)
+                {
+                    Datastore.Insert(tree, Backpack.SQL.OnConflictOption.Default);
+                }
+            }
+            else if (sampler.CruiseMethod == "STR")
+            {
+                var tree = TallySTR(tally, sampler);
+                if (tree != null)
+                {
+                    Datastore.Insert(tree, Backpack.SQL.OnConflictOption.Default);
+                }
+            }
+
+            tally.TreeCount += 1;
         }
 
-        TreeEx TallyThreeP(CountTree tally, Sampler sampler)
+        Tree TallyThreeP(TallyPopulation tally, Sampler sampler)
         {
             var selector = sampler.Selector;
 
@@ -64,7 +77,7 @@ namespace FScruiser.ViewModels
             bool stm;
             if (AskKPI(sampler.MinKPI, sampler.MaxKPI, out kpi, out stm))
             {
-                TreeEx tree = null;
+                Tree tree = null;
 
                 if (stm)
                 {
@@ -93,11 +106,46 @@ namespace FScruiser.ViewModels
             return null;
         }
 
+        Tree TallySTR(TallyPopulation tally, Sampler sampler)
+        {
+            var selector = sampler.Selector;
+
+            var result = (boolItem)selector.NextItem();
+            //If we receive nothing from the sampler, we don't have a sample
+            if (result != null)
+            {
+                var tree = CreateTree(tally);
+
+                if (result.IsInsuranceItem)
+                {
+                    tree.CountMeasure = "I";
+                }
+                else
+                {
+                    tree.CountMeasure = "M";
+                }
+
+                return tree;
+            }
+            else
+            { return null; }
+        }
+
         bool AskKPI(int min, int max, out int kpi, out bool stm)
         { throw new NotImplementedException(); }
 
-        TreeEx CreateTree(CountTree tally)
-        { throw new NotImplementedException(); }
+        Tree CreateTree(TallyPopulation tally)
+        {
+            var tree = new Tree()
+            {
+                CuttingUnit_CN = Stratum.CuttingUnit_CN,
+                Stratum_CN = Stratum.Stratum_CN,
+                SampleGroup_CN = tally.SampleGroup_CN,
+                TreeDefaultValue_CN = tally.TreeDefaultValue_CN
+            };
+
+            return tree;
+        }
 
         void LogTreeEstimate(int kpi)
         { throw new NotImplementedException(); }

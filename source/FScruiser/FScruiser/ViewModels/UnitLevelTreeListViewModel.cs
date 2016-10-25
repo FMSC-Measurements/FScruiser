@@ -16,10 +16,10 @@ namespace FScruiser.ViewModels
 
         public CuttingUnitModel Unit { get; set; }
 
-        public IList<Tree> Trees { get; protected set; }
+        public IList<TreeProxy> Trees { get; protected set; }
 
         public ICommand EditTreeCommand =>
-            new Command<Tree>((x) => EditTree(x));
+            new Command<TreeProxy>((x) => EditTree(x));
 
         public UnitLevelTreeListViewModel(DatastoreRedux dataStore)
         {
@@ -32,11 +32,11 @@ namespace FScruiser.ViewModels
 
             Unit = initData as CuttingUnitModel;
 
-            Trees = Datastore.From<Tree>().Where($"CuttingUnit_CN = {Unit.CuttingUnit_CN}")
+            Trees = Datastore.From<TreeProxy>().Where($"CuttingUnit_CN = {Unit.CuttingUnit_CN}")
                 .Read().ToList();
         }
 
-        protected void EditTree(Tree tree)
+        protected void EditTree(TreeProxy tree)
         {
             CoreMethods.PushPageModel<TreeEditViewModel>(tree);
         }

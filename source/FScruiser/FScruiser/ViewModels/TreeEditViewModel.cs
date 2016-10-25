@@ -14,7 +14,7 @@ namespace FScruiser.ViewModels
 
         public IEnumerable<TreeField> TreeFields { get; set; }
 
-        public TreeEx Tree { get; set; }
+        public Tree Tree { get; set; }
 
         public TreeEditViewModel(DatastoreRedux datastore)
         {
@@ -24,13 +24,13 @@ namespace FScruiser.ViewModels
         public override void Init(object initData)
         {
             base.Init(initData);
-            var treeProxy = initData as Tree;
+            var treeProxy = initData as TreeProxy;
 
             TreeFields = Datastore.From<TreeField>()
                 .Where($"Stratum_CN = {treeProxy.Stratum_CN}")
                 .OrderBy("FieldOrder").Read().ToList();
 
-            Tree = Datastore.From<TreeEx>().Where($"Tree_GUID = ?1").Read(treeProxy.Tree_GUID).FirstOrDefault();
+            Tree = Datastore.From<Tree>().Where($"Tree_GUID = ?1").Read(treeProxy.Tree_GUID).FirstOrDefault();
         }
     }
 }
