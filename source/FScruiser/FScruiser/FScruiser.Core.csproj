@@ -45,13 +45,13 @@
     </Compile>
     <Compile Include="ICruiseFolderService.cs" />
     <Compile Include="Models\CruiseMethods.cs" />
+    <Compile Include="Models\Plot.cs" />
     <Compile Include="Models\PlotProxy.cs" />
     <Compile Include="Models\TallyPopulation.cs" />
     <Compile Include="Models\CruiseModel.cs" />
     <Compile Include="Models\CuttingUnitModel.cs" />
     <Compile Include="Models\Sale.cs" />
     <Compile Include="Models\Sampler.cs" />
-    <Compile Include="Models\StratumModel.cs" />
     <Compile Include="Models\TreeEstimate.cs" />
     <Compile Include="Models\TreeProxy.cs" />
     <Compile Include="Models\Tree.cs" />
@@ -70,15 +70,15 @@
       <DependentUpon>UnitLevelTreeListPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\CuttingUnitDataService.cs" />
+    <Compile Include="Services\ICruiseDataService.cs" />
+    <Compile Include="Services\ICuttingUnitDataService.cs" />
+    <Compile Include="Services\IDataService.cs" />
     <Compile Include="Util\ICollectionExtentions.cs" />
     <Compile Include="ViewModels\CruiseViewModel.cs" />
-    <Compile Include="ViewModels\DataEntryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Pages\CruisePage.xaml.cs">
       <DependentUpon>CruisePage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\DataEntryPage.xaml.cs">
-      <DependentUpon>DataEntryPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -101,12 +101,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Pages\CruisePage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Pages\DataEntryPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>

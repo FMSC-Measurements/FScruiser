@@ -13,7 +13,7 @@ namespace FScruiser.Models
     [EntitySource(SourceName = "CuttingUnit")]
     public class CuttingUnitModel
     {
-        public long? CuttingUnit_CN { get; set; }
+        public long CuttingUnit_CN { get; set; }
 
         [Field(Name = "Code")]
         public string CuttingUnitCode
@@ -21,8 +21,5 @@ namespace FScruiser.Models
             get;
             set;
         }
-
-        [IgnoreField]
-        public IEnumerable<StratumModel> Strata { get; set; }
     }
 }

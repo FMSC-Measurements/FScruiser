@@ -84,6 +84,11 @@ namespace FScruiser.ViewModels
             base.Init(initData);
         }
 
+        public override void ReverseInit(object returnedData)
+        {
+            base.ReverseInit(returnedData);
+        }
+
         bool EnsurePlotSelected()
         {
             if (CurrentPlot != null) { return true; }
@@ -96,23 +101,28 @@ namespace FScruiser.ViewModels
 
         protected void Tally(TallyPopulation tally)
         {
-            if (Stratum.IsPlotStratum)
-            {
-            }
+            //if is plot stratum, but no plot selected then bounce
+            if (Stratum.IsPlotStratum && !EnsurePlotSelected()) { return; }
 
-            var sampler = tally.Sampler;
-
-            if (sampler.CruiseMethod == "3P")
+            if (CruiseMethods.THREE_P_METHODS.Contains(Stratum.CruiseMethod))
             {
-                var tree = TallyThreeP(tally, sampler);
+                var tree = TallyThreeP(tally);
                 if (tree != null)
                 {
                     Datastore.Insert(tree, Backpack.SQL.OnConflictOption.Default);
                 }
             }
-            else if (sampler.CruiseMethod == "STR")
+            else if (CruiseMethods.STANDARD_SAMPLING_METHODS.Contains(Stratum.CruiseMethod))
             {
-                var tree = TallySTR(tally, sampler);
+                var tree = TallyStandard(tally);
+                if (tree != null)
+                {
+                    Datastore.Insert(tree, Backpack.SQL.OnConflictOption.Default);
+                }
+            }
+            else if (Stratum.CruiseMethod == CruiseMethods.H_PCT)
+            {
+                var tree = TallyHpct(tally);
                 if (tree != null)
                 {
                     Datastore.Insert(tree, Backpack.SQL.OnConflictOption.Default);
@@ -122,8 +132,18 @@ namespace FScruiser.ViewModels
             tally.TreeCount += 1;
         }
 
-        Tree TallyThreeP(TallyPopulation tally, Sampler sampler)
+        Tree TallyHpct(TallyPopulation tally)
         {
+            var tree = CreateTree(tally);
+            tree.TreeCount = 1;
+            tree.CountOrMeasure = "M";
+
+            return tree;
+        }
+
+        Tree TallyThreeP(TallyPopulation tally)
+        {
+            var sampler = tally.Sampler;
             var selector = sampler.Selector;
 
             int kpi;
@@ -168,8 +188,9 @@ namespace FScruiser.ViewModels
             return null;
         }
 
-        Tree TallySTR(TallyPopulation tally, Sampler sampler)
+        Tree TallyStandard(TallyPopulation tally)
         {
+            var sampler = tally.Sampler;
             var selector = sampler.Selector;
 
             var result = (boolItem)selector.NextItem();

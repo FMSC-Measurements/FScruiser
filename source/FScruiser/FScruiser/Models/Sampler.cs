@@ -25,6 +25,9 @@ namespace FScruiser.Models
 
         public int KZ { get; set; }
 
+        [Field(Alias = "SampleGroupCode", SQLExpression = "SampleGroup.Code")]
+        public string SampleGroupCode { get; set; }
+
         [Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method")]
         public string CruiseMethod { get; set; }
 

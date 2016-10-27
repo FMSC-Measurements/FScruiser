@@ -30,6 +30,7 @@ namespace FScruiser.Models
         public static readonly string[] SUPPORTED_METHODS = { H_PCT, STR, S3P, THREEP, FIX, F3P, FCM, PCM, PNT, P3P, THREEPPNT, FIXCNT };
         public static readonly string[] PLOT_METHODS = { FIX, F3P, FCM, PNT, PCM, P3P };
         public static readonly string[] THREE_P_METHODS = { THREEP, S3P, F3P, P3P };
+        public static readonly string[] STANDARD_SAMPLING_METHODS = { STR, FCM, PCM };
         public static readonly string[] VARIABLE_RADIUS_METHODS = { PCM, PNT, P3P, THREEPPNT };
         public static readonly string[] TALLY_METHODS = { STR, THREEP, S3P, F3P, P3P, PCM, FCM };
         public static readonly string[] MANDITORY_TALLY_METHODS = { STR, THREEP, S3P, PCM, FCM };

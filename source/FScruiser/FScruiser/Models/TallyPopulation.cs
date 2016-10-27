@@ -36,6 +36,9 @@ namespace FScruiser.Models
             }
         }
 
+        [Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
+        public string StratumCode { get; set; }
+
         public int SumKPI { get; set; }
 
         [IgnoreField]
