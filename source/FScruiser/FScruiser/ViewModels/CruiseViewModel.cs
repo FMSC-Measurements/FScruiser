@@ -1,5 +1,7 @@
 ﻿using Backpack;
+using FreshMvvm;
 using FScruiser.Models;
+using FScruiser.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,7 @@ namespace FScruiser.ViewModels
 {
     public class CruiseViewModel : FreshMvvm.FreshBasePageModel
     {
-        public DatastoreRedux Datastore { get; set; }
+        public ICruiseDataService Dataservice { get; set; }
 
         public Sale Sale { get; set; }
 
@@ -20,14 +22,14 @@ namespace FScruiser.ViewModels
 
         //public IList<StratumModel> Strata { get; set; }
 
-        public CruiseViewModel(DatastoreRedux dataStore)
+        public CruiseViewModel(ICruiseDataService dataservice)
         {
-            Datastore = dataStore;
+            Dataservice = dataservice;
         }
 
         public override void Init(object initData)
         {
-            CuttingUnits = Datastore.From<CuttingUnitModel>().Read().ToList();
+            CuttingUnits = Dataservice.GetUnits().ToList();
 
             base.Init(initData);
         }
@@ -50,6 +52,9 @@ namespace FScruiser.ViewModels
             //masterDetail.Detail = new NavigationPage(treePage);
 
             //this.CurrentPage.Navigation.PushModalAsync(masterDetail);
+
+            var dataStore = FreshIOC.Container.Resolve<DatastoreRedux>();
+            FreshIOC.Container.Register<ICuttingUnitDataService>(new CuttingUnitDataService(unit, dataStore));
 
             CoreMethods.PushPageModel<UnitLevelNavigationViewModel>(unit);
         }

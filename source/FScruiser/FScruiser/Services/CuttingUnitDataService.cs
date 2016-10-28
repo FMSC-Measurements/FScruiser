@@ -99,14 +99,33 @@ namespace FScruiser.Services
             return newPlot;
         }
 
-        public Tree CreateNewTree(TallyPopulation tallyPop)
+        public Tree CreateNewTree(TallyPopulation tallyPop, long? plotCN = null)
         {
-            throw new NotImplementedException();
+            var tree = new Tree()
+            {
+                CuttingUnit_CN = Unit.CuttingUnit_CN,
+                Stratum_CN = tallyPop.Stratum_CN,
+                SampleGroup_CN = tallyPop.SampleGroup_CN,
+                TreeDefaultValue_CN = tallyPop.TreeDefaultValue_CN
+            };
+
+            if (plotCN != null)
+            {
+                tree.Plot_CN = plotCN.Value;
+                tree.TreeCount = 1;
+            }
+
+            return tree;
         }
 
         public Tree CreateNewTree(string stratumCode, string sampleGroupCode, string species)
         {
             throw new NotImplementedException();
+        }
+
+        public void AddTree(Tree tree)
+        {
+            DataStore.Insert(tree, Backpack.SQL.OnConflictOption.Fail);
         }
 
         public IEnumerable<TreeProxy> GetAllTreeProxiesInUnit()

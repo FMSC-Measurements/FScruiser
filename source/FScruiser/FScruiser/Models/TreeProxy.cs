@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource(SourceName = "Tree", JoinCommands = "JOIN Stratum USING (Stratum_CN) JOIN SampleGroup USING (SampleGroup_CN) JOIN TreeDefaultValue USING (TreeDefaultValue_CN)")]
+    [EntitySource(SourceName = "Tree", JoinCommands = "JOIN CuttingUnit USING (CuttingUnit_CN) JOIN Stratum USING (Stratum_CN) LEFT JOIN SampleGroup USING (SampleGroup_CN) LEFT JOIN TreeDefaultValue USING (TreeDefaultValue_CN) LEFT JOIN Plot USING (Plot_CN)")]
     public class TreeProxy
     {
         public Guid Tree_GUID { get; set; }
@@ -20,8 +20,14 @@ namespace FScruiser.Models
         [Field(SQLExpression = "Stratum.Code", Alias = "StratumCode")]
         public string StratumCode { get; set; }
 
+        [Field(SQLExpression = "CuttingUnit.Code", Alias = "CuttingUnitCode")]
+        public string CuttingUnitCode { get; set; }
+
         [Field(SQLExpression = "SampleGroup.Code", Alias = "SampleGroupCode")]
         public string SampleGroupCode { get; set; }
+
+        [Field(SQLExpression = "ifnull(Plot.PlotNumber, 0)", Alias = "PlotNumber")]
+        public int? PlotNumber { get; set; }
 
         [Field(SQLExpression = "max(TotalHeight, MerchHeightPrimary)", Alias = "Height")]
         public double Height { get; set; }

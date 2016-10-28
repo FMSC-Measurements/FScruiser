@@ -24,6 +24,9 @@ namespace FScruiser.Models
 
         public long? TreeDefaultValue_CN { get; set; }
 
+        [Field(SQLExpression = "SampleGroup.Code", Alias = "SampleGroupCode")]
+        public string SampleGroupCode { get; set; }
+
         int _treeCount;
 
         public int TreeCount
@@ -38,6 +41,9 @@ namespace FScruiser.Models
 
         [Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
         public string StratumCode { get; set; }
+
+        //[Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method")]
+        //public string CruiseMethod { get; set; }
 
         public int SumKPI { get; set; }
 

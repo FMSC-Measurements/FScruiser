@@ -1,5 +1,6 @@
 ﻿using Backpack;
 using FScruiser.Models;
+using FScruiser.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,19 +16,18 @@ namespace FScruiser.ViewModels
         public CuttingUnitModel Unit { get; set; }
         public IList<UnitStratum> Strata { get; set; }
 
-        DatastoreRedux Datastore { get; set; }
+        ICuttingUnitDataService DataService { get; set; }
 
-        public UnitLevelNavigationViewModel(DatastoreRedux dataStore)
+        public UnitLevelNavigationViewModel(ICuttingUnitDataService dataService)
         {
-            Datastore = dataStore;
+            DataService = dataService;
         }
 
         public override void Init(object initData)
         {
             Unit = initData as CuttingUnitModel;
 
-            Strata = Datastore.From<UnitStratum>()
-                .Where($"CuttingUnit_CN = {Unit.CuttingUnit_CN}").Read().ToList();
+            Strata = DataService.GetStrata().ToList();
 
             base.Init(initData);
         }

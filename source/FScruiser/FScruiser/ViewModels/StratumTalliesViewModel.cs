@@ -1,6 +1,7 @@
 ﻿using Backpack;
 using FMSC.Sampling;
 using FScruiser.Models;
+using FScruiser.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,12 @@ namespace FScruiser.ViewModels
 {
     public class StratumTalliesViewModel : FreshMvvm.FreshBasePageModel
     {
-        public DatastoreRedux Datastore { get; set; }
+        public ICuttingUnitDataService DataService { get; set; }
+
+        public StratumTalliesViewModel(ICuttingUnitDataService dataService)
+        {
+            DataService = dataService;
+        }
 
         public UnitStratum Stratum { get; set; }
 
@@ -54,31 +60,20 @@ namespace FScruiser.ViewModels
             }
         }
 
-        public StratumTalliesViewModel(DatastoreRedux datastore)
-        {
-            Datastore = datastore;
-        }
-
         public override void Init(object initData)
         {
             Stratum = (UnitStratum)initData;
 
-            TallyPopulations = Datastore.From<TallyPopulation>()
-                .Where($"CuttingUnit_CN = {Stratum.CuttingUnit_CN} AND Stratum_CN = {Stratum.Stratum_CN}")
-                .Read().ToList();
+            TallyPopulations = DataService.GetTallyPopulationByStratum(Stratum.StratumCode).ToList();
 
             foreach (var population in TallyPopulations)
             {
-                population.Sampler = Datastore.From<Sampler>()
-                    .Where($"Stratum_CN = {population.Stratum_CN} AND SampleGroup_CN = {population.SampleGroup_CN}")
-                    .Read().FirstOrDefault();
+                population.Sampler = DataService.GetSamplerBySampleGroup(population.SampleGroupCode);
             }
 
             if (Stratum.IsPlotStratum)
             {
-                Plots = Datastore.From<PlotProxy>()
-                    .Where($"CuttingUnit_CN = {Stratum.CuttingUnit_CN} AND Stratum_CN = {Stratum.Stratum_CN}")
-                    .Read().ToList();
+                Plots = DataService.GetPlotProxiesByStratum(Stratum.StratumCode).ToList();
             }
 
             base.Init(initData);
@@ -109,7 +104,7 @@ namespace FScruiser.ViewModels
                 var tree = TallyThreeP(tally);
                 if (tree != null)
                 {
-                    Datastore.Insert(tree, Backpack.SQL.OnConflictOption.Default);
+                    DataService.AddTree(tree);
                 }
             }
             else if (CruiseMethods.STANDARD_SAMPLING_METHODS.Contains(Stratum.CruiseMethod))
@@ -117,7 +112,7 @@ namespace FScruiser.ViewModels
                 var tree = TallyStandard(tally);
                 if (tree != null)
                 {
-                    Datastore.Insert(tree, Backpack.SQL.OnConflictOption.Default);
+                    DataService.AddTree(tree);
                 }
             }
             else if (Stratum.CruiseMethod == CruiseMethods.H_PCT)
@@ -125,7 +120,7 @@ namespace FScruiser.ViewModels
                 var tree = TallyHpct(tally);
                 if (tree != null)
                 {
-                    Datastore.Insert(tree, Backpack.SQL.OnConflictOption.Default);
+                    DataService.AddTree(tree);
                 }
             }
 
@@ -134,7 +129,7 @@ namespace FScruiser.ViewModels
 
         Tree TallyHpct(TallyPopulation tally)
         {
-            var tree = CreateTree(tally);
+            var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
             tree.TreeCount = 1;
             tree.CountOrMeasure = "M";
 
@@ -154,18 +149,18 @@ namespace FScruiser.ViewModels
 
                 if (stm)
                 {
-                    tree = CreateTree(tally);
+                    tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
                     tree.STM = true;
                 }
                 else
                 {
-                    LogTreeEstimate(tally, kpi);
+                    DataService.LogTreeEstimate(kpi, tally);
                     tally.SumKPI += kpi;
 
                     ThreePItem item = (ThreePItem)((ThreePSelecter)selector).NextItem();
                     if (item != null && kpi > item.KPI)
                     {
-                        tree = CreateTree(tally);
+                        tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
                         tree.KPI = kpi;
 
                         if (selector.IsSelectingITrees && selector.InsuranceCounter.Next())
@@ -179,7 +174,7 @@ namespace FScruiser.ViewModels
                     }
                     else if (Stratum.IsPlotStratum)
                     {
-                        tree = CreateTree(tally);
+                        tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
                         tree.CountOrMeasure = "C";
                     }
                 }
@@ -197,7 +192,7 @@ namespace FScruiser.ViewModels
             //If we receive nothing from the sampler, we don't have a sample
             if (result != null)
             {
-                var tree = CreateTree(tally);
+                var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
 
                 if (result.IsInsuranceItem)
                 {
@@ -212,7 +207,7 @@ namespace FScruiser.ViewModels
             }
             else if (Stratum.IsPlotStratum)
             {
-                var tree = CreateTree(tally);
+                var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
                 tree.CountOrMeasure = "C";
                 return tree;
             }
@@ -226,36 +221,6 @@ namespace FScruiser.ViewModels
             kpi = rand.Next(min, max);
             stm = false;
             return true;
-        }
-
-        Tree CreateTree(TallyPopulation tally)
-        {
-            var tree = new Tree()
-            {
-                CuttingUnit_CN = Stratum.CuttingUnit_CN,
-                Stratum_CN = Stratum.Stratum_CN,
-                SampleGroup_CN = tally.SampleGroup_CN,
-                TreeDefaultValue_CN = tally.TreeDefaultValue_CN
-            };
-
-            if (Stratum.IsPlotStratum)
-            {
-                tree.Plot_CN = CurrentPlot.Plot_CN;
-                tree.TreeCount = 1;
-            }
-
-            return tree;
-        }
-
-        void LogTreeEstimate(TallyPopulation tally, int kpi)
-        {
-            var treeEstimate = new TreeEstimate
-            {
-                CountTree_CN = tally.CountTree_CN,
-                KPI = kpi
-            };
-
-            Datastore.Insert(treeEstimate, Backpack.SQL.OnConflictOption.Default);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Backpack;
 using FScruiser.Models;
+using FScruiser.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,28 +13,23 @@ namespace FScruiser.ViewModels
 {
     public class UnitLevelTreeListViewModel : FreshMvvm.FreshBasePageModel
     {
-        public DatastoreRedux Datastore { get; set; }
-
-        public CuttingUnitModel Unit { get; set; }
+        public ICuttingUnitDataService DataService { get; set; }
 
         public IList<TreeProxy> Trees { get; protected set; }
 
         public ICommand EditTreeCommand =>
             new Command<TreeProxy>((x) => EditTree(x));
 
-        public UnitLevelTreeListViewModel(DatastoreRedux dataStore)
+        public UnitLevelTreeListViewModel(ICuttingUnitDataService dataService)
         {
-            Datastore = dataStore;
+            DataService = dataService;
         }
 
         public override void Init(object initData)
         {
             base.Init(initData);
 
-            Unit = initData as CuttingUnitModel;
-
-            Trees = Datastore.From<TreeProxy>().Where($"CuttingUnit_CN = {Unit.CuttingUnit_CN}")
-                .Read().ToList();
+            Trees = DataService.GetAllTreeProxiesInUnit().ToList();
         }
 
         protected void EditTree(TreeProxy tree)

@@ -70,6 +70,7 @@
       <DependentUpon>UnitLevelTreeListPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\CruiseDataService.cs" />
     <Compile Include="Services\CuttingUnitDataService.cs" />
     <Compile Include="Services\ICruiseDataService.cs" />
     <Compile Include="Services\ICuttingUnitDataService.cs" />

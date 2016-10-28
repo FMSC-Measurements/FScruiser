@@ -27,9 +27,13 @@ namespace FScruiser.Services
 
         IEnumerable<Sampler> Samplers { get; }
 
+        void AddTree(Tree tree);
+
         Plot CreateNewPlot(string stratumCode);
 
         Tree CreateNewTree(TallyPopulation tallyPop);
+
+        Tree CreateNewTree(TallyPopulation tallyPop, long? plotCN);
 
         Tree CreateNewTree(string stratumCode, string sampleGroupCode, string species);
 
