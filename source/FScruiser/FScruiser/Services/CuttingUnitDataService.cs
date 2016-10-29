@@ -149,10 +149,10 @@ namespace FScruiser.Services
                 .Read();
         }
 
-        public Sampler GetSamplerBySampleGroup(string code)
+        public Sampler GetSamplerBySampleGroup(string stCode, string sgCode)
         {
             return DataStore.From<Sampler>()
-                .Where($"SampleGroupCode = '{code}'")
+                .Where($"SampleGroupCode = '{sgCode}' AND StratumCode = '{stCode}'")
                 .Read().FirstOrDefault();
         }
 

@@ -21,19 +21,12 @@ namespace FScruiser.ViewModels
             DataService = dataService;
         }
 
-        public UnitStratum Stratum { get; set; }
-
-        IList<PlotProxy> _plots;
-
-        public IList<PlotProxy> Plots
-        {
-            get { return _plots; }
-            set { _plots = value; }
-        }
-
         public PlotProxy CurrentPlot { get; set; }
-
+        public IList<PlotProxy> Plots { get; set; }
+        public UnitStratum Stratum { get; set; }
         public IList<TallyPopulation> TallyPopulations { get; set; }
+
+        #region Commands
 
         public ICommand TallyCommand =>
             new Command<TallyPopulation>((x) => Tally(x));
@@ -60,6 +53,8 @@ namespace FScruiser.ViewModels
             }
         }
 
+        #endregion Commands
+
         public override void Init(object initData)
         {
             Stratum = (UnitStratum)initData;
@@ -84,27 +79,35 @@ namespace FScruiser.ViewModels
             base.ReverseInit(returnedData);
         }
 
-        bool EnsurePlotSelected()
+        bool AskKPI(int min, int max, out int kpi, out bool stm)
         {
-            if (CurrentPlot != null) { return true; }
-            else
-            {
-                CoreMethods.DisplayAlert("Alert", "No Plot Selected", "OK");
-                return false;
-            }
+            var rand = new Random();
+            kpi = rand.Next(min, max);
+            stm = false;
+            return true;
         }
 
-        protected void Tally(TallyPopulation tally)
+        public void Tally(TallyPopulation tally)
         {
             //if is plot stratum, but no plot selected then bounce
             if (Stratum.IsPlotStratum && !EnsurePlotSelected()) { return; }
 
             if (CruiseMethods.THREE_P_METHODS.Contains(Stratum.CruiseMethod))
             {
-                var tree = TallyThreeP(tally);
-                if (tree != null)
+                int kpi;
+                bool stm;
+                if (AskKPI(tally.Sampler.MinKPI, tally.Sampler.MaxKPI, out kpi, out stm))
                 {
-                    DataService.AddTree(tree);
+                    if (stm)
+                    { TallySTM(tally); }
+                    else
+                    {
+                        var tree = TallyThreeP(tally, kpi);
+                        if (tree != null)
+                        {
+                            DataService.AddTree(tree);
+                        }
+                    }
                 }
             }
             else if (CruiseMethods.STANDARD_SAMPLING_METHODS.Contains(Stratum.CruiseMethod))
@@ -136,59 +139,52 @@ namespace FScruiser.ViewModels
             return tree;
         }
 
-        Tree TallyThreeP(TallyPopulation tally)
+        Tree TallySTM(TallyPopulation tally)
+        {
+            var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+            tree.STM = true;
+
+            return tree;
+        }
+
+        Tree TallyThreeP(TallyPopulation tally, int kpi)
         {
             var sampler = tally.Sampler;
             var selector = sampler.Selector;
+            Tree tree = null;
 
-            int kpi;
-            bool stm;
-            if (AskKPI(sampler.MinKPI, sampler.MaxKPI, out kpi, out stm))
+            DataService.LogTreeEstimate(kpi, tally);
+            tally.SumKPI += kpi;
+
+            ThreePItem item = (ThreePItem)selector.NextItem();
+            if (item != null && kpi > item.KPI)
             {
-                Tree tree = null;
+                tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+                tree.KPI = kpi;
 
-                if (stm)
+                if (selector.IsSelectingITrees && selector.InsuranceCounter.Next())
                 {
-                    tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
-                    tree.STM = true;
+                    tree.CountOrMeasure = "I";
                 }
                 else
                 {
-                    DataService.LogTreeEstimate(kpi, tally);
-                    tally.SumKPI += kpi;
-
-                    ThreePItem item = (ThreePItem)((ThreePSelecter)selector).NextItem();
-                    if (item != null && kpi > item.KPI)
-                    {
-                        tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
-                        tree.KPI = kpi;
-
-                        if (selector.IsSelectingITrees && selector.InsuranceCounter.Next())
-                        {
-                            tree.CountOrMeasure = "I";
-                        }
-                        else
-                        {
-                            tree.CountOrMeasure = "M";
-                        }
-                    }
-                    else if (Stratum.IsPlotStratum)
-                    {
-                        tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
-                        tree.CountOrMeasure = "C";
-                    }
+                    tree.CountOrMeasure = "M";
                 }
-                return tree;
             }
-            return null;
+            else if (Stratum.IsPlotStratum)
+            {
+                tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+                tree.CountOrMeasure = "C";
+            }
+
+            return tree;
         }
 
         Tree TallyStandard(TallyPopulation tally)
         {
             var sampler = tally.Sampler;
-            var selector = sampler.Selector;
 
-            var result = (boolItem)selector.NextItem();
+            var result = (boolItem)sampler.NextItem();
             //If we receive nothing from the sampler, we don't have a sample
             if (result != null)
             {
@@ -215,12 +211,14 @@ namespace FScruiser.ViewModels
             { return null; }
         }
 
-        bool AskKPI(int min, int max, out int kpi, out bool stm)
+        bool EnsurePlotSelected()
         {
-            var rand = new Random();
-            kpi = rand.Next(min, max);
-            stm = false;
-            return true;
+            if (CurrentPlot != null) { return true; }
+            else
+            {
+                CoreMethods.DisplayAlert("Alert", "No Plot Selected", "OK");
+                return false;
+            }
         }
     }
 }

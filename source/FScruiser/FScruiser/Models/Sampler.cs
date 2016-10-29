@@ -15,6 +15,15 @@ namespace FScruiser.Models
     {
         public long SampleGroup_CN { get; set; }
 
+        [Field(Alias = "SampleGroupCode", SQLExpression = "SampleGroup.Code")]
+        public string SampleGroupCode { get; set; }
+
+        [Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
+        public string StratumCode { get; set; }
+
+        [Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method")]
+        public string CruiseMethod { get; set; }
+
         public int SamplingFrequency { get; set; }
 
         public int InsuranceFrequency { get; set; }
@@ -24,13 +33,6 @@ namespace FScruiser.Models
         public int MaxKPI { get; set; }
 
         public int KZ { get; set; }
-
-        [Field(Alias = "SampleGroupCode", SQLExpression = "SampleGroup.Code")]
-        public string SampleGroupCode { get; set; }
-
-        [Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method")]
-        public string CruiseMethod { get; set; }
-
         public string SampleSelectorType { get; set; }
 
         public string SampleSelectorState { get; set; }
@@ -50,6 +52,11 @@ namespace FScruiser.Models
         }
 
         #region Sample Selector Methods
+
+        public SampleItem NextItem()
+        {
+            return _selector.NextItem();
+        }
 
         public void SerializeSamplerState()
         {
