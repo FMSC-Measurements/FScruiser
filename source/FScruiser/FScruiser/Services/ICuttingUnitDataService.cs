@@ -31,9 +31,7 @@ namespace FScruiser.Services
 
         Plot CreateNewPlot(string stratumCode);
 
-        Tree CreateNewTree(TallyPopulation tallyPop);
-
-        Tree CreateNewTree(TallyPopulation tallyPop, long? plotCN);
+        Tree CreateNewTree(TallyPopulation tallyPop, long? plotCN = null);
 
         Tree CreateNewTree(string stratumCode, string sampleGroupCode, string species);
 
@@ -59,6 +57,6 @@ namespace FScruiser.Services
 
         IEnumerable<TallyPopulation> GetTallyPopulationByStratum(string code);
 
-        Sampler GetSamplerBySampleGroup(string code);
+        Sampler GetSamplerBySampleGroup(string stCode, string sgCode);
     }
 }
