@@ -20,6 +20,7 @@ namespace FScruiser.Models
         [Field(SQLExpression = "Stratum.Code", Alias = "StratumCode")]
         public string StratumCode { get; set; }
 
+        [Field(SQLExpression = "Stratum.KZ3ppnt", Alias = "KZ3ppnt")]
         public int KZ3ppnt { get; set; }
 
         public bool IsPlotStratum => CruiseMethods.PLOT_METHODS.Contains(CruiseMethod);

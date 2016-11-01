@@ -74,9 +74,9 @@ namespace FScruiser.ViewModels
             base.Init(initData);
         }
 
-        public override void ReverseInit(object returnedData)
+        protected override void ViewIsDisappearing(object sender, EventArgs e)
         {
-            base.ReverseInit(returnedData);
+            base.ViewIsDisappearing(sender, e);
         }
 
         bool AskKPI(int min, int max, out int kpi, out bool stm)
