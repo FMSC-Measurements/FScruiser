@@ -130,7 +130,7 @@ namespace FScruiser.Services
 
         public IEnumerable<TreeProxy> GetAllTreeProxiesInUnit()
         {
-            return DataStore.From<TreeProxy>().Where($"CuttingUnit_CN = {Unit.CuttingUnit_CN}").Read();
+            return DataStore.From<TreeProxy>().Where($"Tree.CuttingUnit_CN = {Unit.CuttingUnit_CN}").Read();
         }
 
         public Plot GetPlot(string stratumCode, int plotNumber)
