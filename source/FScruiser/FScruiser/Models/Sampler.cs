@@ -1,7 +1,7 @@
-﻿using Backpack.EntityModel.Attributes;
-using FMSC.Sampling;
+﻿using FMSC.Sampling;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,18 +10,28 @@ using System.Xml.Serialization;
 
 namespace FScruiser.Models
 {
-    [EntitySource(SourceName = "SampleGroup", JoinCommands = "JOIN Stratum USING (Stratum_CN)")]
+    //[EntitySource(SourceName = "SampleGroup", JoinCommands = "JOIN Stratum USING (Stratum_CN)")]
+    [Table("SampleGroup")]
     public class Sampler
     {
+        public const string SYSTEMATIC_SELECTER = "SystematicSelecter";
+        public const string BLOCK_SELECTER = "BlockSelecter";
+
+        public long Stratum_CN { get; set; }
+
+        [ForeignKey(nameof(Stratum_CN))]
+        public Stratum Stratum { get; set; }
+
         public long SampleGroup_CN { get; set; }
 
-        [Field(Alias = "SampleGroupCode", SQLExpression = "SampleGroup.Code")]
+        //[Field(Alias = "SampleGroupCode", SQLExpression = "SampleGroup.Code")]
+        [Column("Code")]
         public string SampleGroupCode { get; set; }
 
-        [Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
+        //[Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
         public string StratumCode { get; set; }
 
-        [Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method")]
+        //[Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method")]
         public string CruiseMethod { get; set; }
 
         public int SamplingFrequency { get; set; }
@@ -55,17 +65,21 @@ namespace FScruiser.Models
 
         public SampleItem NextItem()
         {
-            return _selector.NextItem();
+            return Selector.NextItem();
         }
 
         public void SerializeSamplerState()
         {
-            if (_selector == null) { return; }
-            SampleSelecter selector = _selector;
+            SerializeSamplerState(_selector);
+        }
+
+        public void SerializeSamplerState(SampleSelecter selector)
+        {
+            if (selector == null) { return; }
             if (selector != null && (selector is BlockSelecter || selector is SystematicSelecter))
             {
-                XmlSerializer serializer = new XmlSerializer(selector.GetType());
-                using (StringWriter writer = new StringWriter())
+                var serializer = new XmlSerializer(selector.GetType());
+                using (var writer = new StringWriter())
                 {
                     serializer.Serialize(writer, selector);
                     SampleSelectorState = writer.ToString();

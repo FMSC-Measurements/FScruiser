@@ -8,8 +8,8 @@ namespace FScruiser.Services
 {
     public interface IDataService
     {
-        bool HasChanges();
+        int SaveChanges();
 
-        bool SaveChanges();
+        //Task<int> SaveChangesAsync();
     }
 }

@@ -1,5 +1,6 @@
 ﻿{
   "dependencies": {
+    "FluentAssertions": "4.16.0",
     "Microsoft.Data.SQLite": "1.0.0",
     "SQLite.Native": "3.12.3",
     "xunit": "2.1.0",

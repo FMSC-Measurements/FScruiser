@@ -33,7 +33,7 @@ namespace FScruiser.Test.Services
         [Fact]
         public void TestGetPlot()
         {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
+            var dataStore = new CruiseFile { Path = ".//TestFiles//MultiTest.cruise" };
 
             var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
 

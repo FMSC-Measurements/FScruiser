@@ -9,24 +9,6 @@ namespace FScruiser.Services
 {
     public interface ICuttingUnitDataService
     {
-        CuttingUnitModel Unit { get; }
-
-        IEnumerable<Tree> Trees { get; }
-
-        IEnumerable<TreeProxy> TreeProxies { get; }
-
-        IEnumerable<TreeField> TreeFields { get; }
-
-        IEnumerable<PlotProxy> PlotProxies { get; }
-
-        IEnumerable<Plot> Plots { get; }
-
-        IEnumerable<UnitStratum> Strata { get; }
-
-        IEnumerable<TallyPopulation> TallyPopulations { get; }
-
-        IEnumerable<Sampler> Samplers { get; }
-
         void AddTree(Tree tree);
 
         Plot CreateNewPlot(string stratumCode);
@@ -51,7 +33,7 @@ namespace FScruiser.Services
 
         Plot GetPlot(string stratumCode, int plotNumber);
 
-        IEnumerable<PlotProxy> GetPlotProxiesByStratum(string code);
+        //IEnumerable<PlotProxy> GetPlotProxiesByStratum(string code);
 
         IEnumerable<TreeField> GetTreeFieldsByStratum(string code);
 

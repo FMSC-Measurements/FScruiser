@@ -1,5 +1,4 @@
-﻿using Backpack;
-using FMSC.Sampling;
+﻿using FMSC.Sampling;
 using FScruiser.Models;
 using FScruiser.Services;
 using System;
@@ -21,9 +20,9 @@ namespace FScruiser.ViewModels
             DataService = dataService;
         }
 
-        public PlotProxy CurrentPlot { get; set; }
-        public IList<PlotProxy> Plots { get; set; }
-        public UnitStratum Stratum { get; set; }
+        public Plot CurrentPlot { get; set; }
+        public IList<Plot> Plots { get; set; }
+        public UnitStratum UnitStratum { get; set; }
         public IList<TallyPopulation> TallyPopulations { get; set; }
 
         #region Commands
@@ -39,7 +38,7 @@ namespace FScruiser.ViewModels
 
         private void ShowAddPlot()
         {
-            if (Stratum.IsPlotStratum)
+            if (UnitStratum.Stratum.IsPlotStratum)
             {
                 CoreMethods.PushPageModel<PlotInfoViewModel>(null);
             }
@@ -47,7 +46,7 @@ namespace FScruiser.ViewModels
 
         private void ShowPlotInfo()
         {
-            if (Stratum.IsPlotStratum && CurrentPlot != null)
+            if (UnitStratum.Stratum.IsPlotStratum && CurrentPlot != null)
             {
                 CoreMethods.PushPageModel<PlotInfoViewModel>(CurrentPlot);
             }
@@ -57,18 +56,14 @@ namespace FScruiser.ViewModels
 
         public override void Init(object initData)
         {
-            Stratum = (UnitStratum)initData;
+            UnitStratum = (UnitStratum)initData;
 
-            TallyPopulations = DataService.GetTallyPopulationByStratum(Stratum.StratumCode).ToList();
+            TallyPopulations = DataService.GetTallyPopulationByStratum(UnitStratum.Stratum.Code).ToList();
 
             foreach (var population in TallyPopulations)
             {
-                population.Sampler = DataService.GetSamplerBySampleGroup(population.StratumCode, population.SampleGroupCode);
-            }
-
-            if (Stratum.IsPlotStratum)
-            {
-                Plots = DataService.GetPlotProxiesByStratum(Stratum.StratumCode).ToList();
+                population.Sampler = DataService.GetSamplerBySampleGroup(population.SampleGroup.Stratum.Code
+                    , population.SampleGroup.Code);
             }
 
             base.Init(initData);
@@ -90,9 +85,9 @@ namespace FScruiser.ViewModels
         public void Tally(TallyPopulation tally)
         {
             //if is plot stratum, but no plot selected then bounce
-            if (Stratum.IsPlotStratum && !EnsurePlotSelected()) { return; }
+            if (UnitStratum.Stratum.IsPlotStratum && !EnsurePlotSelected()) { return; }
 
-            if (CruiseMethods.THREE_P_METHODS.Contains(Stratum.CruiseMethod))
+            if (CruiseMethods.THREE_P_METHODS.Contains(UnitStratum.Stratum.CruiseMethod))
             {
                 int kpi;
                 bool stm;
@@ -110,7 +105,7 @@ namespace FScruiser.ViewModels
                     }
                 }
             }
-            else if (CruiseMethods.STANDARD_SAMPLING_METHODS.Contains(Stratum.CruiseMethod))
+            else if (CruiseMethods.STANDARD_SAMPLING_METHODS.Contains(UnitStratum.Stratum.CruiseMethod))
             {
                 var tree = TallyStandard(tally);
                 if (tree != null)
@@ -118,7 +113,7 @@ namespace FScruiser.ViewModels
                     DataService.AddTree(tree);
                 }
             }
-            else if (Stratum.CruiseMethod == CruiseMethods.H_PCT)
+            else if (UnitStratum.Stratum.CruiseMethod == CruiseMethods.H_PCT)
             {
                 var tree = TallyHpct(tally);
                 if (tree != null)
@@ -171,7 +166,7 @@ namespace FScruiser.ViewModels
                     tree.CountOrMeasure = "M";
                 }
             }
-            else if (Stratum.IsPlotStratum)
+            else if (UnitStratum.Stratum.IsPlotStratum)
             {
                 tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
                 tree.CountOrMeasure = "C";
@@ -201,7 +196,7 @@ namespace FScruiser.ViewModels
 
                 return tree;
             }
-            else if (Stratum.IsPlotStratum)
+            else if (UnitStratum.Stratum.IsPlotStratum)
             {
                 var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
                 tree.CountOrMeasure = "C";

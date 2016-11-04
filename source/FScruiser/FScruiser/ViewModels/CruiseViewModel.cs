@@ -1,5 +1,4 @@
-﻿using Backpack;
-using FreshMvvm;
+﻿using FreshMvvm;
 using FScruiser.Models;
 using FScruiser.Services;
 using System;
@@ -18,20 +17,13 @@ namespace FScruiser.ViewModels
 
         public Sale Sale { get; set; }
 
-        public IList<CuttingUnitModel> CuttingUnits { get; set; }
+        public IEnumerable<CuttingUnitModel> CuttingUnits => Dataservice.GetUnits();
 
         //public IList<StratumModel> Strata { get; set; }
 
         public CruiseViewModel(ICruiseDataService dataservice)
         {
             Dataservice = dataservice;
-        }
-
-        public override void Init(object initData)
-        {
-            CuttingUnits = Dataservice.GetUnits().ToList();
-
-            base.Init(initData);
         }
 
         public ICommand ShowDataEntryCommand =>
@@ -42,19 +34,8 @@ namespace FScruiser.ViewModels
 
         public void ShowDataEntry(CuttingUnitModel unit)
         {
-            //var masterDetail = new MasterDetailPage();
-            //masterDetail.Title = unit.CuttingUnitCode;
-
-            //masterDetail.Master = FreshMvvm.FreshPageModelResolver.ResolvePageModel<StratumListViewModel>(unit);
-
-            //var treePage = FreshMvvm.FreshPageModelResolver.ResolvePageModel<UnitLevelTreeListViewModel>(unit);
-
-            //masterDetail.Detail = new NavigationPage(treePage);
-
-            //this.CurrentPage.Navigation.PushModalAsync(masterDetail);
-
-            var dataStore = FreshIOC.Container.Resolve<DatastoreRedux>();
-            FreshIOC.Container.Register<ICuttingUnitDataService>(new CuttingUnitDataService(unit, dataStore));
+            var cruiseFile = FreshIOC.Container.Resolve<CruiseFile>();
+            FreshIOC.Container.Register<ICuttingUnitDataService>(new CuttingUnitDataService(unit, cruiseFile));
 
             CoreMethods.PushPageModel<UnitLevelNavigationViewModel>(unit);
         }

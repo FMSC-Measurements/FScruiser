@@ -1,32 +1,34 @@
-﻿using Backpack.EntityModel.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Tree")]
+    [Table("Tree")]
     public class Tree
     {
         #region keyFields
 
+        [Key]
+        public long Tree_CN { get; set; }
+
         public Guid Tree_GUID { get; set; }
 
-        public string Species { get; set; }
-
-        public int TreeNumber { get; set; }
-
-        public long? SampleGroup_CN { get; set; }
-
-        public long? Stratum_CN { get; set; }
-
-        public long? TreeDefaultValue_CN { get; set; }
-
+        [Required]
         public long? CuttingUnit_CN { get; set; }
 
+        [Required]
+        public long? Stratum_CN { get; set; }
+
+        public long? SampleGroup_CN { get; set; }
+        public long? TreeDefaultValue_CN { get; set; }
         public long? Plot_CN { get; set; }
+        public int TreeNumber { get; set; }
+        public string Species { get; set; }
 
         #endregion keyFields
 
@@ -94,7 +96,7 @@ namespace FScruiser.Models
 
         public double VoidPercent { get; set; }
 
-        [CreatedByField]
-        public string CreatedBy { get; set; }
+        [Required]
+        public string CreatedBy { get; set; } = "Default";
     }
 }

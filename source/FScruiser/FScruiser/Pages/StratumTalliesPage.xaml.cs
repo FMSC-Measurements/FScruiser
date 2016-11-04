@@ -24,9 +24,9 @@ namespace FScruiser.Pages
         /// </summary>
         public static readonly BindableProperty CurrentPlotProperty =
             BindableProperty.Create(nameof(CurrentPlot),
-              typeof(PlotProxy),
+              typeof(Plot),
               typeof(StratumTalliesPage),
-              defaultValue: default(PlotProxy),
+              defaultValue: default(Plot),
               defaultBindingMode: BindingMode.OneWayToSource);
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace FScruiser.Pages
         /// <value>
         ///
         /// </value>
-        public PlotProxy CurrentPlot
+        public Plot CurrentPlot
         {
-            get { return (PlotProxy)GetValue(CurrentPlotProperty); }
+            get { return (Plot)GetValue(CurrentPlotProperty); }
             set { SetValue(CurrentPlotProperty, value); }
         }
 
@@ -66,7 +66,7 @@ namespace FScruiser.Pages
             var viewModel = (StratumTalliesViewModel)BindingContext;
 
             //if stratum is a plot stratum
-            if (viewModel.Stratum.IsPlotStratum)
+            if (viewModel.UnitStratum.Stratum.IsPlotStratum)
             {
                 //enable the plot nav bar
                 PlotNavBar.IsVisible = true;

@@ -1,19 +1,17 @@
-﻿using Backpack.EntityModel.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Sale")]
+    [Table("Sale")]
     public class Sale
     {
-        [Field("Name")]
         public string SaleName { get; set; }
 
-        [Field("Number")]
         public string SaleNumber { get; set; }
 
         public string Region { get; set; }

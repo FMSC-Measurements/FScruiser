@@ -1,5 +1,5 @@
-﻿using Backpack;
-using FScruiser.Models;
+﻿using FScruiser.Models;
+using FScruiser.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +10,15 @@ namespace FScruiser.ViewModels
 {
     public class TreeEditViewModel : FreshMvvm.FreshBasePageModel
     {
-        public DatastoreRedux Datastore { get; set; }
+        public ICuttingUnitDataService Dataservice { get; set; }
 
         public IEnumerable<TreeField> TreeFields { get; set; }
 
         public Tree Tree { get; set; }
 
-        public TreeEditViewModel(DatastoreRedux datastore)
+        public TreeEditViewModel(ICuttingUnitDataService ds)
         {
-            Datastore = datastore;
+            Dataservice = ds;
         }
 
         public override void Init(object initData)
@@ -26,11 +26,9 @@ namespace FScruiser.ViewModels
             base.Init(initData);
             var treeProxy = initData as TreeProxy;
 
-            TreeFields = Datastore.From<TreeField>()
-                .Where($"Stratum_CN = {treeProxy.Stratum_CN}")
-                .OrderBy("FieldOrder").Read().ToList();
+            TreeFields = Dataservice.GetTreeFieldsByStratum(treeProxy.Stratum.Code);
 
-            Tree = Datastore.From<Tree>().Where($"Tree_GUID = ?1").Read(treeProxy.Tree_GUID).FirstOrDefault();
+            Tree = Dataservice.GetTree(treeProxy.Tree_GUID);
         }
     }
 }

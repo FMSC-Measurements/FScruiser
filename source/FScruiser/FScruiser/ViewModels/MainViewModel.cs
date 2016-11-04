@@ -1,6 +1,5 @@
-﻿using Backpack;
-using Backpack.SQLite;
-using FScruiser.Models;
+﻿using FScruiser.Models;
+using FScruiser.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,8 +37,8 @@ namespace FScruiser.ViewModels
 
         void ShowCruise(CruiseModel cruise)
         {
-            var datastore = new SQLiteDatastore(cruise.Path);
-            FreshMvvm.FreshIOC.Container.Register<DatastoreRedux>(datastore);
+            var cruiseFile = new CruiseFile { Path = cruise.Path };
+            FreshMvvm.FreshIOC.Container.Register<CruiseFile>(cruiseFile);
 
             Task t = CoreMethods.PushPageModel<CruiseViewModel>(cruise);
             var ex = t.Exception;

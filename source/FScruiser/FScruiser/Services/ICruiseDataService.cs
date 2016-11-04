@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
-    public interface ICruiseDataService
+    public interface ICruiseDataService : IDataService
     {
-        Sale Sale { get; }
-
-        IEnumerable<CuttingUnitModel> Units { get; }
+        Sale GetSale();
 
         IEnumerable<CuttingUnitModel> GetUnits();
     }
