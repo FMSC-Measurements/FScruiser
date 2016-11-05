@@ -11,6 +11,6 @@ namespace FScruiser.Services
     {
         Sale GetSale();
 
-        IEnumerable<CuttingUnitModel> GetUnits();
+        IEnumerable<CuttingUnit> GetUnits();
     }
 }

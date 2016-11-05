@@ -23,9 +23,9 @@ namespace FScruiser.Services
 
         IEnumerable<UnitStratum> GetStrata();
 
-        IEnumerable<TreeProxy> GetAllTreeProxiesInUnit();
+        //IEnumerable<TreeProxy> GetAllTreeProxiesInUnit();
 
-        IEnumerable<TreeProxy> GetTreeProxiesByStratum(string code);
+        //IEnumerable<TreeProxy> GetTreeProxiesByStratum(string code);
 
         Tree GetTree(long tree_CN);
 
@@ -39,6 +39,6 @@ namespace FScruiser.Services
 
         IEnumerable<TallyPopulation> GetTallyPopulationByStratum(string code);
 
-        Sampler GetSamplerBySampleGroup(string stCode, string sgCode);
+        //Sampler GetSamplerBySampleGroup(string stCode, string sgCode);
     }
 }

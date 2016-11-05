@@ -17,7 +17,7 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
     <AndroidSupportedAbis>armeabi,armeabi-v7a,x86</AndroidSupportedAbis>
     <AndroidStoreUncompressedFileExtensions />
     <MandroidI18n />
@@ -86,9 +86,9 @@
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FScruiser\FScruiser.Core.csproj">
+    <ProjectReference Include="..\FScruiser\FScruiser.Xamarin.csproj">
       <Project>{b8020b07-e2b6-42be-9d1f-37f74660aefa}</Project>
-      <Name>FScruiser.Core</Name>
+      <Name>FScruiser.Xamarin</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

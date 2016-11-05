@@ -26,7 +26,6 @@ namespace FScruiser.Droid
 		
 		public static void UpdateIdValues()
 		{
-			global::Xamarin.Forms.Platform.Android.Resource.Attribute.actionBarSize = global::FScruiser.Droid.Resource.Attribute.actionBarSize;
 		}
 		
 		public partial class Animation

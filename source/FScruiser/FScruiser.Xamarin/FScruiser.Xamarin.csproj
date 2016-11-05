@@ -43,7 +43,6 @@
     <Compile Include="Cells\TreeCell.xaml.cs">
       <DependentUpon>TreeCell.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ICruiseFolderService.cs" />
     <Compile Include="Models\CruiseMethods.cs" />
     <Compile Include="Models\Plot.cs" />
     <Compile Include="Models\SampleGroup.cs" />
@@ -72,13 +71,6 @@
       <DependentUpon>UnitLevelTreeListPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\CruiseDataService.cs" />
-    <Compile Include="Services\CruiseFile.cs" />
-    <Compile Include="Services\CuttingUnitDataService.cs" />
-    <Compile Include="Services\ICruiseDataService.cs" />
-    <Compile Include="Services\ICuttingUnitDataService.cs" />
-    <Compile Include="Services\IDataService.cs" />
-    <Compile Include="Util\ICollectionExtentions.cs" />
     <Compile Include="ViewModels\CruiseViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="Pages\CruisePage.xaml.cs">
@@ -94,7 +86,6 @@
     <Compile Include="ViewModels\UnitLevelTreeListViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="GettingStarted.Xamarin" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>

@@ -26,7 +26,7 @@ namespace FScruiser.Services
 
         public DbSet<Sale> Sale { get; protected set; }
 
-        public DbSet<CuttingUnitModel> Units { get; protected set; }
+        public DbSet<CuttingUnit> Units { get; protected set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -38,7 +38,7 @@ namespace FScruiser.Services
             return Sale.FirstOrDefault();
         }
 
-        public IEnumerable<CuttingUnitModel> GetUnits()
+        public IEnumerable<CuttingUnit> GetUnits()
         {
             return Units;
         }

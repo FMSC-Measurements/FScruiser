@@ -12,10 +12,15 @@ namespace FScruiser.Services
     {
         string _connectionString;
 
-        public CuttingUnitModel Unit { get; private set; }
+        public CuttingUnit Unit { get; private set; }
 
-        public CuttingUnitDataService(CuttingUnitModel unit, CruiseFile dataStore)
+        public CuttingUnitDataService(CuttingUnit unit, CruiseFile dataStore)
         {
+            _connectionString = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
+            {
+                DataSource = dataStore.Path
+            }.ToString();
+
             Unit = unit;
         }
 
@@ -28,7 +33,7 @@ namespace FScruiser.Services
 
         public DbSet<Plot> Plots { get; set; }
 
-        public DbSet<Sampler> Samplers { get; set; }
+        //public DbSet<Sampler> Samplers { get; set; }
 
         public DbSet<UnitStratum> Strata { get; set; }
 
@@ -38,7 +43,7 @@ namespace FScruiser.Services
 
         public DbSet<TreeField> TreeFields { get; set; }
 
-        public DbSet<TreeProxy> TreeProxies { get; set; }
+        //public DbSet<TreeProxy> TreeProxies { get; set; }
 
         public DbSet<Tree> Trees { get; set; }
 
@@ -89,10 +94,10 @@ namespace FScruiser.Services
             Trees.Add(tree);
         }
 
-        public IEnumerable<TreeProxy> GetAllTreeProxiesInUnit()
-        {
-            return TreeProxies.Where(t => t.CuttingUnit_CN == Unit.CuttingUnit_CN);
-        }
+        //public IEnumerable<TreeProxy> GetAllTreeProxiesInUnit()
+        //{
+        //    return TreeProxies.Where(t => t.CuttingUnit_CN == Unit.CuttingUnit_CN);
+        //}
 
         public Plot GetPlot(string stratumCode, int plotNumber)
         {
@@ -107,14 +112,14 @@ namespace FScruiser.Services
             //    .Read().FirstOrDefault();
         }
 
-        public Sampler GetSamplerBySampleGroup(string stCode, string sgCode)
-        {
-            return Samplers.Where(s => s.StratumCode == stCode && s.SampleGroupCode == sgCode).FirstOrDefault();
+        //public Sampler GetSamplerBySampleGroup(string stCode, string sgCode)
+        //{
+        //    return Samplers.Where(s => s.StratumCode == stCode && s.SampleGroupCode == sgCode).FirstOrDefault();
 
-            //return DataStore.From<Sampler>()
-            //    .Where($"SampleGroupCode = '{sgCode}' AND StratumCode = '{stCode}'")
-            //    .Read().FirstOrDefault();
-        }
+        //    //return DataStore.From<Sampler>()
+        //    //    .Where($"SampleGroupCode = '{sgCode}' AND StratumCode = '{stCode}'")
+        //    //    .Read().FirstOrDefault();
+        //}
 
         public IEnumerable<UnitStratum> GetStrata()
         {
@@ -160,14 +165,14 @@ namespace FScruiser.Services
             //    .Read();
         }
 
-        public IEnumerable<TreeProxy> GetTreeProxiesByStratum(string code)
-        {
-            return TreeProxies.Where(t => t.Stratum.Code == code);
+        //public IEnumerable<TreeProxy> GetTreeProxiesByStratum(string code)
+        //{
+        //    return TreeProxies.Where(t => t.Stratum.Code == code);
 
-            //return DataStore.From<TreeProxy>()
-            //    .Where($"StratumCode = '{code}'")
-            //    .Read();
-        }
+        //    //return DataStore.From<TreeProxy>()
+        //    //    .Where($"StratumCode = '{code}'")
+        //    //    .Read();
+        //}
 
         public void LogTreeEstimate(int kpi, TallyPopulation tallyPop)
         {
