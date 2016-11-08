@@ -20,16 +20,16 @@ namespace FScruiser.Models
 
         public int PlotNumber { get; set; }
 
-        public bool IsEmpty { get; set; }
+        public bool? IsEmpty { get; set; }
 
         public string Remarks { get; set; }
 
-        [ForeignKey("Stratum_CN")]
+        [ForeignKey(nameof(Stratum_CN))]
         public Stratum Stratum { get; set; }
 
         public override string ToString()
         {
-            var isEmptyExpr = (IsEmpty) ? ":Empty" : string.Empty;
+            var isEmptyExpr = (IsEmpty.GetValueOrDefault(false)) ? ":Empty" : string.Empty;
             return $"{PlotNumber} {isEmptyExpr}";
         }
     }

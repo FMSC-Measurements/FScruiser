@@ -31,6 +31,8 @@ namespace FScruiser.Services
 
         Tree GetTree(Guid tree_GUID);
 
+        IEnumerable<Tree> GetAllTrees();
+
         Plot GetPlot(string stratumCode, int plotNumber);
 
         //IEnumerable<PlotProxy> GetPlotProxiesByStratum(string code);

@@ -21,8 +21,10 @@ namespace FScruiser.Models
 
         public Stratum Stratum { get; set; }
 
+        [NotMapped]
         public List<Plot> Plots { get; set; }
 
+        [NotMapped]
         public List<Tree> Trees { get; set; }
     }
 }

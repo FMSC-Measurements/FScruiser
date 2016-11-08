@@ -17,7 +17,7 @@ namespace FScruiser.ViewModels
 
         public Sale Sale { get; set; }
 
-        public IEnumerable<CuttingUnitModel> CuttingUnits => Dataservice.GetUnits();
+        public IEnumerable<CuttingUnit> CuttingUnits => Dataservice.GetUnits();
 
         //public IList<StratumModel> Strata { get; set; }
 
@@ -27,12 +27,12 @@ namespace FScruiser.ViewModels
         }
 
         public ICommand ShowDataEntryCommand =>
-            new Command<CuttingUnitModel>
+            new Command<CuttingUnit>
             (
                 unit => ShowDataEntry(unit)
             );
 
-        public void ShowDataEntry(CuttingUnitModel unit)
+        public void ShowDataEntry(CuttingUnit unit)
         {
             var cruiseFile = FreshIOC.Container.Resolve<CruiseFile>();
             FreshIOC.Container.Register<ICuttingUnitDataService>(new CuttingUnitDataService(unit, cruiseFile));

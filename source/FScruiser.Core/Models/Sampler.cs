@@ -15,41 +15,24 @@ namespace FScruiser.Models
     [Table("SampleGroup")]
     public class Sampler
     {
-        [Key]
-        public long SampleGroup_CN { get; set; }
+        public SampleGroup SampleGroup { get; set; }
+
+        public Sampler(SampleGroup sg)
+        {
+            SampleGroup = sg;
+        }
 
         public const string SYSTEMATIC_SELECTER = "SystematicSelecter";
         public const string BLOCK_SELECTER = "BlockSelecter";
 
-        public long Stratum_CN { get; set; }
-
-        [ForeignKey(nameof(Stratum_CN))]
-        public Stratum Stratum { get; set; }
-
-        
-
-        //[Field(Alias = "SampleGroupCode", SQLExpression = "SampleGroup.Code")]
-        [Column("Code")]
-        public string SampleGroupCode { get; set; }
-
-        //[Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
-        public string StratumCode { get; set; }
-
-        //[Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method")]
-        public string CruiseMethod { get; set; }
-
-        public int SamplingFrequency { get; set; }
-
-        public int InsuranceFrequency { get; set; }
-
-        public int MinKPI { get; set; }
-
-        public int MaxKPI { get; set; }
-
-        public int KZ { get; set; }
-        public string SampleSelectorType { get; set; }
-
-        public string SampleSelectorState { get; set; }
+        public string CruiseMethod => SampleGroup.Stratum.CruiseMethod;
+        public int SamplingFrequency => SampleGroup.SamplingFrequency;
+        public int InsuranceFrequency => SampleGroup.InsuranceFrequency;
+        public int MinKPI => SampleGroup.MinKPI;
+        public int MaxKPI => SampleGroup.MaxKPI;
+        public int KZ => SampleGroup.KZ;
+        public string SampleSelectorType => SampleGroup.SampleSelectorType;
+        public string SampleSelectorState => SampleGroup.SampleSelectorState;
 
         SampleSelecter _selector;
 
@@ -59,7 +42,9 @@ namespace FScruiser.Models
             {
                 if (_selector == null)
                 {
-                    _selector = MakeSampleSelecter(CruiseMethod);
+                    var cruiseMethod = SampleGroup.Stratum.CruiseMethod;
+
+                    _selector = MakeSampleSelecter(cruiseMethod);
                 }
                 return _selector;
             }
@@ -74,10 +59,10 @@ namespace FScruiser.Models
 
         public void SerializeSamplerState()
         {
-            SerializeSamplerState(_selector);
+            SerializeSamplerState(_selector, SampleGroup);
         }
 
-        public void SerializeSamplerState(SampleSelecter selector)
+        public void SerializeSamplerState(SampleSelecter selector, SampleGroup sg)
         {
             if (selector == null) { return; }
             if (selector != null && (selector is BlockSelecter || selector is SystematicSelecter))
@@ -86,8 +71,8 @@ namespace FScruiser.Models
                 using (var writer = new StringWriter())
                 {
                     serializer.Serialize(writer, selector);
-                    SampleSelectorState = writer.ToString();
-                    SampleSelectorType = selector.GetType().Name;
+                    sg.SampleSelectorState = writer.ToString();
+                    sg.SampleSelectorType = selector.GetType().Name;
                 }
             }
         }

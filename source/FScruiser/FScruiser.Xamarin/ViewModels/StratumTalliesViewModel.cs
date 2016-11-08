@@ -60,12 +60,6 @@ namespace FScruiser.ViewModels
 
             TallyPopulations = DataService.GetTallyPopulationByStratum(UnitStratum.Stratum.Code).ToList();
 
-            foreach (var population in TallyPopulations)
-            {
-                population.Sampler = DataService.GetSamplerBySampleGroup(population.SampleGroup.Stratum.Code
-                    , population.SampleGroup.Code);
-            }
-
             base.Init(initData);
         }
 

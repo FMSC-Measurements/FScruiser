@@ -1,7 +1,11 @@
 ﻿using FScruiser.Models;
 using FScruiser.Services;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,13 +35,16 @@ namespace FScruiser.Test.Services
             var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
             var dataService = new CuttingUnitDataService(unit, cruiseFile);
 
+            var serviceProvider = dataService.GetInfrastructure<IServiceProvider>();
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            loggerFactory.AddProvider(new MyLoggerProvider());
+
             var plot = dataService.GetPlot("04", 1);
 
             Assert.NotNull(plot);
 
             Assert.True(dataService.Plots.Count() > 0);
         }
-
 
         //[Fact]
         //public void TestGetSamplerBySampleGroup()
@@ -63,7 +70,7 @@ namespace FScruiser.Test.Services
 
             Assert.NotEmpty(strata);
 
-            Assert.NotEmpty(dataService.Strata);
+            Assert.NotEmpty(dataService.UnitStrata);
         }
 
         [Fact]
@@ -72,6 +79,10 @@ namespace FScruiser.Test.Services
             var unit = new CuttingUnit { CuttingUnit_CN = 2 };
             var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
             var dataService = new CuttingUnitDataService(unit, cruiseFile);
+
+            var serviceProvider = dataService.GetInfrastructure<IServiceProvider>();
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            loggerFactory.AddProvider(new MyLoggerProvider());
 
             var tallyPop = dataService.GetTallyPopulationByStratum("02");
 
@@ -123,5 +134,35 @@ namespace FScruiser.Test.Services
 
         //    Assert.NotEmpty(dataService.TreeProxies);
         //}
+    }
+
+    public class MyLoggerProvider : ILoggerProvider
+    {
+        public ILogger CreateLogger(string categoryName)
+        {
+            return new MyLogger();
+        }
+
+        public void Dispose()
+        { }
+
+        private class MyLogger : ILogger
+        {
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return true;
+            }
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                File.AppendAllText(@"C:\temp\log.txt", formatter(state, exception));
+                Console.WriteLine(formatter(state, exception));
+            }
+
+            public IDisposable BeginScope<TState>(TState state)
+            {
+                return null;
+            }
+        }
     }
 }

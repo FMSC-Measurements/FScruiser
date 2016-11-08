@@ -12,7 +12,7 @@ namespace FScruiser.Models
     public class SampleGroup
     {
         [Key]
-        public long SampleGoup_CN { get; set; }
+        public long SampleGroup_CN { get; set; }
 
         public long Stratum_CN { get; set; }
 
@@ -20,5 +20,20 @@ namespace FScruiser.Models
         public Stratum Stratum { get; set; }
 
         public string Code { get; set; }
+
+        public string CruiseMethod { get; set; }
+
+        public int SamplingFrequency { get; set; }
+
+        public int InsuranceFrequency { get; set; }
+
+        public int MinKPI { get; set; }
+
+        public int MaxKPI { get; set; }
+
+        public int KZ { get; set; }
+        public string SampleSelectorType { get; set; }
+
+        public string SampleSelectorState { get; set; }
     }
 }

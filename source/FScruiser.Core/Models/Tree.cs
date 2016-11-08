@@ -30,6 +30,12 @@ namespace FScruiser.Models
         public int TreeNumber { get; set; }
         public string Species { get; set; }
 
+        [ForeignKey(nameof(Stratum_CN))]
+        public Stratum Stratum { get; set; }
+
+        [ForeignKey(nameof(SampleGroup_CN))]
+        public SampleGroup SampleGroup { get; set; }
+
         #endregion keyFields
 
         public double Aspect { get; set; }

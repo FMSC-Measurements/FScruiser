@@ -12,7 +12,7 @@ namespace FScruiser.ViewModels
 {
     public class UnitLevelNavigationViewModel : FreshMvvm.FreshBasePageModel
     {
-        public CuttingUnitModel Unit { get; set; }
+        public CuttingUnit Unit { get; set; }
         public IList<UnitStratum> Strata { get; set; }
 
         ICuttingUnitDataService DataService { get; set; }
@@ -24,7 +24,7 @@ namespace FScruiser.ViewModels
 
         public override void Init(object initData)
         {
-            Unit = initData as CuttingUnitModel;
+            Unit = initData as CuttingUnit;
 
             Strata = DataService.GetStrata().ToList();
 

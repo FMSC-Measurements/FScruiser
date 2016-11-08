@@ -14,7 +14,7 @@ namespace FScruiser.ViewModels
     {
         public ICuttingUnitDataService DataService { get; set; }
 
-        public IList<TreeProxy> Trees { get; protected set; }
+        public IList<Tree> Trees { get; protected set; }
 
         public ICommand EditTreeCommand =>
             new Command<TreeProxy>((x) => EditTree(x));
@@ -28,7 +28,7 @@ namespace FScruiser.ViewModels
         {
             base.Init(initData);
 
-            Trees = DataService.GetAllTreeProxiesInUnit().ToList();
+            Trees = DataService.GetAllTrees().ToList();
         }
 
         protected void EditTree(TreeProxy tree)

@@ -18,10 +18,8 @@ namespace FScruiser.Test.Models
         {
             var freq = 10;
 
-            var sampler = new Sampler()
-            {
-                SamplingFrequency = freq,
-            };
+            var sg = new SampleGroup { SamplingFrequency = freq };
+            var sampler = new Sampler(sg);
 
             var selector = sampler.MakeSampleSelecter(CruiseMethods.STR);
 
@@ -35,13 +33,10 @@ namespace FScruiser.Test.Models
         {
             var freq = 10;
 
-            var sampler = new Sampler()
-            {
-                SampleSelectorType = Sampler.BLOCK_SELECTER,
-                SamplingFrequency = freq,
-            };
+            var sg = new SampleGroup { SamplingFrequency = freq, SampleSelectorType = Sampler.BLOCK_SELECTER };
+            var sampler = new Sampler(sg);
 
-            sampler.SerializeSamplerState(new BlockSelecter(sampler.SamplingFrequency, sampler.InsuranceFrequency));
+            sampler.SerializeSamplerState(new BlockSelecter(sampler.SamplingFrequency, sampler.InsuranceFrequency), sg);
 
             sampler.SampleSelectorState.Should().NotBeNullOrEmpty();
 
@@ -57,13 +52,10 @@ namespace FScruiser.Test.Models
         {
             var freq = 10;
 
-            var sampler = new Sampler()
-            {
-                SampleSelectorType = Sampler.SYSTEMATIC_SELECTER,
-                SamplingFrequency = freq,
-            };
+            var sg = new SampleGroup { SamplingFrequency = freq, SampleSelectorType = Sampler.SYSTEMATIC_SELECTER };
+            var sampler = new Sampler(sg);
 
-            sampler.SerializeSamplerState(new SystematicSelecter(sampler.SamplingFrequency, sampler.InsuranceFrequency, true));
+            sampler.SerializeSamplerState(new SystematicSelecter(sampler.SamplingFrequency, sampler.InsuranceFrequency, true), sg);
 
             sampler.SampleSelectorState.Should().NotBeNullOrEmpty();
 

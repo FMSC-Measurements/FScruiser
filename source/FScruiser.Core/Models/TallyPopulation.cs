@@ -27,22 +27,17 @@ namespace FScruiser.Models
         [ForeignKey(nameof(SampleGroup_CN))]
         public SampleGroup SampleGroup { get; set; }
 
-        //[Field(SQLExpression = "SampleGroup.Stratum_CN", Alias = "Stratum_CN")]
-        //public long Stratum_CN { get; set; } // we need this so we can create trees from a tally pop, but is otherwise unnecessary
-
         public long? TreeDefaultValue_CN { get; set; }
 
         [ForeignKey(nameof(TreeDefaultValue_CN))]
         public TreeDefaultValue TDV { get; set; }
 
-        //[Field(SQLExpression = "Tally.Description", Alias = "Description")]
-        public string Description { get; set; }
+        public string Description => Tally.Description;
 
-        //[Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
-        //public string StratumCode { get; set; } // may need this if we want to resolve sampler using sample group code
+        public long Tally_CN { get; set; }
 
-        //[Field(SQLExpression = "SampleGroup.Code", Alias = "SampleGroupCode")]
-        //public string SampleGroupCode { get; set; }
+        [ForeignKey("Tally_CN")]
+        public Tally Tally { get; set; }
 
         public int SumKPI
         {
@@ -64,8 +59,10 @@ namespace FScruiser.Models
             }
         }
 
+        Sampler _sampler;
+
         [NotMapped]
-        public Sampler Sampler { get; set; }
+        public Sampler Sampler => _sampler ?? (_sampler = new Sampler(this.SampleGroup));
 
         #region INotifyPropertyChanged members
 
@@ -77,5 +74,16 @@ namespace FScruiser.Models
         }
 
         #endregion INotifyPropertyChanged members
+    }
+
+    [Table("Tally")]
+    public class Tally
+    {
+        [Key]
+        public long Tally_CN { get; set; }
+
+        public string Description { get; set; }
+
+        public string HotKey { get; set; }
     }
 }
