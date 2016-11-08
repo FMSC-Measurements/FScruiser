@@ -11,8 +11,8 @@
                   VerticalOptions="StartAndExpand">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding StratumCode}"
-                              Detail="{Binding CruiseMethod}"
+                    <TextCell Text="{Binding Stratum.Code}"
+                              Detail="{Binding Stratum.Method}"
                           Command="{Binding BindingContext.ShowTalliesCommand, Source={x:Reference Self}}"
                           CommandParameter="{Binding .}" />
                 </DataTemplate>

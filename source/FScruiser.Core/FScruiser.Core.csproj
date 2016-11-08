@@ -49,7 +49,6 @@
     <Compile Include="Models\TreeDefaultValue.cs" />
     <Compile Include="Models\TreeEstimate.cs" />
     <Compile Include="Models\TreeField.cs" />
-    <Compile Include="Models\TreeProxy.cs" />
     <Compile Include="Models\UnitStratum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CruiseDataService.cs" />

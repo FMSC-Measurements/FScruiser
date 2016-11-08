@@ -13,7 +13,7 @@
             ItemSelected="ListView_ItemSelected">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding CuttingUnitCode}"
+                    <TextCell Text="{Binding Code}"
                         Command="{Binding BindingContext.ShowDataEntryCommand, Source={x:Reference TopPage}}"
                         CommandParameter="{Binding .}" />
                 </DataTemplate>

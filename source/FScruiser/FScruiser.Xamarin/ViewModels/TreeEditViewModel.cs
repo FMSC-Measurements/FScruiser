@@ -24,11 +24,11 @@ namespace FScruiser.ViewModels
         public override void Init(object initData)
         {
             base.Init(initData);
-            var treeProxy = initData as TreeProxy;
-
-            TreeFields = Dataservice.GetTreeFieldsByStratum(treeProxy.Stratum.Code);
-
-            Tree = Dataservice.GetTree(treeProxy.Tree_GUID);
+            Tree = initData as Tree;
+            if (Tree != null)
+            {
+                TreeFields = Dataservice.GetTreeFieldsByStratum(Tree.Stratum.Code);
+            }
         }
     }
 }
