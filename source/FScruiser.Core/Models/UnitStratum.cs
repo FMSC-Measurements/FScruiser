@@ -19,9 +19,12 @@ namespace FScruiser.Models
 
         public long Stratum_CN { get; set; }
 
+        [ForeignKey(nameof(Stratum_CN))]
         public Stratum Stratum { get; set; }
 
-        [NotMapped]
+        [ForeignKey(nameof(CuttingUnit_CN))]
+        public CuttingUnit Unit { get; set; }
+
         public List<Plot> Plots { get; set; }
 
         [NotMapped]

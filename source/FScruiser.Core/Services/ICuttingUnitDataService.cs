@@ -21,11 +21,9 @@ namespace FScruiser.Services
 
         void LogTreeEstimate(int KPI, string stratumCode, string sampleGroupCode, string species);
 
-        IEnumerable<UnitStratum> GetStrata();
+        IEnumerable<UnitStratum> GetAllUnitStrata();
 
-        //IEnumerable<TreeProxy> GetAllTreeProxiesInUnit();
-
-        //IEnumerable<TreeProxy> GetTreeProxiesByStratum(string code);
+        #region Tree
 
         Tree GetTree(long tree_CN);
 
@@ -33,14 +31,12 @@ namespace FScruiser.Services
 
         IEnumerable<Tree> GetAllTrees();
 
-        Plot GetPlot(string stratumCode, int plotNumber);
+        #endregion Tree
 
-        //IEnumerable<PlotProxy> GetPlotProxiesByStratum(string code);
+        Plot GetPlot(string stratumCode, int plotNumber);
 
         IEnumerable<TreeField> GetTreeFieldsByStratum(string code);
 
         IEnumerable<TallyPopulation> GetTallyPopulationByStratum(string code);
-
-        //Sampler GetSamplerBySampleGroup(string stCode, string sgCode);
     }
 }

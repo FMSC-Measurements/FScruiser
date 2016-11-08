@@ -25,7 +25,7 @@ namespace FScruiser.Models
         public const string SYSTEMATIC_SELECTER = "SystematicSelecter";
         public const string BLOCK_SELECTER = "BlockSelecter";
 
-        public string CruiseMethod => SampleGroup.Stratum.CruiseMethod;
+        public string CruiseMethod => SampleGroup.Stratum.Method;
         public int SamplingFrequency => SampleGroup.SamplingFrequency;
         public int InsuranceFrequency => SampleGroup.InsuranceFrequency;
         public int MinKPI => SampleGroup.MinKPI;
@@ -42,7 +42,7 @@ namespace FScruiser.Models
             {
                 if (_selector == null)
                 {
-                    var cruiseMethod = SampleGroup.Stratum.CruiseMethod;
+                    var cruiseMethod = SampleGroup.Stratum.Method;
 
                     _selector = MakeSampleSelecter(cruiseMethod);
                 }

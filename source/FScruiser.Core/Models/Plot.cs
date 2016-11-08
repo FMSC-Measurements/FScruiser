@@ -27,6 +27,8 @@ namespace FScruiser.Models
         [ForeignKey(nameof(Stratum_CN))]
         public Stratum Stratum { get; set; }
 
+        public UnitStratum UnitStratum { get; set; }
+
         public override string ToString()
         {
             var isEmptyExpr = (IsEmpty.GetValueOrDefault(false)) ? ":Empty" : string.Empty;

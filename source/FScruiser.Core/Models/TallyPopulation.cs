@@ -32,12 +32,11 @@ namespace FScruiser.Models
         [ForeignKey(nameof(TreeDefaultValue_CN))]
         public TreeDefaultValue TDV { get; set; }
 
-        public string Description => Tally.Description;
-
-        public long Tally_CN { get; set; }
-
         [ForeignKey("Tally_CN")]
         public Tally Tally { get; set; }
+
+        public long Tally_CN { get; set; }
+        public string Description => Tally.Description;
 
         public int SumKPI
         {

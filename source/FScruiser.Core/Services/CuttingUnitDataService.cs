@@ -32,25 +32,26 @@ namespace FScruiser.Services
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Plot>()
-                .Property(p => p.IsEmpty)
-                .HasDefaultValue(false);
+                .HasOne(p => p.UnitStratum)
+                .WithMany(us => us.Plots)
+                .HasForeignKey(p => new { p.CuttingUnit_CN, p.Stratum_CN })
+                .HasPrincipalKey(us => new { us.CuttingUnit_CN, us.Stratum_CN });
+
+            //modelBuilder.Entity<UnitStratum>()
+            //    .HasAlternateKey(us => new { us.CuttingUnit_CN, us.Stratum_CN });
         }
 
-        //public DbSet<PlotProxy> PlotProxies { get; set; }
-
         public DbSet<Plot> Plots { get; set; }
-
-        //public DbSet<Sampler> Samplers { get; set; }
 
         public DbSet<UnitStratum> UnitStrata { get; set; }
 
         public DbSet<SampleGroup> SampleGroup { get; set; }
 
+        public DbSet<Stratum> Strata { get; set; }
+
         public DbSet<TallyPopulation> TallyPopulations { get; set; }
 
         public DbSet<TreeField> TreeFields { get; set; }
-
-        //public DbSet<TreeProxy> TreeProxies { get; set; }
 
         public DbSet<Tree> Trees { get; set; }
 
@@ -58,16 +59,17 @@ namespace FScruiser.Services
 
         public Plot CreateNewPlot(string stratumCode)
         {
-            var highestPlotNumber = Plots
-                .Where(p => p.CuttingUnit_CN == Unit.CuttingUnit_CN && p.Stratum.Code == stratumCode)
-                .Max(p => p.PlotNumber);
+            var unitStratum = UnitStrata.Where(uSt => uSt.CuttingUnit_CN == Unit.CuttingUnit_CN && uSt.Stratum.Code == stratumCode)
+                .FirstOrDefault();
+
+            var highestPlotNumber = unitStratum.Plots.Max(p => p.PlotNumber);
 
             var newPlot = new Plot
             {
-                CuttingUnit_CN = Unit.CuttingUnit_CN,
-                Stratum_CN = stratum.Stratum_CN,
                 PlotNumber = highestPlotNumber + 1
             };
+
+            unitStratum.Plots.Add(newPlot);
 
             return newPlot;
         }
@@ -106,14 +108,31 @@ namespace FScruiser.Services
             return Plots.Where(p => p.Stratum.Code == stratumCode && p.PlotNumber == plotNumber).FirstOrDefault();
         }
 
-        public IEnumerable<UnitStratum> GetStrata()
+        public IEnumerable<UnitStratum> GetAllUnitStrata()
         {
-            return UnitStrata.Where(uSt => uSt.CuttingUnit_CN == Unit.CuttingUnit_CN);
+            return UnitStrata
+                .Include(ust => ust.Stratum)
+                .Include(ust => ust.Plots)
+                .Where(uSt => uSt.CuttingUnit_CN == Unit.CuttingUnit_CN);
+        }
+
+        public UnitStratum GetUnitStratum(string stratumCode)
+        {
+            return UnitStrata
+                .Include(ust => ust.Stratum)
+                .Include(ust => ust.Plots)
+                .Where(ust => ust.CuttingUnit_CN == Unit.CuttingUnit_CN && ust.Stratum.Code == stratumCode)
+                .FirstOrDefault();
         }
 
         public IEnumerable<TallyPopulation> GetTallyPopulationByStratum(string code)
         {
-            return TallyPopulations.Where(tp => tp.CuttingUnit_CN == Unit.CuttingUnit_CN
+            return TallyPopulations
+                .Include(tp => tp.TDV)
+                .Include(tp => tp.Tally)
+                .Include(tp => tp.SampleGroup)
+                    .ThenInclude(sg => sg.Stratum)
+                .Where(tp => tp.CuttingUnit_CN == Unit.CuttingUnit_CN
             && tp.SampleGroup.Stratum.Code == code);
         }
 

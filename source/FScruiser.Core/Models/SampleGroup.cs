@@ -21,8 +21,6 @@ namespace FScruiser.Models
 
         public string Code { get; set; }
 
-        public string CruiseMethod { get; set; }
-
         public int SamplingFrequency { get; set; }
 
         public int InsuranceFrequency { get; set; }

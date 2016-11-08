@@ -1,4 +1,5 @@
-﻿using FScruiser.Models;
+﻿using FluentAssertions;
+using FScruiser.Models;
 using FScruiser.Services;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,29 +16,23 @@ namespace FScruiser.Test.Services
 {
     public class TestCuttingUnitDataService
     {
-        //[Fact]
-        //public void TestGetAllTreeProxiesInUnit()
-        //{
-        //    var unit = new CuttingUnit { CuttingUnit_CN = 2 };
-        //    var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
-        //    var dataService = new CuttingUnitDataService(unit, cruiseFile);
-
-        //    var trees = dataService.GetAllTreeProxiesInUnit().ToList();
-
-        //    Assert.True(trees.Count > 0);
-        //    Assert.True(dataService.TreeProxies.ToList().Count > 0);
-        //}
-
-        [Fact]
-        public void TestGetPlot()
+        CuttingUnitDataService CreateDataService(long unit_CN = 2)
         {
-            var unit = new CuttingUnit { CuttingUnit_CN = 2 };
+            var unit = new CuttingUnit { CuttingUnit_CN = unit_CN };
             var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
             var dataService = new CuttingUnitDataService(unit, cruiseFile);
 
             var serviceProvider = dataService.GetInfrastructure<IServiceProvider>();
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             loggerFactory.AddProvider(new MyLoggerProvider());
+
+            return dataService;
+        }
+
+        [Fact]
+        public void TestGetPlot()
+        {
+            var dataService = CreateDataService();
 
             var plot = dataService.GetPlot("04", 1);
 
@@ -46,94 +41,67 @@ namespace FScruiser.Test.Services
             Assert.True(dataService.Plots.Count() > 0);
         }
 
-        //[Fact]
-        //public void TestGetSamplerBySampleGroup()
-        //{
-        //    var unit = new CuttingUnit { CuttingUnit_CN = 2 };
-        //    var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
-        //    var dataService = new CuttingUnitDataService(unit, cruiseFile);
-
-        //    var samplers = dataService.GetSamplerBySampleGroup("02", "03");
-
-        //    Assert.NotNull(samplers);
-        //    Assert.NotNull(samplers.Selector);
-        //}
-
         [Fact]
-        public void TestGetStrata()
+        public void TestGetUnitStrata()
         {
-            var unit = new CuttingUnit { CuttingUnit_CN = 2 };
-            var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
-            var dataService = new CuttingUnitDataService(unit, cruiseFile);
+            var dataService = CreateDataService();
 
-            var strata = dataService.GetStrata().ToList();
+            var strata = dataService.GetAllUnitStrata().ToList();
 
             Assert.NotEmpty(strata);
 
-            Assert.NotEmpty(dataService.UnitStrata);
+            foreach (var unitStratum in strata)
+            {
+                ValidateUnitStratum(unitStratum);
+            }
+        }
+
+        [Fact]
+        public void TestGetUnitStratum()
+        {
+            var dataService = CreateDataService();
+
+            var unitStratum = dataService.GetUnitStratum("04");
+
+            ValidateUnitStratum(unitStratum);
+        }
+
+        void ValidateUnitStratum(UnitStratum unitStratum)
+        {
+            unitStratum.Stratum.Should().NotBeNull();
+            if (unitStratum.Stratum.IsPlotStratum)
+            {
+                unitStratum.Plots.Should().NotBeEmpty();
+                unitStratum.Plots[0].Stratum.Should().NotBeNull();
+            }
         }
 
         [Fact]
         public void TestGetTallyPopulationByStratum()
         {
-            var unit = new CuttingUnit { CuttingUnit_CN = 2 };
-            var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
-            var dataService = new CuttingUnitDataService(unit, cruiseFile);
-
-            var serviceProvider = dataService.GetInfrastructure<IServiceProvider>();
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-            loggerFactory.AddProvider(new MyLoggerProvider());
+            var dataService = CreateDataService();
 
             var tallyPop = dataService.GetTallyPopulationByStratum("02");
 
             Assert.NotEmpty(tallyPop);
 
-            Assert.NotEmpty(dataService.TallyPopulations);
+            foreach (var tp in tallyPop)
+            {
+                tp.Tally.Should().NotBeNull();
+                tp.SampleGroup.Should().NotBeNull();
+                tp.SampleGroup.Stratum.Should().NotBeNull();
+            }
         }
-
-        //[Fact]
-        //public void TestGetTree()
-        //{
-        //    var unit = new CuttingUnit { CuttingUnit_CN = 2 };
-        //    var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
-        //    var dataService = new CuttingUnitDataService(unit, cruiseFile);
-
-        //    var trees = dataService.GetTreeProxiesByStratum("02");
-
-        //    foreach (var tree in trees)
-        //    {
-        //        var t = dataService.GetTree(tree.Tree_GUID);
-        //        Assert.NotNull(t);
-        //    }
-
-        //    Assert.NotEmpty(dataService.Trees);
-        //}
 
         [Fact]
         public void TestGetTreeFieldsByStratum()
         {
-            var unit = new CuttingUnit { CuttingUnit_CN = 2 };
-            var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
-            var dataService = new CuttingUnitDataService(unit, cruiseFile);
+            var dataService = CreateDataService();
 
             var treeFields = dataService.GetTreeFieldsByStratum("02");
 
             Assert.NotEmpty(treeFields);
         }
-
-        //[Fact]
-        //public void TestGetTreeProxiesByStratum()
-        //{
-        //    var unit = new CuttingUnit { CuttingUnit_CN = 2 };
-        //    var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
-        //    var dataService = new CuttingUnitDataService(unit, cruiseFile);
-
-        //    var trees = dataService.GetTreeProxiesByStratum("02");
-
-        //    Assert.NotEmpty(trees);
-
-        //    Assert.NotEmpty(dataService.TreeProxies);
-        //}
     }
 
     public class MyLoggerProvider : ILoggerProvider

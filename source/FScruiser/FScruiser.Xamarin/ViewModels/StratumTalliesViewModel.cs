@@ -81,7 +81,7 @@ namespace FScruiser.ViewModels
             //if is plot stratum, but no plot selected then bounce
             if (UnitStratum.Stratum.IsPlotStratum && !EnsurePlotSelected()) { return; }
 
-            if (CruiseMethods.THREE_P_METHODS.Contains(UnitStratum.Stratum.CruiseMethod))
+            if (CruiseMethods.THREE_P_METHODS.Contains(UnitStratum.Stratum.Method))
             {
                 int kpi;
                 bool stm;
@@ -99,7 +99,7 @@ namespace FScruiser.ViewModels
                     }
                 }
             }
-            else if (CruiseMethods.STANDARD_SAMPLING_METHODS.Contains(UnitStratum.Stratum.CruiseMethod))
+            else if (CruiseMethods.STANDARD_SAMPLING_METHODS.Contains(UnitStratum.Stratum.Method))
             {
                 var tree = TallyStandard(tally);
                 if (tree != null)
@@ -107,7 +107,7 @@ namespace FScruiser.ViewModels
                     DataService.AddTree(tree);
                 }
             }
-            else if (UnitStratum.Stratum.CruiseMethod == CruiseMethods.H_PCT)
+            else if (UnitStratum.Stratum.Method == CruiseMethods.H_PCT)
             {
                 var tree = TallyHpct(tally);
                 if (tree != null)
