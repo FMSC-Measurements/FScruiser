@@ -25,7 +25,13 @@ namespace FScruiser.Models
         [ForeignKey(nameof(CuttingUnit_CN))]
         public CuttingUnit Unit { get; set; }
 
-        public List<Plot> Plots { get; set; }
+        List<Plot> _plots;
+
+        public List<Plot> Plots
+        {
+            get { return _plots ?? (_plots = new List<Plot>()); }
+            set { _plots = value; }
+        }
 
         [NotMapped]
         public List<Tree> Trees { get; set; }

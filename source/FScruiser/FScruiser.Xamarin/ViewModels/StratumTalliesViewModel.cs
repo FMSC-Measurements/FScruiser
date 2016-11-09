@@ -21,7 +21,6 @@ namespace FScruiser.ViewModels
         }
 
         public Plot CurrentPlot { get; set; }
-        public IList<Plot> Plots { get; set; }
         public UnitStratum UnitStratum { get; set; }
         public IList<TallyPopulation> TallyPopulations { get; set; }
 

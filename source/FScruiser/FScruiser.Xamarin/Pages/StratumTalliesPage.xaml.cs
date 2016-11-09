@@ -54,7 +54,7 @@ namespace FScruiser.Pages
 
             //get view model
             var viewModel = (StratumTalliesViewModel)BindingContext;
-            CurrentPlot = viewModel.Plots.Where(plot => plot.ToString() == pickerValue).FirstOrDefault();
+            CurrentPlot = viewModel.UnitStratum.Plots.Where(plot => plot.ToString() == pickerValue).FirstOrDefault();
         }
 
         protected override void OnBindingContextChanged()
@@ -72,7 +72,7 @@ namespace FScruiser.Pages
                 PlotNavBar.IsVisible = true;
 
                 //setup plot picker
-                foreach (var plot in viewModel.Plots)
+                foreach (var plot in viewModel.UnitStratum.Plots)
                 {
                     PlotPicker.Items.Add(plot.ToString());
                 }

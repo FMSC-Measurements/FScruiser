@@ -17,13 +17,19 @@ namespace FScruiser.ViewModels
 
         public Sale Sale { get; set; }
 
-        public IEnumerable<CuttingUnit> CuttingUnits => Dataservice.GetUnits();
+        public IList<CuttingUnit> CuttingUnits { get; set; }
 
         //public IList<StratumModel> Strata { get; set; }
 
         public CruiseViewModel(ICruiseDataService dataservice)
         {
             Dataservice = dataservice;
+        }
+
+        public override void Init(object initData)
+        {
+            base.Init(initData);
+            CuttingUnits = Dataservice.GetUnits().ToList();
         }
 
         public ICommand ShowDataEntryCommand =>

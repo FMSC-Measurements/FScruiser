@@ -40,6 +40,8 @@ namespace FScruiser.ViewModels
             var cruiseFile = new CruiseFile { Path = cruise.Path };
             FreshMvvm.FreshIOC.Container.Register<CruiseFile>(cruiseFile);
 
+            FreshMvvm.FreshIOC.Container.Register<ICruiseDataService>(new CruiseDataService(cruiseFile));
+
             Task t = CoreMethods.PushPageModel<CruiseViewModel>(cruise);
             var ex = t.Exception;
         }

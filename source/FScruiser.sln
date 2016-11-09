@@ -4,6 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FScruiser.Droid", "FScruiser\FScruiser.Droid\FScruiser.Droid.csproj", "{D7270C98-62A5-42AF-B008-1715CA930014}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B8020B07-E2B6-42BE-9D1F-37F74660AEFA} = {B8020B07-E2B6-42BE-9D1F-37F74660AEFA}
+		{4C61AB15-EAC0-417B-B8B1-742183AEA970} = {4C61AB15-EAC0-417B-B8B1-742183AEA970}
+		{B2CB186C-9319-43D0-A694-FB566E083C58} = {B2CB186C-9319-43D0-A694-FB566E083C58}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FScruiser.Xamarin", "FScruiser\FScruiser.Xamarin\FScruiser.Xamarin.csproj", "{B8020B07-E2B6-42BE-9D1F-37F74660AEFA}"
 EndProject
