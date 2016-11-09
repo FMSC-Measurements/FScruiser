@@ -58,10 +58,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
-    <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activities\MainActivity.cs" />
@@ -71,7 +69,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="project.json" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
@@ -86,6 +83,10 @@
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\FScruiser.Core\FScruiser.Core.csproj">
+      <Project>{4c61ab15-eac0-417b-b8b1-742183aea970}</Project>
+      <Name>FScruiser.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FScruiser.Xamarin\FScruiser.Xamarin.csproj">
       <Project>{b8020b07-e2b6-42be-9d1f-37f74660aefa}</Project>
       <Name>FScruiser.Xamarin</Name>
