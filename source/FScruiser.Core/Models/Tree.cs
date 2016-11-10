@@ -19,10 +19,10 @@ namespace FScruiser.Models
         public Guid Tree_GUID { get; set; }
 
         [Required]
-        public long? CuttingUnit_CN { get; set; }
+        public long CuttingUnit_CN { get; set; }
 
         [Required]
-        public long? Stratum_CN { get; set; }
+        public long Stratum_CN { get; set; }
 
         public long? SampleGroup_CN { get; set; }
         public long? TreeDefaultValue_CN { get; set; }
@@ -38,6 +38,14 @@ namespace FScruiser.Models
 
         #endregion keyFields
 
+        #region metaFields
+
+        public double Diameter => Math.Max(DBH, DRC);
+
+        public double Height => Math.Max(TotalHeight, MerchHeightPrimary);
+
+        #endregion metaFields
+
         public double Aspect { get; set; }
 
         public string ClearFace { get; set; }
@@ -50,7 +58,7 @@ namespace FScruiser.Models
 
         public double DBHDoubleBarkThickness { get; set; }
 
-        public double DefectCode { get; set; }
+        public double? DefectCode { get; set; }
 
         public double DiameterAtDefect { get; set; }
 
@@ -62,7 +70,7 @@ namespace FScruiser.Models
 
         public double HeightToFirstLiveLimb { get; set; }
 
-        public double Initials { get; set; }
+        public string Initials { get; set; }
 
         public bool IsFallBuckScale { get; set; }
 

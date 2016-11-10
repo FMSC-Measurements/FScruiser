@@ -8,7 +8,7 @@ namespace FScruiser.Models
     public class Stratum
     {
         [Key]
-        public long? Stratum_CN { get; set; }
+        public long Stratum_CN { get; set; }
 
         public string Code { get; set; }
 

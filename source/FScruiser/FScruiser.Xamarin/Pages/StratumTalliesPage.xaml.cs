@@ -17,32 +17,6 @@ namespace FScruiser.Pages
             InitializeComponent();
         }
 
-        #region CurrentPlot
-
-        /// <summary>
-        /// Identifies the <see cref="CurrentPlot"/> bindable property.
-        /// </summary>
-        public static readonly BindableProperty CurrentPlotProperty =
-            BindableProperty.Create(nameof(CurrentPlot),
-              typeof(Plot),
-              typeof(StratumTalliesPage),
-              defaultValue: default(Plot),
-              defaultBindingMode: BindingMode.OneWayToSource);
-
-        /// <summary>
-        /// Gets or sets the <see cref="CurrentPlot" /> property. This is a bindable property.
-        /// </summary>
-        /// <value>
-        ///
-        /// </value>
-        public Plot CurrentPlot
-        {
-            get { return (Plot)GetValue(CurrentPlotProperty); }
-            set { SetValue(CurrentPlotProperty, value); }
-        }
-
-        #endregion CurrentPlot
-
         private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             ((ListView)sender).SelectedItem = null;
@@ -54,7 +28,7 @@ namespace FScruiser.Pages
 
             //get view model
             var viewModel = (StratumTalliesViewModel)BindingContext;
-            CurrentPlot = viewModel.UnitStratum.Plots.Where(plot => plot.ToString() == pickerValue).FirstOrDefault();
+            viewModel.CurrentPlot = viewModel.UnitStratum.Plots.Where(plot => plot.ToString() == pickerValue).FirstOrDefault();
         }
 
         protected override void OnBindingContextChanged()

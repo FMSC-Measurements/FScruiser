@@ -11,8 +11,8 @@
                      HorizontalOptions="Fill">
             <Label Text="Plot" FontSize="Large" />
             <Picker x:Name="PlotPicker"  SelectedIndexChanged="PlotPicker_SelectedIndexChanged" HorizontalOptions="CenterAndExpand" />
-            <Button HorizontalOptions="End" Command="{Binding ShowPlotInfoCommand}">info</Button>
-            <Button HorizontalOptions="End" Command="{Binding AddPlotCommand}">Add</Button>
+            <Button HorizontalOptions="End" Command="{Binding ShowPlotInfoCommand}" Image="ic_pencil_box_outline_grey600_24dp.png" />
+            <Button HorizontalOptions="End" Command="{Binding AddPlotCommand}" Image="ic_plus_grey600_24dp.png" />
         </StackLayout>
         <ScrollView>
             <ListView ItemsSource="{Binding TallyPopulations}"
@@ -27,8 +27,8 @@
             </ListView>
         </ScrollView>
         <StackLayout Orientation="Horizontal">
-            <Button Text="Trees" HorizontalOptions="Start" />
-            <Button Text="TallyHistory" HorizontalOptions="End" />
+            <Button Command="{Binding ShowTreesCommand}" HorizontalOptions="Start" Image="ic_pine_tree_box_grey600_18dp.png" />
+            <Button Text="TallyHistory" HorizontalOptions="End" Image="ic_history_grey600_18dp.png" />
         </StackLayout>
     </StackLayout>
 </ContentPage>

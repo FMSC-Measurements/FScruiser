@@ -10,6 +10,12 @@ using Xamarin.Forms;
 
 namespace FScruiser.ViewModels
 {
+    public class TreeListFilter
+    {
+        public Stratum Stratum { get; set; }
+        public Plot Plot { get; set; }
+    }
+
     public class UnitLevelTreeListViewModel : FreshMvvm.FreshBasePageModel
     {
         public ICuttingUnitDataService DataService { get; set; }
@@ -24,11 +30,18 @@ namespace FScruiser.ViewModels
             DataService = dataService;
         }
 
+        //public Stratum Stratum => Filter?.Stratum;
+        //public Plot Plot => Filter.Plot;
+
+        public TreeListFilter Filter { get; set; }
+
         public override void Init(object initData)
         {
             base.Init(initData);
 
-            Trees = DataService.GetAllTrees().ToList();
+            Filter = initData as TreeListFilter;
+
+            Trees = DataService.GetTrees(Filter?.Stratum, Filter?.Plot).ToList();
         }
 
         protected void EditTree(Tree tree)

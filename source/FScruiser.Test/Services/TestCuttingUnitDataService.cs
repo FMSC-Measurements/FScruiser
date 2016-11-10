@@ -37,8 +37,6 @@ namespace FScruiser.Test.Services
             var plot = dataService.GetPlot("04", 1);
 
             Assert.NotNull(plot);
-
-            Assert.True(dataService.Plots.Count() > 0);
         }
 
         [Fact]
@@ -53,6 +51,24 @@ namespace FScruiser.Test.Services
             foreach (var unitStratum in strata)
             {
                 ValidateUnitStratum(unitStratum);
+            }
+        }
+
+        [Fact]
+        public void TestGetTrees()
+        {
+            var dataService = CreateDataService();
+
+            var strata = dataService.GetAllUnitStrata().ToList();
+
+            foreach (var ust in strata)
+            {
+                var trees = dataService.GetTrees(ust.Stratum).ToList();
+
+                foreach (var plot in ust.Plots)
+                {
+                    var plotTrees = dataService.GetTrees(ust.Stratum, plot).ToList();
+                }
             }
         }
 

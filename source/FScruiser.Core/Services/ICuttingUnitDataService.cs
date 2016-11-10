@@ -17,6 +17,8 @@ namespace FScruiser.Services
 
         Tree CreateNewTree(string stratumCode, string sampleGroupCode, string species);
 
+        Tree CreateNewTree(Stratum stratum, SampleGroup sampleGroup, TreeDefaultValue tdv = null, Plot plot = null);
+
         void LogTreeEstimate(int KPI, TallyPopulation tallyPop);
 
         void LogTreeEstimate(int KPI, string stratumCode, string sampleGroupCode, string species);
@@ -30,6 +32,8 @@ namespace FScruiser.Services
         Tree GetTree(Guid tree_GUID);
 
         IEnumerable<Tree> GetAllTrees();
+
+        IEnumerable<Tree> GetTrees(Stratum stratum, Plot plot = null);
 
         #endregion Tree
 

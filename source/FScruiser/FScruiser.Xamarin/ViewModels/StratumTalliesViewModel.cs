@@ -32,8 +32,24 @@ namespace FScruiser.ViewModels
         public ICommand ShowPlotInfoCommand =>
             new Command(() => ShowPlotInfo(), () => CurrentPlot != null);
 
+        public ICommand ShowTreesCommand =>
+            new Command(() => ShowTrees());
+
+        private void ShowTrees()
+        {
+            var filter = new TreeListFilter
+            {
+                Stratum = UnitStratum.Stratum,
+                Plot = CurrentPlot
+            };
+
+            CoreMethods.PushPageModel<UnitLevelTreeListViewModel>(filter);
+        }
+
         public ICommand AddPlotCommand =>
             new Command(() => ShowAddPlot());
+
+        public object TreeListData { get; private set; }
 
         private void ShowAddPlot()
         {

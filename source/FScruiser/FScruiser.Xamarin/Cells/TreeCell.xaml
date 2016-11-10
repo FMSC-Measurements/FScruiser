@@ -19,15 +19,15 @@
         </StackLayout>
         <StackLayout Orientation="Vertical">
             <Label Text="Stratum" Style="{StaticResource HeadingText}" />
-            <Label x:Name="Stratum" Text="{Binding StratumCode}" Style="{StaticResource ValueText}" />
+            <Label x:Name="Stratum" Text="{Binding Stratum.Code}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
             <Label Text="SampleGroup" Style="{StaticResource HeadingText}" />
-            <Label x:Name="SampleGroup" Text="{Binding SampleGroupCode}" Style="{StaticResource ValueText}" />
+            <Label x:Name="SampleGroup" Text="{Binding SampleGroup.Code}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
             <Label Text="Species" Style="{StaticResource HeadingText}" />
-            <Label x:Name="Species" Text="{Binding SpeciesCode}" Style="{StaticResource ValueText}" />
+            <Label x:Name="Species" Text="{Binding Species}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
             <Label Text="Diameter" Style="{StaticResource HeadingText}" />

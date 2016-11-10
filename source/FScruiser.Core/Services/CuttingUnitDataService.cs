@@ -36,26 +36,23 @@ namespace FScruiser.Services
                 .WithMany(us => us.Plots)
                 .HasForeignKey(p => new { p.CuttingUnit_CN, p.Stratum_CN })
                 .HasPrincipalKey(us => new { us.CuttingUnit_CN, us.Stratum_CN });
-
-            //modelBuilder.Entity<UnitStratum>()
-            //    .HasAlternateKey(us => new { us.CuttingUnit_CN, us.Stratum_CN });
         }
 
-        public DbSet<Plot> Plots { get; set; }
+        protected DbSet<Plot> Plots { get; set; }
 
-        public DbSet<UnitStratum> UnitStrata { get; set; }
+        protected DbSet<UnitStratum> UnitStrata { get; set; }
 
-        public DbSet<SampleGroup> SampleGroup { get; set; }
+        protected DbSet<SampleGroup> SampleGroup { get; set; }
 
-        public DbSet<Stratum> Strata { get; set; }
+        protected DbSet<Stratum> Strata { get; set; }
 
-        public DbSet<TallyPopulation> TallyPopulations { get; set; }
+        protected DbSet<TallyPopulation> TallyPopulations { get; set; }
 
-        public DbSet<TreeField> TreeFields { get; set; }
+        protected DbSet<TreeField> TreeFields { get; set; }
 
-        public DbSet<Tree> Trees { get; set; }
+        protected DbSet<Tree> Trees { get; set; }
 
-        public DbSet<TreeEstimate> TreeEstimates { get; set; }
+        protected DbSet<TreeEstimate> TreeEstimates { get; set; }
 
         public Plot CreateNewPlot(string stratumCode)
         {
@@ -89,6 +86,23 @@ namespace FScruiser.Services
                 tree.Plot_CN = plotCN.Value;
                 tree.TreeCount = 1;
             }
+
+            return tree;
+        }
+
+        public Tree CreateNewTree(Stratum stratum, SampleGroup sampleGroup, TreeDefaultValue tdv = null, Plot plot = null)
+        {
+            var tree = new Tree
+            {
+                CuttingUnit_CN = Unit.CuttingUnit_CN,
+                Stratum_CN = stratum.Stratum_CN
+            };
+
+            if (sampleGroup == null)
+            { tree.SampleGroup_CN = sampleGroup.SampleGroup_CN; }
+
+            if (plot != null)
+            { tree.Plot_CN = plot.Plot_CN; }
 
             return tree;
         }
@@ -151,10 +165,21 @@ namespace FScruiser.Services
             return Trees.Where(t => t.CuttingUnit_CN == Unit.CuttingUnit_CN);
         }
 
-        public IEnumerable<Tree> GetTreeByStratum(string stratumCode)
+        public IEnumerable<Tree> GetTrees(Stratum stratum, Plot plot = null)
         {
-            return Trees.Where(t => t.CuttingUnit_CN == Unit.CuttingUnit_CN
-            && t.Stratum.Code == stratumCode);
+            var trees = Trees.Where(t => t.CuttingUnit_CN == Unit.CuttingUnit_CN);
+
+            if (stratum != null)
+            {
+                trees = trees.Where(t => t.Stratum_CN == stratum.Stratum_CN);
+            }
+
+            if (plot != null)
+            {
+                trees = trees.Where(t => t.Plot_CN == plot.Plot_CN);
+            }
+
+            return trees;
         }
 
         public IEnumerable<TreeField> GetTreeFieldsByStratum(string code)
