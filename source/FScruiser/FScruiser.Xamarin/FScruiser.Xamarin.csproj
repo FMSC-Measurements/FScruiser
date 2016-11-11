@@ -43,6 +43,9 @@
     <Compile Include="Cells\TreeCell.xaml.cs">
       <DependentUpon>TreeCell.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\TreeMasterDetail.xaml.cs">
+      <DependentUpon>TreeMasterDetail.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\UnitLevelNavigationPage.xaml.cs">
       <DependentUpon>UnitLevelNavigationPage.xaml</DependentUpon>
     </Compile>
@@ -52,8 +55,8 @@
     <Compile Include="Pages\TreeEditPage.xaml.cs">
       <DependentUpon>TreeEditPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\UnitLevelTreeListPage.xaml.cs">
-      <DependentUpon>UnitLevelTreeListPage.xaml</DependentUpon>
+    <Compile Include="Pages\TreeListPage.xaml.cs">
+      <DependentUpon>TreeListPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\CruiseViewModel.cs" />
@@ -68,7 +71,7 @@
     <Compile Include="ViewModels\UnitLevelNavigationViewModel.cs" />
     <Compile Include="ViewModels\StratumTalliesViewModel.cs" />
     <Compile Include="ViewModels\TreeEditViewModel.cs" />
-    <Compile Include="ViewModels\UnitLevelTreeListViewModel.cs" />
+    <Compile Include="ViewModels\TreeListViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
@@ -114,7 +117,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Pages\UnitLevelTreeListPage.xaml">
+    <EmbeddedResource Include="Pages\TreeListPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -127,6 +130,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Cells\TallyCell.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\TreeMasterDetail.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>

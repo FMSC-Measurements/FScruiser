@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace FScruiser.Models
 {
     [Table("Tree")]
-    public class Tree
+    public class Tree : INotifyPropertyChanged
     {
         #region keyFields
 
@@ -35,6 +36,9 @@ namespace FScruiser.Models
 
         [ForeignKey(nameof(SampleGroup_CN))]
         public SampleGroup SampleGroup { get; set; }
+
+        [ForeignKey(nameof(TreeDefaultValue_CN)]
+        public TreeDefaultValue TreeDefaultValue { get; set; }
 
         #endregion keyFields
 
@@ -112,5 +116,7 @@ namespace FScruiser.Models
 
         [Required]
         public string CreatedBy { get; set; } = "Default";
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

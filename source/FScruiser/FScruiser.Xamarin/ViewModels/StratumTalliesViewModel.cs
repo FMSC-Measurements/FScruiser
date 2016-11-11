@@ -43,7 +43,7 @@ namespace FScruiser.ViewModels
                 Plot = CurrentPlot
             };
 
-            CoreMethods.PushPageModel<UnitLevelTreeListViewModel>(filter);
+            CoreMethods.PushPageModel<TreeListViewModel>(filter);
         }
 
         public ICommand AddPlotCommand =>

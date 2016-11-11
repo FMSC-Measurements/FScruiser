@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
@@ -17,5 +18,9 @@ namespace FScruiser.Models
         public int KZ3ppnt { get; set; }
 
         public bool IsPlotStratum => CruiseMethods.PLOT_METHODS.Contains(Method);
+
+        public List<TreeField> TreeFields { get; set; }
+
+        public List<SampleGroup> SampleGroups { get; set; }
     }
 }

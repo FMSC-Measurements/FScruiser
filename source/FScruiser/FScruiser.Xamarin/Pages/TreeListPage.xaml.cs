@@ -8,9 +8,9 @@ using Xamarin.Forms;
 
 namespace FScruiser.Pages
 {
-    public partial class UnitLevelTreeListPage : ContentPage
+    public partial class TreeListPage : ContentPage
     {
-        public UnitLevelTreeListPage()
+        public TreeListPage()
         {
             InitializeComponent();
         }
