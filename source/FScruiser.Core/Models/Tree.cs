@@ -37,7 +37,7 @@ namespace FScruiser.Models
         [ForeignKey(nameof(SampleGroup_CN))]
         public SampleGroup SampleGroup { get; set; }
 
-        [ForeignKey(nameof(TreeDefaultValue_CN)]
+        [ForeignKey(nameof(TreeDefaultValue_CN))]
         public TreeDefaultValue TreeDefaultValue { get; set; }
 
         #endregion keyFields

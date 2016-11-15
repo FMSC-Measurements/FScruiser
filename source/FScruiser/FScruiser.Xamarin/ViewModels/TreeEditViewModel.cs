@@ -46,6 +46,11 @@ namespace FScruiser.ViewModels
             }
         }
 
+        public TreeEditViewModel(ICuttingUnitDataService ds)
+        {
+            Dataservice = ds;
+        }
+
         private void RaiseTreeChanged()
         {
             TreeChanged?.Invoke(this, _tree);
@@ -54,11 +59,6 @@ namespace FScruiser.ViewModels
         private void RaiseTreeChanging()
         {
             TreeChanging?.Invoke(this, _tree);
-        }
-
-        public TreeEditViewModel(ICuttingUnitDataService ds)
-        {
-            Dataservice = ds;
         }
 
         public override void Init(object initData)

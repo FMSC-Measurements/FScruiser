@@ -1,5 +1,6 @@
 ﻿using FMSC.Sampling;
 using FScruiser.Models;
+using FScruiser.Pages;
 using FScruiser.Services;
 using System;
 using System.Collections.Generic;
@@ -43,7 +44,10 @@ namespace FScruiser.ViewModels
                 Plot = CurrentPlot
             };
 
-            CoreMethods.PushPageModel<TreeListViewModel>(filter);
+            var treePage = new TreeMasterDetail(this.DataService);
+            CurrentPage.Navigation.PushAsync(treePage);
+
+            //CoreMethods.PushPageModel<TreeListViewModel>(filter);
         }
 
         public ICommand AddPlotCommand =>

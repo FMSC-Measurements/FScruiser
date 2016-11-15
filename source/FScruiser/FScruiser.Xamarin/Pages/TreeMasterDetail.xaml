@@ -4,9 +4,13 @@
                 xmlns:pages="clr-namespace:FScruiser.Pages"
                 x:Class="FScruiser.Pages.TreeMasterDetail">
     <MasterDetailPage.Master>
-        <pages:TreeListPage Icon="ic_menu_white_24dp.png" Title="Trees" />
+        <pages:TreeListPage
+            x:Name="TreeListView"
+            Icon="ic_menu_white_24dp.png"
+            Title="Trees"
+            TreeSelected="TreeListPage_TreeSelected" />
     </MasterDetailPage.Master>
     <MasterDetailPage.Detail>
-        <pages:TreeEditPage />
+        <pages:TreeEditPage x:Name="TreeEditView" />
     </MasterDetailPage.Detail>
 </MasterDetailPage>

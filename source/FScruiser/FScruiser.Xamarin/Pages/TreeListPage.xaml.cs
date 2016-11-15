@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FScruiser.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,9 +16,22 @@ namespace FScruiser.Pages
             InitializeComponent();
         }
 
+        public event EventHandler<Tree> TreeSelected;
+
         private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
-            ((ListView)sender).SelectedItem = null;
+            try
+            {
+                var selectedTree = ((ListView)sender).SelectedItem as Tree;
+                if (selectedTree != null)
+                {
+                    TreeSelected?.Invoke(this, selectedTree);
+                }
+            }
+            finally
+            {
+                ((ListView)sender).SelectedItem = null;
+            }
         }
     }
 }
