@@ -16,22 +16,22 @@ namespace FScruiser.Pages
             InitializeComponent();
         }
 
-        public event EventHandler<Tree> TreeSelected;
+        //public event EventHandler<Tree> TreeSelected;
 
-        private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
-        {
-            try
-            {
-                var selectedTree = ((ListView)sender).SelectedItem as Tree;
-                if (selectedTree != null)
-                {
-                    TreeSelected?.Invoke(this, selectedTree);
-                }
-            }
-            finally
-            {
-                ((ListView)sender).SelectedItem = null;
-            }
-        }
+        //private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        var selectedTree = ((ListView)sender).SelectedItem as Tree;
+        //        if (selectedTree != null)
+        //        {
+        //            TreeSelected?.Invoke(this, selectedTree);
+        //        }
+        //    }
+        //    finally
+        //    {
+        //        ((ListView)sender).SelectedItem = null;
+        //    }
+        //}
     }
 }

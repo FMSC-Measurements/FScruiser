@@ -42,5 +42,9 @@ namespace FScruiser.Services
         IEnumerable<TreeField> GetTreeFieldsByStratum(string code);
 
         IEnumerable<TallyPopulation> GetTallyPopulationByStratum(string code);
+
+        IEnumerable<TreeDefaultValue> GetTreeDefaultsBySampleGroup(SampleGroup sg);
+
+        IEnumerable<SampleGroup> GetSampleGroupsByStratum(Stratum stratum);
     }
 }

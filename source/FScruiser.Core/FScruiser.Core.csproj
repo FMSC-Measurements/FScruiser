@@ -42,6 +42,7 @@
     <Compile Include="Models\Plot.cs" />
     <Compile Include="Models\Sale.cs" />
     <Compile Include="Models\SampleGroup.cs" />
+    <Compile Include="Models\SampleGroupTreeDefaultValue.cs" />
     <Compile Include="Models\Sampler.cs" />
     <Compile Include="Models\Stratum.cs" />
     <Compile Include="Models\TallyPopulation.cs" />

@@ -34,6 +34,7 @@ namespace FScruiser.Models
 
         public string SampleSelectorState { get; set; }
 
+        [NotMapped]
         public List<TreeDefaultValue> TreeDefaults { get; set; }
     }
 }

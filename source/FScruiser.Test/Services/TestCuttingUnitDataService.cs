@@ -118,6 +118,23 @@ namespace FScruiser.Test.Services
 
             Assert.NotEmpty(treeFields);
         }
+
+        [Fact]
+        public void TestGetTreeDefatulsBySampleGroup()
+        {
+            var dataService = CreateDataService();
+
+            var unitStrata = dataService.GetAllUnitStrata();
+
+            foreach (var st in unitStrata)
+            {
+                foreach (var sg in st.Stratum.SampleGroups)
+                {
+                    var tdvs = dataService.GetTreeDefaultsBySampleGroup(sg).ToList();
+                    tdvs.Should().NotBeNull();
+                }
+            }
+        }
     }
 
     public class MyLoggerProvider : ILoggerProvider

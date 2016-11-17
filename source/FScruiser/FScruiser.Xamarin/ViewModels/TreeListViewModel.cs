@@ -2,6 +2,7 @@
 using FScruiser.Services;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,14 +19,29 @@ namespace FScruiser.ViewModels
 
     public class TreeListViewModel : FreshMvvm.FreshBasePageModel
     {
+        private IList<Tree> _trees;
+
         public ICuttingUnitDataService DataService { get; set; }
 
-        public IList<Tree> Trees { get; protected set; }
+        public IList<Tree> Trees
+        {
+            get { return _trees; }
+            protected set
+            {
+                _trees = value;
+                RaisePropertyChanged();
+            }
+        }
 
-        //public event EventHandler<Tree> TreeSelected;
+        public event EventHandler<Tree> TreeSelected;
 
-        //public ICommand EditTreeCommand =>
-        //    new Command<Tree>((x) => SelectTree(x));
+        public ICommand EditTreeCommand =>
+            new Command<Tree>((tree) => SelectTree(tree));
+
+        public void SelectTree(Tree tree)
+        {
+            TreeSelected?.Invoke(this, tree);
+        }
 
         public TreeListViewModel(ICuttingUnitDataService dataService)
         {
@@ -45,6 +61,11 @@ namespace FScruiser.ViewModels
                 Plot = filter.Plot;
             }
 
+            LoadTrees();
+        }
+
+        private void LoadTrees()
+        {
             Trees = DataService.GetTrees(Stratum, Plot).ToList();
         }
     }

@@ -13,39 +13,62 @@ namespace FScruiser.Pages
     public partial class TreeEditPage : ContentPage
     {
         private Picker _speciesPicker;
+        private bool _speciesPickerUpdating;
+        private bool _sampleGroupPickerUpdating;
+        private Picker _sampleGroupPicker;
 
         public TreeEditPage()
         {
             InitializeComponent();
         }
 
-        protected override void OnBindingContextChanged()
-        {
-            UpdateTreeFields();
-            ViewModel.TreeChanging += ViewModel_TreeChanging;
-            ViewModel.TreeChanged += ViewModel_TreeChanged;
-
-            base.OnBindingContextChanged();
-        }
-
         public TreeEditViewModel ViewModel => BindingContext as TreeEditViewModel;
 
-        protected void UpdateTreeFields()
+        protected override void OnBindingContextChanged()
         {
+            base.OnBindingContextChanged();
+
             var viewModel = ViewModel;
+            if (viewModel == null) { return; }
+            if (viewModel.TreeFields != null)
+            {
+                UpdateTreeFields(viewModel);
+            }
+
+            viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            viewModel.TreeChanging += UnwireTree_PropertyChanged;
+            viewModel.TreeChanged += WireupTree_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(TreeEditViewModel.Stratum))
+            {
+                UpdateTreeFields(ViewModel);
+            }
+        }
+
+        protected async void UpdateTreeFields(TreeEditViewModel viewModel)
+        {
             if (ViewModel != null)
             {
-                var stackLayout = new StackLayout();
-
-                foreach (var field in viewModel.TreeFields)
-                {
-                    var cell = MakeEditView(field);
-                    cell.BindingContext = viewModel.Tree;
-                    stackLayout.Children.Add(cell);
-                }
-
+                StackLayout stackLayout = MakeTreeFields(viewModel.TreeFields);
                 this.Content = new ScrollView { Content = stackLayout };
             }
+        }
+
+        private StackLayout MakeTreeFields(IEnumerable<TreeField> treeFields)
+        {
+            _speciesPicker = null;
+            _sampleGroupPicker = null;
+            var stackLayout = new StackLayout();
+            stackLayout.SetBinding(BindableObject.BindingContextProperty, nameof(TreeEditViewModel.Tree));
+            foreach (var field in treeFields)
+            {
+                var cell = MakeEditView(field);
+                stackLayout.Children.Add(cell);
+            }
+            return stackLayout;
         }
 
         protected View MakeEditView(TreeField field)
@@ -63,47 +86,87 @@ namespace FScruiser.Pages
                 }
             };
 
-            View editView = null;
+            grid.Children.Add(new Label { Text = field.Heading }, 0, 0);
 
+            View editView = null;
             switch (field.Field)
             {
                 case nameof(Tree.SampleGroup):
                     {
+                        editView = _sampleGroupPicker = MakeSampleGroupPicker();
+                        break;
+                    }
+                case nameof(Tree.Species):
+                    {
+                        editView = _speciesPicker = MakeSpeciesPicker();
                         break;
                     }
                 default:
                     {
-                        editView = new Label { Text = field.Heading };
+                        editView = new Entry();
+                        editView.SetBinding(Entry.TextProperty, field.Field);
                         break;
                     }
             }
 
-            grid.Children.Add(new Label { Text = field.Heading }, 0, 0);
-
-            View editControl = new Entry();
-            editControl.SetBinding(Entry.TextProperty, field.Field);
-
-            grid.Children.Add(editControl, 1, 0);
+            grid.Children.Add(editView, 1, 0);
 
             return grid;
         }
 
-        View MakeSampleGroupEditView()
+        #region Sg Picker
+
+        Picker MakeSampleGroupPicker()
         {
             var view = new Picker();
-            view.Items.Add(null);
-            foreach (var sg in ViewModel.Stratum.SampleGroups)
-            {
-                view.Items.Add(sg.Code);
-            }
 
-            view.SelectedIndex = view.Items.IndexOf(ViewModel.Tree?.SampleGroup.Code);
+            UpdateSampleGroupPicker(view);
+
             view.SelectedIndexChanged += SampleGroupPicker_SelectedIndexChanged;
 
             return view;
         }
 
-        View MakeSpeciesPicker()
+        private void SampleGroupPicker_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_sampleGroupPickerUpdating) { return; }
+            var picker = sender as Picker;
+            if (picker == null) { return; }
+            var index = picker.SelectedIndex;
+            if (index < 0 || index >= ViewModel.SampleGroups.Count()) { return; }
+            var sampleGroup = ViewModel.SampleGroups.ElementAt(index);
+            ViewModel.Tree.SampleGroup = sampleGroup;
+            UpdateSpeciesPicker(_speciesPicker);
+        }
+
+        private void UpdateSampleGroupPicker(Picker view)
+        {
+            if (view == null) { return; }
+            try
+            {
+                _sampleGroupPickerUpdating = true;
+                if (view.Items.Count > 0)
+                { view.Items.Clear(); }
+                view.Items.Add(string.Empty);
+                foreach (var sg in ViewModel.SampleGroups)
+                {
+                    view.Items.Add(sg.Code);
+                }
+
+                var index = view.Items.IndexOf(ViewModel.Tree?.SampleGroup.Code);
+                view.SelectedIndex = (index > 0) ? index : 0;
+            }
+            finally
+            {
+                _sampleGroupPickerUpdating = false;
+            }
+        }
+
+        #endregion Sg Picker
+
+        #region Sp Picker
+
+        Picker MakeSpeciesPicker()
         {
             var view = new Picker();
 
@@ -115,50 +178,45 @@ namespace FScruiser.Pages
 
         private void SpeciesPicker_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_speciesPickerUpdating) { return; }
             var picker = sender as Picker;
             if (picker == null) { return; }
 
-            var sampleGroup = ViewModel.Tree.SampleGroup;
-            if (sampleGroup != null)
-            {
-                var index = picker.SelectedIndex;
-                var selectedValue = picker.Items[index];
-                var tdv = sampleGroup.TreeDefaults.Find(x => x.Species == selectedValue);
-                ViewModel.Tree.TreeDefaultValue = tdv;
-            }
-            else
-            {
-                ViewModel.Tree.TreeDefaultValue = null;
-            }
+            var index = picker.SelectedIndex;
+            var selectedValue = picker.Items[index];
+            var tdv = ViewModel.TreeDefaults.FirstOrDefault(x => x.Species == selectedValue);
+            ViewModel.Tree.TreeDefaultValue = tdv;
         }
 
         private void UpdateSpeciesPicker(Picker view)
         {
-            if (view.Items.Count > 0) { view.Items.Clear(); }
-
-            view.Items.Add(null);
-            var sampleGroup = ViewModel.Tree?.SampleGroup;
-            if (sampleGroup != null)
+            if (view == null) { return; }
+            try
             {
-                foreach (var sp in ViewModel.Tree.SampleGroup.TreeDefaults)
+                _speciesPickerUpdating = true;
+                if (view.Items.Count > 0) { view.Items.Clear(); }
+
+                view.Items.Add(string.Empty);//default empty option at index 0
+                foreach (var sp in ViewModel.TreeDefaults)
                 {
                     view.Items.Add(sp.Species);
                 }
+
+                //set selected index
+                var index = view.Items.IndexOf(ViewModel.Tree?.TreeDefaultValue?.Species);
+                view.SelectedIndex = (index > 0) ? index : 0;
+            }
+            finally
+            {
+                _speciesPickerUpdating = false;
             }
         }
 
-        private void SampleGroupPicker_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var picker = sender as Picker;
-            if (picker == null) { return; }
-            var index = picker.SelectedIndex;
-            if (index < 0 || index >= ViewModel.Stratum.SampleGroups.Count) { return; }
-            var sampleGroup = ViewModel.Stratum.SampleGroups[index];
-            ViewModel.Tree.SampleGroup = sampleGroup;
-            UpdateSpeciesPicker(_speciesPicker);
-        }
+        #endregion Sp Picker
 
-        private void ViewModel_TreeChanging(object sender, Tree e)
+        #region Tree PropertyChyanged
+
+        private void UnwireTree_PropertyChanged(object sender, Tree e)
         {
             if (e != null)
             {
@@ -166,7 +224,7 @@ namespace FScruiser.Pages
             }
         }
 
-        private void ViewModel_TreeChanged(object sender, Tree e)
+        private void WireupTree_PropertyChanged(object sender, Tree e)
         {
             if (e != null)
             {
@@ -185,5 +243,7 @@ namespace FScruiser.Pages
                     }
             }
         }
+
+        #endregion Tree PropertyChyanged
     }
 }

@@ -8,8 +8,7 @@
     <ScrollView>
         <ListView x:Name="ListView"
                     ItemsSource="{Binding Trees}"
-                    RowHeight="50"
-                    ItemSelected="ListView_ItemSelected">
+                    RowHeight="50">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Cells:TreeCell

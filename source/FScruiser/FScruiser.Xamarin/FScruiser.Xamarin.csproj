@@ -43,8 +43,8 @@
     <Compile Include="Cells\TreeCell.xaml.cs">
       <DependentUpon>TreeCell.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\TreeMasterDetail.xaml.cs">
-      <DependentUpon>TreeMasterDetail.xaml</DependentUpon>
+    <Compile Include="Pages\TreeMasterDetailPage.xaml.cs">
+      <DependentUpon>TreeMasterDetailPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\UnitLevelNavigationPage.xaml.cs">
       <DependentUpon>UnitLevelNavigationPage.xaml</DependentUpon>
@@ -68,6 +68,7 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\PlotInfoViewModel.cs" />
+    <Compile Include="ViewModels\TreeMasterDetailViewModel.cs" />
     <Compile Include="ViewModels\UnitLevelNavigationViewModel.cs" />
     <Compile Include="ViewModels\StratumTalliesViewModel.cs" />
     <Compile Include="ViewModels\TreeEditViewModel.cs" />
@@ -135,7 +136,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Pages\TreeMasterDetail.xaml">
+    <EmbeddedResource Include="Pages\TreeMasterDetailPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>

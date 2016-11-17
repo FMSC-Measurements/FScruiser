@@ -44,10 +44,7 @@ namespace FScruiser.ViewModels
                 Plot = CurrentPlot
             };
 
-            var treePage = new TreeMasterDetail(this.DataService);
-            CurrentPage.Navigation.PushAsync(treePage);
-
-            //CoreMethods.PushPageModel<TreeListViewModel>(filter);
+            CoreMethods.PushPageModel<TreeMasterDetailViewModel>(filter);
         }
 
         public ICommand AddPlotCommand =>

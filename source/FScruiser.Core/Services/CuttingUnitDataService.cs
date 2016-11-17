@@ -42,7 +42,7 @@ namespace FScruiser.Services
 
         protected DbSet<UnitStratum> UnitStrata { get; set; }
 
-        protected DbSet<SampleGroup> SampleGroup { get; set; }
+        protected DbSet<SampleGroup> SampleGroups { get; set; }
 
         protected DbSet<Stratum> Strata { get; set; }
 
@@ -53,6 +53,10 @@ namespace FScruiser.Services
         protected DbSet<Tree> Trees { get; set; }
 
         protected DbSet<TreeEstimate> TreeEstimates { get; set; }
+
+        //protected DbSet<TreeDefaultValue> TreeDefaults { get; set; }
+
+        protected DbSet<SampleGroupTreeDefaultValue> SgTDVs { get; set; }
 
         public Plot CreateNewPlot(string stratumCode)
         {
@@ -126,6 +130,7 @@ namespace FScruiser.Services
         {
             return UnitStrata
                 .Include(ust => ust.Stratum)
+                    .ThenInclude(st => st.SampleGroups)
                 .Include(ust => ust.Plots)
                 .Where(uSt => uSt.CuttingUnit_CN == Unit.CuttingUnit_CN);
         }
@@ -134,6 +139,7 @@ namespace FScruiser.Services
         {
             return UnitStrata
                 .Include(ust => ust.Stratum)
+                    .ThenInclude(st => st.SampleGroups)
                 .Include(ust => ust.Plots)
                 .Where(ust => ust.CuttingUnit_CN == Unit.CuttingUnit_CN && ust.Stratum.Code == stratumCode)
                 .FirstOrDefault();
@@ -152,39 +158,55 @@ namespace FScruiser.Services
 
         public Tree GetTree(Guid tree_GUID)
         {
-            return Trees.Where(t => t.Tree_GUID == tree_GUID).FirstOrDefault();
+            return Trees
+                .Include(t => t.Stratum)
+                .Include(t => t.SampleGroup)
+                .Where(t => t.Tree_GUID == tree_GUID).FirstOrDefault();
         }
 
         public Tree GetTree(long tree_CN)
         {
-            return Trees.Where(t => t.Tree_CN == tree_CN).FirstOrDefault();
+            return Trees
+                .Include(t => t.Stratum)
+                .Include(t => t.SampleGroup)
+                .Where(t => t.Tree_CN == tree_CN).FirstOrDefault();
         }
 
         public IEnumerable<Tree> GetAllTrees()
         {
-            return Trees.Where(t => t.CuttingUnit_CN == Unit.CuttingUnit_CN);
+            return Trees
+                .Include(t => t.Stratum)
+                .Include(t => t.SampleGroup)
+                .Where(t => t.CuttingUnit_CN == Unit.CuttingUnit_CN);
         }
 
         public IEnumerable<Tree> GetTrees(Stratum stratum, Plot plot = null)
         {
-            var trees = Trees.Where(t => t.CuttingUnit_CN == Unit.CuttingUnit_CN);
+            var resultSet = GetAllTrees();
 
             if (stratum != null)
             {
-                trees = trees.Where(t => t.Stratum_CN == stratum.Stratum_CN);
+                resultSet = resultSet.Where(t => t.Stratum_CN == stratum.Stratum_CN);
             }
-
             if (plot != null)
             {
-                trees = trees.Where(t => t.Plot_CN == plot.Plot_CN);
+                resultSet = resultSet.Where(t => t.Plot_CN == plot.Plot_CN);
             }
 
-            return trees;
+            return resultSet;
         }
 
         public IEnumerable<TreeField> GetTreeFieldsByStratum(string code)
         {
             return TreeFields.Where(tf => tf.Stratum.Code == code);
+        }
+
+        public IEnumerable<TreeDefaultValue> GetTreeDefaultsBySampleGroup(SampleGroup sampleGroup)
+        {
+            return SgTDVs
+                    .Include(sgtdv => sgtdv.TDV)
+                .Where(sgtdv => sgtdv.SampleGroup_CN == sampleGroup.SampleGroup_CN)
+                .Select(sgtdv => sgtdv.TDV);
         }
 
         public void LogTreeEstimate(int kpi, TallyPopulation tallyPop)
@@ -214,6 +236,11 @@ namespace FScruiser.Services
             }
 
             LogTreeEstimate(kpi, tallyPop);
+        }
+
+        public IEnumerable<SampleGroup> GetSampleGroupsByStratum(Stratum stratum)
+        {
+            return SampleGroups.Where(sg => sg.Stratum.Stratum_CN == stratum.Stratum_CN);
         }
     }
 }

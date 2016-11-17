@@ -19,8 +19,6 @@ namespace FScruiser.Models
 
         public bool IsPlotStratum => CruiseMethods.PLOT_METHODS.Contains(Method);
 
-        public List<TreeField> TreeFields { get; set; }
-
         public List<SampleGroup> SampleGroups { get; set; }
     }
 }
