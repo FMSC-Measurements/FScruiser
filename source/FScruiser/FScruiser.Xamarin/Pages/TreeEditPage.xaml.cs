@@ -16,28 +16,48 @@ namespace FScruiser.Pages
         private bool _speciesPickerUpdating;
         private bool _sampleGroupPickerUpdating;
         private Picker _sampleGroupPicker;
+        private TreeEditViewModel _viewModel;
 
         public TreeEditPage()
         {
             InitializeComponent();
         }
 
-        public TreeEditViewModel ViewModel => BindingContext as TreeEditViewModel;
-
-        protected override void OnBindingContextChanged()
+        public TreeEditViewModel ViewModel
         {
-            base.OnBindingContextChanged();
+            get { return _viewModel; }
+            set
+            {
+                if (_viewModel == value) { return; }
+                if (_viewModel != null) { UnwireViewModel(_viewModel); }
+                _viewModel = value;
+                if (_viewModel != null) { WireUpViewModel(_viewModel); }
+            }
+        }
 
-            var viewModel = ViewModel;
-            if (viewModel == null) { return; }
+        private void WireUpViewModel(TreeEditViewModel viewModel)
+        {
             if (viewModel.TreeFields != null)
             {
-                UpdateTreeFields(viewModel);
+                UpdateTreeFields(_viewModel);
             }
 
             viewModel.PropertyChanged += ViewModel_PropertyChanged;
             viewModel.TreeChanging += UnwireTree_PropertyChanged;
             viewModel.TreeChanged += WireupTree_PropertyChanged;
+        }
+
+        private void UnwireViewModel(TreeEditViewModel viewModel)
+        {
+            viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            viewModel.TreeChanging -= UnwireTree_PropertyChanged;
+            viewModel.TreeChanged -= WireupTree_PropertyChanged;
+        }
+
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
+            ViewModel = BindingContext as TreeEditViewModel;
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -48,7 +68,7 @@ namespace FScruiser.Pages
             }
         }
 
-        protected async void UpdateTreeFields(TreeEditViewModel viewModel)
+        protected void UpdateTreeFields(TreeEditViewModel viewModel)
         {
             if (ViewModel != null)
             {
@@ -62,7 +82,7 @@ namespace FScruiser.Pages
             _speciesPicker = null;
             _sampleGroupPicker = null;
             var stackLayout = new StackLayout();
-            stackLayout.SetBinding(BindableObject.BindingContextProperty, nameof(TreeEditViewModel.Tree));
+            stackLayout.SetBinding(BindingContextProperty, nameof(TreeEditViewModel.Tree));
             foreach (var field in treeFields)
             {
                 var cell = MakeEditView(field);
