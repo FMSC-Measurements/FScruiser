@@ -64,9 +64,13 @@ namespace FScruiser.ViewModels
             LoadTrees();
         }
 
-        private void LoadTrees()
+        private async void LoadTrees()
         {
-            Trees = DataService.GetTrees(Stratum, Plot).ToList();
+            var trees = await Task.Run(() =>
+            {
+                return DataService.GetTrees(Stratum, Plot);
+            });
+            Trees = trees.ToList();
         }
     }
 }
