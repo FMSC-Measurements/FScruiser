@@ -17,6 +17,8 @@ namespace FScruiser.Pages
         private bool _sampleGroupPickerUpdating;
         private Picker _sampleGroupPicker;
         private TreeEditViewModel _viewModel;
+        private bool _countMeasurePickerUpdating;
+        private Picker _countMeasurePicker;
 
         public TreeEditPage()
         {
@@ -35,6 +37,12 @@ namespace FScruiser.Pages
             }
         }
 
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
+            ViewModel = BindingContext as TreeEditViewModel;
+        }
+
         private void WireUpViewModel(TreeEditViewModel viewModel)
         {
             if (viewModel.TreeFields != null)
@@ -43,21 +51,28 @@ namespace FScruiser.Pages
             }
 
             viewModel.PropertyChanged += ViewModel_PropertyChanged;
-            viewModel.TreeChanging += UnwireTree_PropertyChanged;
-            viewModel.TreeChanged += WireupTree_PropertyChanged;
+            viewModel.TreeChanging += ViewModel_TreeChanging;
+            viewModel.TreeChanged += ViewModel_TreeChanged;
         }
 
         private void UnwireViewModel(TreeEditViewModel viewModel)
         {
             viewModel.PropertyChanged -= ViewModel_PropertyChanged;
-            viewModel.TreeChanging -= UnwireTree_PropertyChanged;
-            viewModel.TreeChanged -= WireupTree_PropertyChanged;
+            viewModel.TreeChanging -= ViewModel_TreeChanging;
+            viewModel.TreeChanged -= ViewModel_TreeChanged;
         }
 
-        protected override void OnBindingContextChanged()
+        private void ViewModel_TreeChanged(object sender, Tree e)
         {
-            base.OnBindingContextChanged();
-            ViewModel = BindingContext as TreeEditViewModel;
+            UpdateCountMeasurePicker(_countMeasurePicker);
+            UpdateSampleGroupPicker(_sampleGroupPicker);
+            UpdateSpeciesPicker(_speciesPicker);
+            WireupTreePropertyChanged(e);
+        }
+
+        private void ViewModel_TreeChanging(object sender, Tree e)
+        {
+            UnwireTreePropertyChanged(e);
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -68,46 +83,42 @@ namespace FScruiser.Pages
             }
         }
 
-        protected void UpdateTreeFields(TreeEditViewModel viewModel)
+        protected async void UpdateTreeFields(TreeEditViewModel viewModel)
         {
             if (ViewModel != null)
             {
-                StackLayout stackLayout = MakeTreeFields(viewModel.TreeFields);
-                this.Content = new ScrollView { Content = stackLayout };
+                var view = await MakeTreeFields(viewModel.TreeFields);
+                this.Content = new ScrollView { Content = view };
             }
         }
 
-        private StackLayout MakeTreeFields(IEnumerable<TreeField> treeFields)
+        private Task<View> MakeTreeFields(IEnumerable<TreeField> treeFields)
         {
             _speciesPicker = null;
             _sampleGroupPicker = null;
-            var stackLayout = new StackLayout();
-            stackLayout.SetBinding(BindingContextProperty, nameof(TreeEditViewModel.Tree));
-            foreach (var field in treeFields)
+            _countMeasurePicker = null;
+            return Task.Run(() =>
             {
-                var cell = MakeEditView(field);
-                stackLayout.Children.Add(cell);
-            }
-            return stackLayout;
+                var containerView = new Grid();
+                containerView.ColumnDefinitions.Add(new ColumnDefinition() { Width = 50 });
+                containerView.ColumnDefinitions.Add(new ColumnDefinition() { Width = 100 });
+                containerView.SetBinding(BindingContextProperty, nameof(TreeEditViewModel.Tree));
+                var index = 0;
+                foreach (var field in treeFields)
+                {
+                    containerView.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+                    var header = new Label() { Text = field.Heading };
+                    containerView.Children.Add(header, 0, index);
+
+                    containerView.Children.Add(MakeEditView(field), 1, index);
+                    index++;
+                }
+                return (View)containerView;
+            });
         }
 
         protected View MakeEditView(TreeField field)
         {
-            var grid = new Grid()
-            {
-                RowDefinitions =
-                {
-                    new RowDefinition {Height = GridLength.Auto }
-                },
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition {Width = GridLength.Auto },
-                    new ColumnDefinition {Width = GridLength.Star }
-                }
-            };
-
-            grid.Children.Add(new Label { Text = field.Heading }, 0, 0);
-
             View editView = null;
             switch (field.Field)
             {
@@ -121,6 +132,44 @@ namespace FScruiser.Pages
                         editView = _speciesPicker = MakeSpeciesPicker();
                         break;
                     }
+                case nameof(Tree.CountOrMeasure):
+                    {
+                        editView = _countMeasurePicker = MakeCountMeasurePicker();
+                        break;
+                    }
+                case nameof(Tree.Aspect):
+                case nameof(Tree.CrownRatio):
+                case nameof(Tree.DBH):
+                case nameof(Tree.DBHDoubleBarkThickness):
+                case nameof(Tree.DefectCode):
+                case nameof(Tree.Diameter):
+                case nameof(Tree.DiameterAtDefect):
+                case nameof(Tree.DRC):
+                case nameof(Tree.FormClass):
+                case nameof(Tree.Height):
+                case nameof(Tree.HeightToFirstLiveLimb):
+                case nameof(Tree.KPI)://int
+                case nameof(Tree.MerchHeightPrimary):
+                case nameof(Tree.MerchHeightSecondary):
+                case nameof(Tree.PoleLength):
+                case nameof(Tree.RecoverablePrimary):
+                case nameof(Tree.SeenDefectPrimary):
+                case nameof(Tree.SeenDefectSecondary):
+                case nameof(Tree.Slope):
+                case nameof(Tree.TopDIBPrimary):
+                case nameof(Tree.TopDIBSecondary):
+                case nameof(Tree.TotalHeight):
+                case nameof(Tree.TreeCount):
+                case nameof(Tree.TreeNumber):
+                case nameof(Tree.UpperStemDOB):
+                case nameof(Tree.UpperStemHeight):
+                case nameof(Tree.VoidPercent):
+                    {
+                        editView = new Entry();
+                        ((InputView)editView).Keyboard = Keyboard.Numeric;
+                        editView.SetBinding(Entry.TextProperty, field.Field);
+                        break;
+                    }
                 default:
                     {
                         editView = new Entry();
@@ -129,10 +178,51 @@ namespace FScruiser.Pages
                     }
             }
 
-            grid.Children.Add(editView, 1, 0);
-
-            return grid;
+            return editView;
         }
+
+        #region CM picker
+
+        private Picker MakeCountMeasurePicker()
+        {
+            var picker = new Picker();
+            picker.Items.Add(string.Empty);
+            picker.Items.Add("C");
+            picker.Items.Add("M");
+            UpdateCountMeasurePicker(picker);
+            picker.SelectedIndexChanged += CountMeasurePicker_SelectedIndexChanged;
+
+            return picker;
+        }
+
+        private void UpdateCountMeasurePicker(Picker picker)
+        {
+            if (picker == null) { return; }
+            try
+            {
+                _countMeasurePickerUpdating = true;
+                var index = picker.Items.IndexOf(ViewModel?.Tree?.CountOrMeasure);
+                picker.SelectedIndex = (index > 0) ? index : 0;
+            }
+            finally
+            {
+                _countMeasurePickerUpdating = false;
+            }
+        }
+
+        private void CountMeasurePicker_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_countMeasurePickerUpdating == true) { return; }
+            var picker = sender as Picker;
+            if (picker == null) { return; }
+            var index = picker.SelectedIndex;
+            var value = picker.Items.ElementAtOrDefault(index) ?? string.Empty;
+            var tree = picker.BindingContext as Tree;
+            if (tree == null) { return; }
+            tree.CountOrMeasure = value;
+        }
+
+        #endregion CM picker
 
         #region Sg Picker
 
@@ -236,7 +326,7 @@ namespace FScruiser.Pages
 
         #region Tree PropertyChyanged
 
-        private void UnwireTree_PropertyChanged(object sender, Tree e)
+        private void UnwireTreePropertyChanged(Tree e)
         {
             if (e != null)
             {
@@ -244,7 +334,7 @@ namespace FScruiser.Pages
             }
         }
 
-        private void WireupTree_PropertyChanged(object sender, Tree e)
+        private void WireupTreePropertyChanged(Tree e)
         {
             if (e != null)
             {
@@ -258,7 +348,17 @@ namespace FScruiser.Pages
             {
                 case nameof(Tree.SampleGroup):
                     {
+                        UpdateSampleGroupPicker(_sampleGroupPicker);
+                        break;
+                    }
+                case nameof(Tree.TreeDefaultValue):
+                    {
                         UpdateSpeciesPicker(_speciesPicker);
+                        break;
+                    }
+                case nameof(Tree.CountOrMeasure):
+                    {
+                        UpdateCountMeasurePicker(_countMeasurePicker);
                         break;
                     }
             }
