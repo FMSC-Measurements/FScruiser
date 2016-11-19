@@ -36,7 +36,12 @@ namespace FScruiser.ViewModels
         public ICommand ShowTreesCommand =>
             new Command(() => ShowTrees());
 
-        private void ShowTrees()
+        public ICommand AddPlotCommand =>
+            new Command(() => ShowAddPlot());
+
+        public object TreeListData { get; private set; }
+
+        public void ShowTrees()
         {
             var filter = new TreeListFilter
             {
@@ -44,13 +49,8 @@ namespace FScruiser.ViewModels
                 Plot = CurrentPlot
             };
 
-            CoreMethods.PushPageModel<TreeMasterDetailViewModel>(filter);
+            CoreMethods.PushPageModel<TreeMasterDetailViewModel>(filter, true);
         }
-
-        public ICommand AddPlotCommand =>
-            new Command(() => ShowAddPlot());
-
-        public object TreeListData { get; private set; }
 
         private void ShowAddPlot()
         {

@@ -38,7 +38,7 @@ namespace FScruiser.ViewModels
 
         private void ShowTrees()
         {
-            CoreMethods.PushPageModel<TreeMasterDetailViewModel>(null);
+            CoreMethods.PushPageModel<TreeMasterDetailViewModel>(null, true);
         }
 
         public void ShowTallies(UnitStratum stratum)
