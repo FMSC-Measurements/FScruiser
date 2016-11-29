@@ -18,7 +18,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <StackLayout Orientation="Horizontal">
+        <StackLayout Orientation="Horizontal" VerticalOptions="End">
             <Button Text="Trees"
                     Image="ic_pine_tree_box_grey600_18dp.png"
                     Command="{Binding ShowTreesCommand}" />

@@ -27,7 +27,7 @@
         </StackLayout>
         <StackLayout Orientation="Vertical">
             <Label Text="Species" Style="{StaticResource HeadingText}" />
-            <Label x:Name="Species" Text="{Binding Species}" Style="{StaticResource ValueText}" />
+            <Label x:Name="Species" Text="{Binding TreeDefaultValue.Species}" Style="{StaticResource ValueText}" />
         </StackLayout>
         <StackLayout Orientation="Vertical">
             <Label Text="Diameter" Style="{StaticResource HeadingText}" />

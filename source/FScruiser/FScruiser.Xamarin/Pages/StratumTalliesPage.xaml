@@ -14,7 +14,7 @@
             <Button HorizontalOptions="End" Command="{Binding ShowPlotInfoCommand}" Image="ic_pencil_box_outline_grey600_24dp.png" />
             <Button HorizontalOptions="End" Command="{Binding AddPlotCommand}" Image="ic_plus_grey600_24dp.png" />
         </StackLayout>
-        <ScrollView>
+        <ScrollView VerticalOptions="FillAndExpand">
             <ListView ItemsSource="{Binding TallyPopulations}"
                       HasUnevenRows="True"
                       ItemSelected="ListView_ItemSelected">
@@ -26,7 +26,7 @@
                 </ListView.ItemTemplate>
             </ListView>
         </ScrollView>
-        <StackLayout Orientation="Horizontal">
+        <StackLayout Orientation="Horizontal" VerticalOptions="End">
             <Button Command="{Binding ShowTreesCommand}" HorizontalOptions="Start" Image="ic_pine_tree_box_grey600_18dp.png" />
             <Button Text="TallyHistory" HorizontalOptions="End" Image="ic_history_grey600_18dp.png" />
         </StackLayout>

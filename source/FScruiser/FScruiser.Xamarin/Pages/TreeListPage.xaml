@@ -5,24 +5,27 @@
              x:Class="FScruiser.Pages.TreeListPage"
              x:Name="Page"
              Title="">
-    <ScrollView>
-        <ListView x:Name="ListView"
+    <StackLayout VerticalOptions="FillAndExpand">
+        <ScrollView x:Name="TreeScrollView" VerticalOptions="FillAndExpand">
+            <ListView x:Name="ListView"
                     ItemsSource="{Binding Trees}"
-                    RowHeight="50">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Cells:TreeCell
+                    HasUnevenRows="True">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Cells:TreeCell
                         Command="{Binding Path=BindingContext.EditTreeCommand, Source={x:Reference Page}}"
                         CommandParameter="{Binding .}">
-                        <Cells:TreeCell.ContextActions>
-                            <MenuItem x:Name="Delete"
+                            <Cells:TreeCell.ContextActions>
+                                <MenuItem x:Name="Delete"
                                       Text="Delete"
                                       Command="{Binding Path=BindingContext.DeleteTreeCommand, Source={x:Reference Page}}"
                                       CommandParameter="{Binding .}" />
-                        </Cells:TreeCell.ContextActions>
-                    </Cells:TreeCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </ScrollView>
+                            </Cells:TreeCell.ContextActions>
+                        </Cells:TreeCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </ScrollView>
+        <Button x:Name="GoToEndButton" Text="End" Clicked="Button_Clicked"  VerticalOptions="End" />
+    </StackLayout>
 </ContentPage>

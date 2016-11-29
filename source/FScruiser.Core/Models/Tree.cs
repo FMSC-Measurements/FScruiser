@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,6 +13,13 @@ namespace FScruiser.Models
     [Table("Tree")]
     public class Tree : INotifyPropertyChanged
     {
+        private Stratum _stratum;
+        private SampleGroup _sampleGroup;
+        private TreeDefaultValue _treeDefaultValue;
+        private double _dbh;
+        private double _dbhdbt;
+        private int _treeNumber;
+
         #region keyFields
 
         [Key]
@@ -28,17 +36,51 @@ namespace FScruiser.Models
         public long? SampleGroup_CN { get; set; }
         public long? TreeDefaultValue_CN { get; set; }
         public long? Plot_CN { get; set; }
-        public int TreeNumber { get; set; }
+
+        public int TreeNumber
+        {
+            get { return _treeNumber; }
+            set
+            {
+                _treeNumber = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string Species { get; set; }
 
         [ForeignKey(nameof(Stratum_CN))]
-        public Stratum Stratum { get; set; }
+        public Stratum Stratum
+        {
+            get { return _stratum; }
+            set
+            {
+                _stratum = value;
+                OnPropertyChanged();
+            }
+        }
 
         [ForeignKey(nameof(SampleGroup_CN))]
-        public SampleGroup SampleGroup { get; set; }
+        public SampleGroup SampleGroup
+        {
+            get { return _sampleGroup; }
+            set
+            {
+                _sampleGroup = value;
+                OnPropertyChanged();
+            }
+        }
 
         [ForeignKey(nameof(TreeDefaultValue_CN))]
-        public TreeDefaultValue TreeDefaultValue { get; set; }
+        public TreeDefaultValue TreeDefaultValue
+        {
+            get { return _treeDefaultValue; }
+            set
+            {
+                _treeDefaultValue = value;
+                OnPropertyChanged();
+            }
+        }
 
         #endregion keyFields
 
@@ -58,9 +100,27 @@ namespace FScruiser.Models
 
         public string CountOrMeasure { get; set; }
 
-        public double DBH { get; set; }
+        public double DBH
+        {
+            get { return _dbh; }
+            set
+            {
+                _dbh = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Tree.Diameter));
+            }
+        }
 
-        public double DBHDoubleBarkThickness { get; set; }
+        public double DBHDoubleBarkThickness
+        {
+            get { return _dbhdbt; }
+            set
+            {
+                _dbhdbt = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Tree.Diameter));
+            }
+        }
 
         public double? DefectCode { get; set; }
 
@@ -118,5 +178,10 @@ namespace FScruiser.Models
         public string CreatedBy { get; set; } = "Default";
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public void OnPropertyChanged([CallerMemberName] string property = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+        }
     }
 }

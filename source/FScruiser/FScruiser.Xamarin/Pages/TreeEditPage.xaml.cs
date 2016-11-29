@@ -344,24 +344,24 @@ namespace FScruiser.Pages
 
         private void Tree_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            switch (e.PropertyName)
-            {
-                case nameof(Tree.SampleGroup):
-                    {
-                        UpdateSampleGroupPicker(_sampleGroupPicker);
-                        break;
-                    }
-                case nameof(Tree.TreeDefaultValue):
-                    {
-                        UpdateSpeciesPicker(_speciesPicker);
-                        break;
-                    }
-                case nameof(Tree.CountOrMeasure):
-                    {
-                        UpdateCountMeasurePicker(_countMeasurePicker);
-                        break;
-                    }
-            }
+            //switch (e.PropertyName)
+            //{
+            //    case nameof(Tree.SampleGroup):
+            //        {
+            //            UpdateSampleGroupPicker(_sampleGroupPicker);
+            //            break;
+            //        }
+            //    case nameof(Tree.TreeDefaultValue):
+            //        {
+            //            UpdateSpeciesPicker(_speciesPicker);
+            //            break;
+            //        }
+            //    case nameof(Tree.CountOrMeasure):
+            //        {
+            //            UpdateCountMeasurePicker(_countMeasurePicker);
+            //            break;
+            //        }
+            //}
         }
 
         #endregion Tree PropertyChyanged

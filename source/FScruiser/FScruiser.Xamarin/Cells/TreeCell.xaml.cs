@@ -57,6 +57,54 @@ namespace FScruiser.Cells
 
         #endregion Command
 
+        //private Tree _tree;
+
+        //Tree Tree
+        //{
+        //    get
+        //    {
+        //        return _tree;
+        //    }
+        //    set
+        //    {
+        //        if (_tree == value) { return; }
+        //        OnTreeChanging(_tree);
+        //        _tree = value;
+        //        OnTreeChanged(_tree);
+        //    }
+        //}
+
+        //private void OnTreeChanged(Tree tree)
+        //{
+        //    if (tree != null)
+        //    {
+        //        tree.PropertyChanged += Tree_PropertyChanged;
+        //    }
+        //}
+
+        //private void OnTreeChanging(Tree tree)
+        //{
+        //    if (tree != null)
+        //    {
+        //        tree.PropertyChanged -= Tree_PropertyChanged;
+        //    }
+        //}
+
+        //private void Tree_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        //{
+        //    switch (e.PropertyName)
+        //    {
+        //        case nameof(Tree.SampleGroup):
+        //            {
+        //                break;
+        //            }
+        //        case nameof(Tree.TreeDefaultValue):
+        //            {
+        //                break;
+        //            }
+        //    }
+        //}
+
         public TreeCell()
         {
             InitializeComponent();
