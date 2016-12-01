@@ -20,7 +20,15 @@ namespace FScruiser.Models
 
         public int PlotNumber { get; set; }
 
-        public bool? IsEmpty { get; set; }
+        bool _isEmpty = false;
+
+        public bool? IsEmpty
+        {
+            get { return _isEmpty; }
+            set { _isEmpty = value ?? false; }
+        }
+
+        public double Slope { get; set; }
 
         public string Remarks { get; set; }
 

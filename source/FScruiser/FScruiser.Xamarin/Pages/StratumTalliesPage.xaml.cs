@@ -12,9 +12,59 @@ namespace FScruiser.Pages
 {
     public partial class StratumTalliesPage : ContentPage
     {
+        private bool _plotPickerUpdating;
+        private StratumTalliesViewModel _viewModel;
+
         public StratumTalliesPage()
         {
             InitializeComponent();
+        }
+
+        public StratumTalliesViewModel ViewModel
+        {
+            get { return _viewModel; }
+            set
+            {
+                if (_viewModel == value) { return; }
+                OnViewModelChanging(_viewModel);
+                _viewModel = value;
+                OnViewModelChanged(_viewModel);
+            }
+        }
+
+        private void OnViewModelChanged(StratumTalliesViewModel viewModel)
+        {
+            //if stratum is a plot stratum
+            if (viewModel != null)
+            {
+                if (viewModel.UnitStratum.Stratum.IsPlotStratum)
+                {
+                    viewModel.PlotsChanged += viewModel_PlotsChanged;
+
+                    //enable the plot nav bar
+                    PlotNavBar.IsVisible = true;
+
+                    UpdatePlotPicker(viewModel);
+                }
+                else
+                {
+                    //otherwise hide it
+                    PlotNavBar.IsVisible = false;
+                }
+            }
+        }
+
+        private void OnViewModelChanging(StratumTalliesViewModel viewModel)
+        {
+            if (viewModel != null)
+            {
+                viewModel.PlotsChanged -= viewModel_PlotsChanged;
+            }
+        }
+
+        private void viewModel_PlotsChanged(object sender, EventArgs e)
+        {
+            UpdatePlotPicker(ViewModel);
         }
 
         private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
@@ -24,6 +74,7 @@ namespace FScruiser.Pages
 
         private void PlotPicker_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (_plotPickerUpdating) { return; }
             var pickerValue = PlotPicker.Items.ElementAtOrDefault(PlotPicker.SelectedIndex);
 
             //get view model
@@ -34,31 +85,30 @@ namespace FScruiser.Pages
         protected override void OnBindingContextChanged()
         {
             base.OnBindingContextChanged();
-            if (BindingContext == null) { return; } //page popped
 
-            //get view model
-            var viewModel = (StratumTalliesViewModel)BindingContext;
+            //set view model
+            ViewModel = BindingContext as StratumTalliesViewModel;
+        }
 
-            //if stratum is a plot stratum
-            if (viewModel.UnitStratum.Stratum.IsPlotStratum)
+        private void UpdatePlotPicker(StratumTalliesViewModel viewModel)
+        {
+            try
             {
-                //enable the plot nav bar
-                PlotNavBar.IsVisible = true;
+                _plotPickerUpdating = true;
+                PlotPicker.Items.Clear();
 
                 //setup plot picker
                 foreach (var plot in viewModel.UnitStratum.Plots)
                 {
                     PlotPicker.Items.Add(plot.ToString());
                 }
-                if (PlotPicker.Items.Count > 0)
-                {
-                    PlotPicker.SelectedIndex = PlotPicker.Items.Count - 1;
-                }
+
+                var index = PlotPicker.Items.IndexOf(viewModel.CurrentPlot?.ToString());
+                PlotPicker.SelectedIndex = index;
             }
-            else
+            finally
             {
-                //otherwise hide it
-                PlotNavBar.IsVisible = false;
+                _plotPickerUpdating = false;
             }
         }
     }

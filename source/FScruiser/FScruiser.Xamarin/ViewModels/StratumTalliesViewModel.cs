@@ -25,6 +25,8 @@ namespace FScruiser.ViewModels
         public UnitStratum UnitStratum { get; set; }
         public IList<TallyPopulation> TallyPopulations { get; set; }
 
+        public event EventHandler PlotsChanged;
+
         #region Commands
 
         public ICommand TallyCommand =>
@@ -52,11 +54,14 @@ namespace FScruiser.ViewModels
             CoreMethods.PushPageModel<TreeMasterDetailViewModel>(filter, true);
         }
 
-        private void ShowAddPlot()
+        private async void ShowAddPlot()
         {
             if (UnitStratum.Stratum.IsPlotStratum)
             {
-                CoreMethods.PushPageModel<PlotInfoViewModel>(null);
+                var plot = DataService.CreateNewPlot(UnitStratum.Stratum.Code);
+                await CoreMethods.PushPageModel<PlotEditViewModel>(plot);
+                CurrentPlot = plot;
+                OnPlotsChanged();
             }
         }
 
@@ -64,7 +69,7 @@ namespace FScruiser.ViewModels
         {
             if (UnitStratum.Stratum.IsPlotStratum && CurrentPlot != null)
             {
-                CoreMethods.PushPageModel<PlotInfoViewModel>(CurrentPlot);
+                CoreMethods.PushPageModel<PlotEditViewModel>(CurrentPlot);
             }
         }
 
@@ -76,7 +81,17 @@ namespace FScruiser.ViewModels
 
             TallyPopulations = DataService.GetTallyPopulationByStratum(UnitStratum.Stratum.Code).ToList();
 
+            if (UnitStratum.Stratum.IsPlotStratum)
+            {
+                CurrentPlot = UnitStratum.Plots.LastOrDefault();
+            }
+
             base.Init(initData);
+        }
+
+        protected void OnPlotsChanged()
+        {
+            PlotsChanged?.Invoke(this, EventArgs.Empty);
         }
 
         protected override void ViewIsDisappearing(object sender, EventArgs e)

@@ -11,9 +11,29 @@ namespace FScruiser.Pages
 {
     public partial class TreeListPage : ContentPage
     {
+        private object _listViewFirst;
+        private object _listViewLast;
+
         public TreeListPage()
         {
             InitializeComponent();
+        }
+
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
+
+            _listViewLast = ListView.ItemsSource?.Cast<object>().LastOrDefault();
+            _listViewFirst = ListView.ItemsSource?.Cast<object>().LastOrDefault();
+        }
+
+        private void Button_Clicked(object sender, EventArgs e)
+        {
+            ListView.ScrollTo(
+                ListView.ItemsSource.Cast<object>().LastOrDefault(),
+                ScrollToPosition.End, false);
+
+            //TreeScrollView.ScrollToAsync(ListView, ScrollToPosition.End, false);
         }
 
         //public event EventHandler<Tree> TreeSelected;
