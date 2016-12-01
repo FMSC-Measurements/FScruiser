@@ -26,6 +26,9 @@
                 </ListView.ItemTemplate>
             </ListView>
         </ScrollView>
-        <Button x:Name="GoToEndButton" Text="End" Clicked="Button_Clicked"  VerticalOptions="End" />
+        <StackLayout Orientation="Horizontal" VerticalOptions="End">
+            <Button x:Name="GoToEndButton" Image="ic_chevron_double_down_black_24dp.png" Clicked="GoToEndButton_Clicked" />
+            <Button x:Name="GoToTopButton" Image="ic_chevron_double_up_black_24dp.png" Clicked="GoToTopButton_Clicked" />
+        </StackLayout>
     </StackLayout>
 </ContentPage>

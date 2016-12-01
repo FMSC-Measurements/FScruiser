@@ -27,13 +27,18 @@ namespace FScruiser.Pages
             _listViewFirst = ListView.ItemsSource?.Cast<object>().LastOrDefault();
         }
 
-        private void Button_Clicked(object sender, EventArgs e)
+        private void GoToEndButton_Clicked(object sender, EventArgs e)
         {
             ListView.ScrollTo(
                 ListView.ItemsSource.Cast<object>().LastOrDefault(),
                 ScrollToPosition.End, false);
+        }
 
-            //TreeScrollView.ScrollToAsync(ListView, ScrollToPosition.End, false);
+        private void GoToTopButton_Clicked(object sender, EventArgs e)
+        {
+            ListView.ScrollTo(
+                ListView.ItemsSource.Cast<object>().FirstOrDefault(),
+                ScrollToPosition.Start, false);
         }
 
         //public event EventHandler<Tree> TreeSelected;
