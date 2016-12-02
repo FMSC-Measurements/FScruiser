@@ -242,9 +242,14 @@ namespace FScruiser.Pages
             if (_sampleGroupPickerUpdating) { return; }
             var picker = sender as Picker;
             if (picker == null) { return; }
+            //get picker value
             var index = picker.SelectedIndex;
-            if (index < 0 || index >= ViewModel.SampleGroups.Count()) { return; }
-            var sampleGroup = ViewModel.SampleGroups.ElementAt(index);
+            var selectedValue = picker.Items.ElementAtOrDefault(index);
+
+            //find samplegroup that matches value or default to null
+            var sampleGroup = (string.IsNullOrEmpty(selectedValue)) ? (SampleGroup)null
+                : ViewModel.SampleGroups.FirstOrDefault((sg) => sg.Code == selectedValue);
+
             ViewModel.Tree.SampleGroup = sampleGroup;
             UpdateSpeciesPicker(_speciesPicker);
         }
@@ -263,7 +268,8 @@ namespace FScruiser.Pages
                     view.Items.Add(sg.Code);
                 }
 
-                var index = view.Items.IndexOf(ViewModel.Tree?.SampleGroup.Code);
+                var sgCode = ViewModel.Tree?.SampleGroup?.Code ?? String.Empty;
+                var index = view.Items.IndexOf(sgCode);
                 view.SelectedIndex = (index > 0) ? index : 0;
             }
             finally
@@ -293,7 +299,7 @@ namespace FScruiser.Pages
             if (picker == null) { return; }
 
             var index = picker.SelectedIndex;
-            var selectedValue = picker.Items[index];
+            var selectedValue = picker.Items.ElementAtOrDefault(index) ?? String.Empty;
             var tdv = ViewModel.TreeDefaults.FirstOrDefault(x => x.Species == selectedValue);
             ViewModel.Tree.TreeDefaultValue = tdv;
         }
@@ -313,7 +319,8 @@ namespace FScruiser.Pages
                 }
 
                 //set selected index
-                var index = view.Items.IndexOf(ViewModel.Tree?.TreeDefaultValue?.Species);
+                var spCode = ViewModel.Tree?.TreeDefaultValue?.Species ?? String.Empty;
+                var index = view.Items.IndexOf(spCode);
                 view.SelectedIndex = (index > 0) ? index : 0;
             }
             finally
@@ -324,7 +331,7 @@ namespace FScruiser.Pages
 
         #endregion Sp Picker
 
-        #region Tree PropertyChyanged
+        #region Tree PropertyChanged
 
         private void UnwireTreePropertyChanged(Tree e)
         {
@@ -364,6 +371,6 @@ namespace FScruiser.Pages
             //}
         }
 
-        #endregion Tree PropertyChyanged
+        #endregion Tree PropertyChanged
     }
 }
