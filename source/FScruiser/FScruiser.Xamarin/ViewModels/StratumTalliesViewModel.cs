@@ -97,6 +97,7 @@ namespace FScruiser.ViewModels
         protected override void ViewIsDisappearing(object sender, EventArgs e)
         {
             base.ViewIsDisappearing(sender, e);
+            DataService.SaveChangesAsync();
         }
 
         bool AskKPI(int min, int max, out int kpi, out bool stm)

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
-    public interface ICuttingUnitDataService
+    public interface ICuttingUnitDataService : IDataService
     {
         void AddTree(Tree tree);
 

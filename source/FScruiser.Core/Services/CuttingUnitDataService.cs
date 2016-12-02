@@ -72,6 +72,8 @@ namespace FScruiser.Services
 
             unitStratum.Plots.Add(newPlot);
 
+            Plots.Add(newPlot);
+
             return newPlot;
         }
 
@@ -91,6 +93,8 @@ namespace FScruiser.Services
                 tree.TreeCount = 1;
             }
 
+            Trees.Add(tree);
+
             return tree;
         }
 
@@ -107,6 +111,8 @@ namespace FScruiser.Services
 
             if (plot != null)
             { tree.Plot_CN = plot.Plot_CN; }
+
+            Trees.Add(tree);
 
             return tree;
         }
