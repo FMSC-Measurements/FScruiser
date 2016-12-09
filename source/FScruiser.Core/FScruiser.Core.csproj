@@ -59,6 +59,7 @@
     <Compile Include="Services\ICuttingUnitDataService.cs" />
     <Compile Include="Services\IDataService.cs" />
     <Compile Include="Util\ICollectionExtentions.cs" />
+    <Compile Include="Util\IEnumerableExtentions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
