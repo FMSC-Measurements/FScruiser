@@ -71,7 +71,6 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\PlotEditViewModel.cs" />
-    <Compile Include="ViewModels\PlotInfoViewModel.cs" />
     <Compile Include="ViewModels\TreeMasterDetailViewModel.cs" />
     <Compile Include="ViewModels\UnitLevelNavigationViewModel.cs" />
     <Compile Include="ViewModels\StratumTalliesViewModel.cs" />
