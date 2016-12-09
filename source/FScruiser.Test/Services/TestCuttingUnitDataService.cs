@@ -1,9 +1,12 @@
-﻿using Backpack;
-using Backpack.SQLite;
+﻿using FluentAssertions;
 using FScruiser.Models;
 using FScruiser.Services;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,142 +16,124 @@ namespace FScruiser.Test.Services
 {
     public class TestCuttingUnitDataService
     {
-        [Fact]
-        public void TestGetAllTreeProxiesInUnit()
+        CuttingUnitDataService CreateDataService(long unit_CN = 2)
         {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
+            var unit = new CuttingUnit { CuttingUnit_CN = unit_CN };
+            var cruiseFile = new CruiseFile(".//TestFiles//MultiTest.cruise");
+            var dataService = new CuttingUnitDataService(unit, cruiseFile);
 
-            var unit = dataStore.From<CuttingUnitModel>().Query().FirstOrDefault();
+            var serviceProvider = dataService.GetInfrastructure<IServiceProvider>();
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            loggerFactory.AddProvider(new MyLoggerProvider());
 
-            Assert.NotNull(unit);
-
-            var dataService = new CuttingUnitDataService(unit, dataStore);
-
-            var trees = dataService.GetAllTreeProxiesInUnit().ToList();
-
-            Assert.True(trees.Count > 0);
-            Assert.True(dataService.TreeProxies.ToList().Count > 0);
+            return dataService;
         }
 
         [Fact]
         public void TestGetPlot()
         {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
-
-            var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
-
-            Assert.NotNull(unit);
-
-            var dataService = new CuttingUnitDataService(unit, dataStore);
+            var dataService = CreateDataService();
 
             var plot = dataService.GetPlot("04", 1);
 
             Assert.NotNull(plot);
-
-            Assert.True(dataService.Plots.Count() > 0);
         }
 
         [Fact]
-        public void TestGetPlotProxiesByStratum()
+        public void TestGetUnitStrata()
         {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
+            var dataService = CreateDataService();
 
-            var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
-
-            Assert.NotNull(unit);
-
-            var dataService = new CuttingUnitDataService(unit, dataStore);
-
-            var plots = dataService.GetPlotProxiesByStratum("04").ToList();
-
-            Assert.True(plots.Count > 0);
-        }
-
-        [Fact]
-        public void TestGetSamplerBySampleGroup()
-        {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
-
-            var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
-
-            Assert.NotNull(unit);
-
-            var dataService = new CuttingUnitDataService(unit, dataStore);
-
-            var samplers = dataService.GetSamplerBySampleGroup("02", "03");
-
-            Assert.NotNull(samplers);
-            Assert.NotNull(samplers.Selector);
-        }
-
-        [Fact]
-        public void TestGetStrata()
-        {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
-
-            var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
-
-            Assert.NotNull(unit);
-
-            var dataService = new CuttingUnitDataService(unit, dataStore);
-
-            var strata = dataService.GetStrata().ToList();
+            var strata = dataService.GetAllUnitStrata().ToList();
 
             Assert.NotEmpty(strata);
 
-            Assert.NotEmpty(dataService.Strata);
+            foreach (var unitStratum in strata)
+            {
+                ValidateUnitStratum(unitStratum);
+            }
+        }
+
+        [Fact]
+        public void TestGetTrees()
+        {
+            var dataService = CreateDataService();
+
+            var strata = dataService.GetAllUnitStrata().ToList();
+
+            foreach (var ust in strata)
+            {
+                var trees = dataService.GetTrees(ust.Stratum).ToList();
+
+                foreach (var plot in ust.Plots)
+                {
+                    var plotTrees = dataService.GetTrees(ust.Stratum, plot).ToList();
+                }
+            }
+        }
+
+        [Fact]
+        public void TestCreatePlotAndAddTrees()
+        {
+            var dataService = CreateDataService();
+
+            var plotUnitStrata = dataService.GetAllUnitStrata().Where(s => s.Stratum.IsPlotStratum);
+            var stratum = plotUnitStrata.First().Stratum;
+            var tallyPop = dataService.GetTallyPopulationByStratum(stratum.Code).First();
+
+            var plot = dataService.CreateNewPlot(stratum.Code);
+            var tree = dataService.CreateNewTree(tallyPop, plot);
+
+            plot.Trees.Should().ContainSingle();
+
+            plot.Trees.Should().OnlyContain(t => !t.Plot_CN.HasValue);
+
+            dataService.SaveChanges();
+
+            plot.Trees.Single().Plot_CN.Should().HaveValue();
+        }
+
+        [Fact]
+        public void TestGetUnitStratum()
+        {
+            var dataService = CreateDataService();
+
+            var unitStratum = dataService.GetUnitStratum("04");
+
+            ValidateUnitStratum(unitStratum);
+        }
+
+        void ValidateUnitStratum(UnitStratum unitStratum)
+        {
+            unitStratum.Stratum.Should().NotBeNull();
+            if (unitStratum.Stratum.IsPlotStratum)
+            {
+                unitStratum.Plots.Should().NotBeEmpty();
+                unitStratum.Plots[0].Stratum.Should().NotBeNull();
+            }
         }
 
         [Fact]
         public void TestGetTallyPopulationByStratum()
         {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
-
-            var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
-
-            Assert.NotNull(unit);
-
-            var dataService = new CuttingUnitDataService(unit, dataStore);
+            var dataService = CreateDataService();
 
             var tallyPop = dataService.GetTallyPopulationByStratum("02");
 
             Assert.NotEmpty(tallyPop);
 
-            Assert.NotEmpty(dataService.TallyPopulations);
-        }
-
-        [Fact]
-        public void TestGetTree()
-        {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
-
-            var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
-
-            Assert.NotNull(unit);
-
-            var dataService = new CuttingUnitDataService(unit, dataStore);
-
-            var trees = dataService.GetTreeProxiesByStratum("02");
-
-            foreach (var tree in trees)
+            foreach (var tp in tallyPop)
             {
-                var t = dataService.GetTree(tree.Tree_GUID);
-                Assert.NotNull(t);
+                tp.Tally.Should().NotBeNull();
+                tp.SampleGroup.Should().NotBeNull();
+                tp.SampleGroup.Stratum.Should().NotBeNull();
             }
-
-            Assert.NotEmpty(dataService.Trees);
         }
 
         [Fact]
         public void TestGetTreeFieldsByStratum()
         {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
-
-            var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
-
-            Assert.NotNull(unit);
-
-            var dataService = new CuttingUnitDataService(unit, dataStore);
+            var dataService = CreateDataService();
 
             var treeFields = dataService.GetTreeFieldsByStratum("02");
 
@@ -156,21 +141,50 @@ namespace FScruiser.Test.Services
         }
 
         [Fact]
-        public void TestGetTreeProxiesByStratum()
+        public void TestGetTreeDefatulsBySampleGroup()
         {
-            var dataStore = new SQLiteDatastore(".//TestFiles//MultiTest.cruise");
+            var dataService = CreateDataService();
 
-            var unit = dataStore.From<CuttingUnitModel>().Where("Code = '02'").Query().FirstOrDefault();
+            var unitStrata = dataService.GetAllUnitStrata();
 
-            Assert.NotNull(unit);
+            foreach (var st in unitStrata)
+            {
+                foreach (var sg in st.Stratum.SampleGroups)
+                {
+                    var tdvs = dataService.GetTreeDefaultsBySampleGroup(sg).ToList();
+                    tdvs.Should().NotBeNull();
+                }
+            }
+        }
+    }
 
-            var dataService = new CuttingUnitDataService(unit, dataStore);
+    public class MyLoggerProvider : ILoggerProvider
+    {
+        public ILogger CreateLogger(string categoryName)
+        {
+            return new MyLogger();
+        }
 
-            var trees = dataService.GetTreeProxiesByStratum("02");
+        public void Dispose()
+        { }
 
-            Assert.NotEmpty(trees);
+        private class MyLogger : ILogger
+        {
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return true;
+            }
 
-            Assert.NotEmpty(dataService.TreeProxies);
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                File.AppendAllText(@"C:\temp\log.txt", formatter(state, exception));
+                Console.WriteLine(formatter(state, exception));
+            }
+
+            public IDisposable BeginScope<TState>(TState state)
+            {
+                return null;
+            }
         }
     }
 }

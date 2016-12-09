@@ -1,6 +1,6 @@
 ﻿{
   "dependencies": {
-    "Microsoft.Data.SQLite": "1.0.0",
+    "FluentAssertions": "4.16.0",
     "SQLite.Native": "3.12.3",
     "xunit": "2.1.0",
     "xunit.runner.visualstudio": "2.1.0"
@@ -9,6 +9,8 @@
     "net461": {}
   },
   "runtimes": {
-    "win": {}
+    "win": {},
+    "win7-x64": {},
+    "win10-x64": {}
   }
 }
