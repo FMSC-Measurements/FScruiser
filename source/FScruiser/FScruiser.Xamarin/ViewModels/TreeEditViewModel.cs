@@ -114,6 +114,11 @@ namespace FScruiser.ViewModels
 
         public override void Init(object initData)
         {
+            var tree = initData as Tree;
+            if (tree != null)
+            {
+                Tree = tree;
+            }
         }
     }
 }

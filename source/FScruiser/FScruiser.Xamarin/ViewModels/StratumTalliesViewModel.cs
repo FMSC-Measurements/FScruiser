@@ -127,6 +127,7 @@ namespace FScruiser.ViewModels
                         if (tree != null)
                         {
                             DataService.AddTree(tree);
+                            CoreMethods.PushPageModel<TreeEditViewModel>(tree);
                         }
                     }
                 }
@@ -137,6 +138,7 @@ namespace FScruiser.ViewModels
                 if (tree != null)
                 {
                     DataService.AddTree(tree);
+                    CoreMethods.PushPageModel<TreeEditViewModel>(tree);
                 }
             }
             else if (UnitStratum.Stratum.Method == CruiseMethods.H_PCT)
@@ -145,6 +147,7 @@ namespace FScruiser.ViewModels
                 if (tree != null)
                 {
                     DataService.AddTree(tree);
+                    CoreMethods.PushPageModel<TreeEditViewModel>(tree);
                 }
             }
 
@@ -153,7 +156,7 @@ namespace FScruiser.ViewModels
 
         Tree TallyHpct(TallyPopulation tally)
         {
-            var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+            var tree = DataService.CreateNewTree(tally, CurrentPlot);
             tree.TreeCount = 1;
             tree.CountOrMeasure = "M";
 
@@ -162,7 +165,7 @@ namespace FScruiser.ViewModels
 
         Tree TallySTM(TallyPopulation tally)
         {
-            var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+            var tree = DataService.CreateNewTree(tally, CurrentPlot);
             tree.STM = true;
 
             return tree;
@@ -180,7 +183,7 @@ namespace FScruiser.ViewModels
             ThreePItem item = (ThreePItem)selector.NextItem();
             if (item != null && kpi > item.KPI)
             {
-                tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+                tree = DataService.CreateNewTree(tally, CurrentPlot);
                 tree.KPI = kpi;
 
                 if (selector.IsSelectingITrees && selector.InsuranceCounter.Next())
@@ -194,7 +197,7 @@ namespace FScruiser.ViewModels
             }
             else if (UnitStratum.Stratum.IsPlotStratum)
             {
-                tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+                tree = DataService.CreateNewTree(tally, CurrentPlot);
                 tree.CountOrMeasure = "C";
             }
 
@@ -209,7 +212,7 @@ namespace FScruiser.ViewModels
             //If we receive nothing from the sampler, we don't have a sample
             if (result != null)
             {
-                var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+                var tree = DataService.CreateNewTree(tally, CurrentPlot);
 
                 if (result.IsInsuranceItem)
                 {
@@ -224,7 +227,7 @@ namespace FScruiser.ViewModels
             }
             else if (UnitStratum.Stratum.IsPlotStratum)
             {
-                var tree = DataService.CreateNewTree(tally, CurrentPlot?.Plot_CN);
+                var tree = DataService.CreateNewTree(tally, CurrentPlot);
                 tree.CountOrMeasure = "C";
                 return tree;
             }

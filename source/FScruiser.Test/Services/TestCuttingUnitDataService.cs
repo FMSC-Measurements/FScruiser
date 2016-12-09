@@ -73,6 +73,27 @@ namespace FScruiser.Test.Services
         }
 
         [Fact]
+        public void TestCreatePlotAndAddTrees()
+        {
+            var dataService = CreateDataService();
+
+            var plotUnitStrata = dataService.GetAllUnitStrata().Where(s => s.Stratum.IsPlotStratum);
+            var stratum = plotUnitStrata.First().Stratum;
+            var tallyPop = dataService.GetTallyPopulationByStratum(stratum.Code).First();
+
+            var plot = dataService.CreateNewPlot(stratum.Code);
+            var tree = dataService.CreateNewTree(tallyPop, plot);
+
+            plot.Trees.Should().ContainSingle();
+
+            plot.Trees.Should().OnlyContain(t => !t.Plot_CN.HasValue);
+
+            dataService.SaveChanges();
+
+            plot.Trees.Single().Plot_CN.Should().HaveValue();
+        }
+
+        [Fact]
         public void TestGetUnitStratum()
         {
             var dataService = CreateDataService();

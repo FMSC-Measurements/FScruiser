@@ -13,11 +13,7 @@ namespace FScruiser.Services
 
         Plot CreateNewPlot(string stratumCode);
 
-        Tree CreateNewTree(TallyPopulation tallyPop, long? plotCN = null);
-
-        Tree CreateNewTree(string stratumCode, string sampleGroupCode, string species);
-
-        Tree CreateNewTree(Stratum stratum, SampleGroup sampleGroup, TreeDefaultValue tdv = null, Plot plot = null);
+        Tree CreateNewTree(TallyPopulation tallyPop, Plot plot = null);
 
         void LogTreeEstimate(int KPI, TallyPopulation tallyPop);
 

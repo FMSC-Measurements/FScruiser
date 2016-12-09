@@ -20,17 +20,22 @@ namespace FScruiser.Models
 
         public int PlotNumber { get; set; }
 
-        bool _isEmpty = false;
+        //bool _isEmpty = false;
 
-        public bool? IsEmpty
-        {
-            get { return _isEmpty; }
-            set { _isEmpty = value ?? false; }
-        }
+        public bool? IsEmpty { get; set; } = false;
+        //{
+        //    get { return _isEmpty; }
+        //    set { _isEmpty = value ?? false; }
+        //}
 
         public double Slope { get; set; }
 
         public string Remarks { get; set; }
+
+        [Required]
+        public string CreatedBy { get; set; } = "Default";
+
+        public List<Tree> Trees { get; set; } = new List<Tree>();
 
         [ForeignKey(nameof(Stratum_CN))]
         public Stratum Stratum { get; set; }

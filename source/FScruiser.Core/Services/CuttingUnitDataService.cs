@@ -1,4 +1,5 @@
-﻿using FScruiser.Models;
+﻿using FScruiser.Core.Util;
+using FScruiser.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -63,11 +64,15 @@ namespace FScruiser.Services
             var unitStratum = UnitStrata.Where(uSt => uSt.CuttingUnit_CN == Unit.CuttingUnit_CN && uSt.Stratum.Code == stratumCode)
                 .FirstOrDefault();
 
-            var highestPlotNumber = unitStratum.Plots.Max(p => p.PlotNumber);
+            var plotNumber = 1;
+            if (unitStratum.Plots.IsNotNullOrEmpty())
+            {
+                plotNumber = unitStratum.Plots.Max(p => p.PlotNumber) + 1;
+            }
 
             var newPlot = new Plot
             {
-                PlotNumber = highestPlotNumber + 1
+                PlotNumber = plotNumber
             };
 
             unitStratum.Plots.Add(newPlot);
@@ -77,7 +82,7 @@ namespace FScruiser.Services
             return newPlot;
         }
 
-        public Tree CreateNewTree(TallyPopulation tallyPop, long? plotCN = null)
+        public Tree CreateNewTree(TallyPopulation tallyPop, Plot plot = null)
         {
             var tree = new Tree()
             {
@@ -87,39 +92,28 @@ namespace FScruiser.Services
                 TreeDefaultValue_CN = tallyPop.TreeDefaultValue_CN
             };
 
-            if (plotCN != null)
+            if (plot != null)
             {
-                tree.Plot_CN = plotCN.Value;
+                var treeNumber = 1;
+                if (plot.Trees.IsNotNullOrEmpty())
+                {
+                    treeNumber = plot.Trees.Max(t => t.TreeNumber) + 1;
+                }
+                tree.TreeNumber = treeNumber;
                 tree.TreeCount = 1;
+
+                plot.Trees.Add(tree);
+            }
+            else
+            {
+                var highestTreeNumber = GetTrees(tallyPop.SampleGroup.Stratum).Max(t => t.TreeNumber);
+                highestTreeNumber = Math.Max(highestTreeNumber, 1);
+                tree.TreeNumber = highestTreeNumber + 1;
             }
 
-            Trees.Add(tree);
+            AddTree(tree);
 
             return tree;
-        }
-
-        public Tree CreateNewTree(Stratum stratum, SampleGroup sampleGroup, TreeDefaultValue tdv = null, Plot plot = null)
-        {
-            var tree = new Tree
-            {
-                CuttingUnit_CN = Unit.CuttingUnit_CN,
-                Stratum_CN = stratum.Stratum_CN
-            };
-
-            if (sampleGroup == null)
-            { tree.SampleGroup_CN = sampleGroup.SampleGroup_CN; }
-
-            if (plot != null)
-            { tree.Plot_CN = plot.Plot_CN; }
-
-            Trees.Add(tree);
-
-            return tree;
-        }
-
-        public Tree CreateNewTree(string stratumCode, string sampleGroupCode, string species)
-        {
-            throw new NotImplementedException();
         }
 
         public void AddTree(Tree tree)
@@ -143,23 +137,25 @@ namespace FScruiser.Services
 
         public UnitStratum GetUnitStratum(string stratumCode)
         {
-            return UnitStrata
-                .Include(ust => ust.Stratum)
-                    .ThenInclude(st => st.SampleGroups)
-                .Include(ust => ust.Plots)
-                .Where(ust => ust.CuttingUnit_CN == Unit.CuttingUnit_CN && ust.Stratum.Code == stratumCode)
+            return GetAllUnitStrata()
+                .Where(ust => ust.Stratum.Code == stratumCode)
                 .FirstOrDefault();
         }
 
-        public IEnumerable<TallyPopulation> GetTallyPopulationByStratum(string code)
+        public IEnumerable<TallyPopulation> GetAllTallyPopulations()
         {
             return TallyPopulations
                 .Include(tp => tp.TDV)
                 .Include(tp => tp.Tally)
                 .Include(tp => tp.SampleGroup)
                     .ThenInclude(sg => sg.Stratum)
-                .Where(tp => tp.CuttingUnit_CN == Unit.CuttingUnit_CN
-            && tp.SampleGroup.Stratum.Code == code);
+                .Where(tp => tp.CuttingUnit_CN == Unit.CuttingUnit_CN);
+        }
+
+        public IEnumerable<TallyPopulation> GetTallyPopulationByStratum(string code)
+        {
+            return GetAllTallyPopulations()
+                .Where(tp => tp.SampleGroup.Stratum.Code == code);
         }
 
         public Tree GetTree(Guid tree_GUID)
@@ -188,16 +184,25 @@ namespace FScruiser.Services
 
         public IEnumerable<Tree> GetTrees(Stratum stratum, Plot plot = null)
         {
+            if (plot != null)
+            {
+                this.Entry(plot)
+                    .Collection(p => p.Trees)
+                    .Load();
+
+                return plot.Trees;
+            }
+
             var resultSet = GetAllTrees();
 
             if (stratum != null)
             {
                 resultSet = resultSet.Where(t => t.Stratum_CN == stratum.Stratum_CN);
             }
-            if (plot != null)
-            {
-                resultSet = resultSet.Where(t => t.Plot_CN == plot.Plot_CN);
-            }
+            //if (plot != null)
+            //{
+            //    resultSet = resultSet.Where(t => t.Plot_CN == plot.Plot_CN);
+            //}
 
             return resultSet;
         }
