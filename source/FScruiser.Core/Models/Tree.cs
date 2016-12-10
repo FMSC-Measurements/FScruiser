@@ -107,7 +107,6 @@ namespace FScruiser.Models
             {
                 _dbh = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(Tree.Diameter));
             }
         }
 
@@ -118,7 +117,6 @@ namespace FScruiser.Models
             {
                 _dbhdbt = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(Tree.Diameter));
             }
         }
 
@@ -182,6 +180,22 @@ namespace FScruiser.Models
         public void OnPropertyChanged([CallerMemberName] string property = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+
+            switch (property)
+            {
+                case nameof(DBH):
+                case nameof(DBHDoubleBarkThickness):
+                    {
+                        OnPropertyChanged(nameof(Diameter));
+                        break;
+                    }
+                case nameof(TotalHeight):
+                case nameof(MerchHeightPrimary):
+                    {
+                        OnPropertyChanged(nameof(Height));
+                        break;
+                    }
+            }
         }
     }
 }
