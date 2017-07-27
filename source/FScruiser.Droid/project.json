@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+    "FreshMvvm": "2.2.0",
+    "Xamarin.Forms": "2.3.3.175"
+  },
+  "frameworks": {
+    "MonoAndroid,Version=v7.0": {}
+  },
+  "runtimes": {
+    "win": {}
+  }
+}

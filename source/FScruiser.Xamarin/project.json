@@ -1,0 +1,15 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "FreshMvvm": "2.2.0",
+    "Microsoft.EntityFrameworkCore.Sqlite": "1.1.0",
+    "NETStandard.Library": "1.6.1",
+    "System.Runtime.Extensions": "4.3.0",
+    "Xamarin.Forms": "2.3.3.175"
+  },
+  "frameworks": {
+    "netstandard1.3": {
+      "imports": "portable-win+net45+wpa81+wp8+win8"
+    }
+  }
+}

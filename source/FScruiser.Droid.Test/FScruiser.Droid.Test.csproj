@@ -64,7 +64,7 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FScruiser\FScruiser.Droid\FScruiser.Droid.csproj">
+    <ProjectReference Include="..\FScruiser.Droid\FScruiser.Droid.csproj">
       <Project>{d7270c98-62a5-42af-b008-1715ca930014}</Project>
       <Name>FScruiser.Droid</Name>
     </ProjectReference>
