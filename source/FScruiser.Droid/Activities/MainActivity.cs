@@ -4,7 +4,9 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using FScruiser.XF;
 using System;
+using System.Linq;
 using Xamarin.Forms.Platform.Android;
 
 namespace FScruiser.Droid

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
-namespace FScruiser.Cells
+namespace FScruiser.XF.Cells
 {
     public partial class TreeCell : ViewCell
     {

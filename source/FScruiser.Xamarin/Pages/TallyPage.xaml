@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:Cells="clr-namespace:FScruiser.XF.Cells"
+             x:Class="FScruiser.XF.Pages.TallyPage">
+    <ContentPage.Content>
+        
+        <StackLayout>
+            <StackLayout x:Name="_plotNavBar"
+                     Orientation="Horizontal"
+                     BackgroundColor="Red"
+                     HorizontalOptions="Fill">
+                <Label Text="Plot" FontSize="Large" VerticalTextAlignment="Center"/>
+                <Label Text="{Binding CurrentPlotNumber}" VerticalTextAlignment="Center" />
+                <Button Text="Go TO" HorizontalOptions="EndAndExpand" />
+            </StackLayout>
+            <ScrollView>
+                <ListView x:Name="_tallyListView"
+                          ItemsSource="{Binding Tallies}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Cells:TallyCell Command="{Binding Path=BindingContext.TallyCommand, Source={x:Reference Page}}"
+                                 CommandParameter="{Binding .}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollView>
+            <ScrollView>
+                <ListView x:Name="_tallyFeedListView"
+                          ItemsSource="{Binding TallyFeed}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Cells:TallyFeedCell />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ScrollView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

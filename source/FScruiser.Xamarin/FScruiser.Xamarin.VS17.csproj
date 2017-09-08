@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.4</TargetFramework>
     <PackageTargetFallback>$(PackageTargetFallback);portable-win+net45+wp8+win81+wpa8</PackageTargetFallback>
+    <RootNamespace>FScruiser.XF</RootNamespace>
+    <AssemblyName>FScruiser.XF</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,11 +13,13 @@
 
   <ItemGroup>
     <None Remove="Cells\TallyCell.xaml" />
+    <None Remove="Cells\TallyFeedCell.xaml" />
     <None Remove="Cells\TreeCell.xaml" />
     <None Remove="Pages\CruisePage.xaml" />
     <None Remove="Pages\MainPage.xaml" />
     <None Remove="Pages\PlotEditPage.xaml" />
     <None Remove="Pages\StratumTalliesPage.xaml" />
+    <None Remove="Pages\TallyPage.xaml" />
     <None Remove="Pages\TreeEditPage.xaml" />
     <None Remove="Pages\TreeListPage.xaml" />
     <None Remove="Pages\TreeMasterDetailPage.xaml" />
@@ -24,6 +28,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Cells\TallyCell.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Cells\TallyFeedCell.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Cells\TreeCell.xaml">
@@ -39,6 +46,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\StratumTalliesPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pages\TallyPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Pages\TreeEditPage.xaml">
@@ -69,8 +79,14 @@
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Cells\TallyFeedCell.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\TallyPage.xaml.cs">
+      <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
 

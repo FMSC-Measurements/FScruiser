@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FScruiser.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
-namespace FScruiser.Cells
+namespace FScruiser.XF.Cells
 {
     public partial class TallyCell : ViewCell
     {
@@ -59,6 +60,17 @@ namespace FScruiser.Cells
         public TallyCell()
         {
             InitializeComponent();
+
+            if(App.InDesignMode)
+            {                
+                var st = new Stratum() { Code = "St" };
+                var sg = new SampleGroup() { Code = "Sg", Stratum = st };                
+                var tally = new Tally() { Description = $"{sg.Code}/{st.Code}" };
+
+                var pop = new TallyPopulation() { SampleGroup = sg, Tally = tally, TreeCount = 100};
+
+                BindingContext = pop;
+            }
         }
 
         private void ViewCell_Tapped(object sender, EventArgs e)

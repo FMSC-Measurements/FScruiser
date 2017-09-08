@@ -7,10 +7,17 @@ using System.Linq;
 using System.Text;
 using Xamarin.Forms;
 
-namespace FScruiser
+namespace FScruiser.XF
 {
     public class App : Xamarin.Forms.Application
     {
+        public static bool InDesignMode = true;
+//#if DEBUG
+//        = true;
+//#else
+//        = false;
+//#endif
+
         public App()
         {
             MainPage = new FreshMvvm.FreshNavigationContainer(FreshMvvm.FreshPageModelResolver.ResolvePageModel<MainViewModel>());
