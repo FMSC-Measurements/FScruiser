@@ -1,81 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4C61AB15-EAC0-417B-B8B1-742183AEA970}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FScruiser.Core</RootNamespace>
-    <AssemblyName>FScruiser.Core</AssemblyName>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>FScruiser</RootNamespace>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="ICruiseFolderService.cs" />
-    <Compile Include="Models\CruiseMethods.cs" />
-    <Compile Include="Models\CruiseModel.cs" />
-    <Compile Include="Models\CuttingUnitModel.cs" />
-    <Compile Include="Models\Plot.cs" />
-    <Compile Include="Models\Sale.cs" />
-    <Compile Include="Models\SampleGroup.cs" />
-    <Compile Include="Models\SampleGroupTreeDefaultValue.cs" />
-    <Compile Include="Models\Sampler.cs" />
-    <Compile Include="Models\Stratum.cs" />
-    <Compile Include="Models\TallyPopulation.cs" />
-    <Compile Include="Models\Tree.cs" />
-    <Compile Include="Models\TreeDefaultValue.cs" />
-    <Compile Include="Models\TreeEstimate.cs" />
-    <Compile Include="Models\TreeField.cs" />
-    <Compile Include="Models\UnitStratum.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\CruiseDataService.cs" />
-    <Compile Include="Services\CruiseFile.cs" />
-    <Compile Include="Services\CuttingUnitDataService.cs" />
-    <Compile Include="Services\ICruiseDataService.cs" />
-    <Compile Include="Services\ICuttingUnitDataService.cs" />
-    <Compile Include="Services\IDataService.cs" />
-    <Compile Include="Util\ICollectionExtentions.cs" />
-    <Compile Include="Util\IEnumerableExtentions.cs" />
+    <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="project.json" />
+    <PackageReference Include="CruiseDAL" Version="1.0.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\FMSC.Sampling\src\FMSC.Sampling.PCL\FMSC.Sampling.PCL.csproj">
-      <Project>{b2cb186c-9319-43d0-a694-fb566e083c58}</Project>
-      <Name>FMSC.Sampling.PCL</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\FMSC.Sampling\src\FMSC.Sampling\FMSC.Sampling.csproj" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>
