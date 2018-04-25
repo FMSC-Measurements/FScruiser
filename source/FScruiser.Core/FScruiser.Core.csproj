@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CruiseDAL" Version="1.0.0" />
+    <PackageReference Include="CruiseDAL" Version="2.2.1.2" />
   </ItemGroup>
 
   <ItemGroup>
