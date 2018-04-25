@@ -5,10 +5,22 @@
     <PackageTargetFallback>$(PackageTargetFallback);portable-win+net45+wp8+win81+wpa8</PackageTargetFallback>
     <RootNamespace>FScruiser.XF</RootNamespace>
     <AssemblyName>FScruiser.XF</AssemblyName>
+    <Version>0.0.1</Version>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Pages\PlotEditPage.xaml.cs" />
+    <Compile Remove="Pages\TreeEditPage.xaml.cs" />
+    <Compile Remove="Pages\TreeListPage.xaml.cs" />
     <Compile Remove="Properties\AssemblyInfo.cs" />
+    <Compile Remove="ViewModels\TreeEditViewModel.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="Pages\PlotEditPage.xaml" />
+    <EmbeddedResource Remove="Pages\TreeEditPage.xaml" />
+    <EmbeddedResource Remove="Pages\TreeListPage.xaml" />
   </ItemGroup>
 
   <!--<ItemGroup>
@@ -65,6 +77,7 @@
     <PackageReference Include="DLToolkit.Forms.Controls.FlowListView" Version="2.0.10" />
     <PackageReference Include="FreshMvvm" Version="2.2.4" />
     <PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
+    <PackageReference Include="Xamarin.Plugin.FilePicker" Version="1.2.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -82,14 +95,20 @@
     <Compile Update="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Pages\TallyPage.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Properties\" />
     <Folder Include="Util\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Pages\CruiseFileSelectPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\UnitTreeTallyPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

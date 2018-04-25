@@ -61,16 +61,16 @@ namespace FScruiser.XF.Cells
         {
             InitializeComponent();
 
-            if(App.InDesignMode)
-            {                
-                var st = new Stratum() { Code = "St" };
-                var sg = new SampleGroup() { Code = "Sg", Stratum = st };                
-                var tally = new Tally() { Description = $"{sg.Code}/{st.Code}" };
+            //if(App.InDesignMode)
+            //{
+            //    var st = new Stratum() { Code = "St" };
+            //    var sg = new SampleGroup() { Code = "Sg", Stratum = st };
+            //    var tally = new Tally() { Description = $"{sg.Code}/{st.Code}" };
 
-                var pop = new TallyPopulation() { SampleGroup = sg, Tally = tally, TreeCount = 100};
+            //    var pop = new TallyPopulation() { SampleGroup = sg, Tally = tally, TreeCount = 100 };
 
-                BindingContext = pop;
-            }
+            //    BindingContext = pop;
+            //}
         }
 
         private void ViewCell_Tapped(object sender, EventArgs e)

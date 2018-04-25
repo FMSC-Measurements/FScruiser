@@ -1,4 +1,5 @@
-﻿using FScruiser.Models;
+﻿using CruiseDAL.DataObjects;
+using FScruiser.Models;
 using FScruiser.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -92,7 +93,7 @@ namespace FScruiser.Pages
             }
         }
 
-        private Task<View> MakeTreeFields(IEnumerable<TreeField> treeFields)
+        private Task<View> MakeTreeFields(IEnumerable<TreeFieldSetupDO> treeFields)
         {
             _speciesPicker = null;
             _sampleGroupPicker = null;

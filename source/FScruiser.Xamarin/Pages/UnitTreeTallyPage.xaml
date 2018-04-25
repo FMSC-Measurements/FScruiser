@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
+             x:Class="FScruiser.XF.Pages.UnitTreeTallyPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="tallyButtonBgColor">Green</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <StackLayout>
+            <ListView x:Name="_tallyFeedListView" HasUnevenRows="False"
+                          ItemsSource="{Binding TallyFeed}" ItemSelected="TallyFeedListView_ItemSelected">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal">
+                                <BoxView Color="#30C1BC" WidthRequest="3" />
+                                <Label VerticalTextAlignment="Center" Text="{Binding StratumCode, StringFormat='St:{0}'}"/>
+                                <Label VerticalTextAlignment="Center" Text="{Binding TallyDescription}, StringFormat='| {0}'}"/>
+                                <Label VerticalTextAlignment="Center" Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" IsVisible="{Binding HasTree}" />
+                                <Frame HorizontalOptions="EndAndExpand" BackgroundColor="#30C1BC" IsVisible="{Binding HasTree}" >
+                                    <Label x:Name="CruiserInitialsLabel" TextColor="Black" Text="{Binding Initials}"/>
+                                </Frame>
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <ScrollView VerticalOptions="FillAndExpand">
+                <flow:FlowListView x:Name="TallyListView"
+                                       
+                                FlowColumnCount="3" SeparatorVisibility="None" HasUnevenRows="True"  
+                                FlowItemsSource="{Binding TalliesFiltered}"
+                                       BackgroundColor="White"
+                                       VerticalOptions="CenterAndExpand"
+                                   FlowItemTappedCommand="{Binding TallyCommand}">
+                    <flow:FlowListView.FlowColumnTemplate>
+                        <DataTemplate>
+                            <StackLayout Margin="3" HorizontalOptions="Fill" VerticalOptions="Fill" Padding="3" BackgroundColor="{StaticResource tallyButtonBgColor}">
+                                <Label HorizontalTextAlignment="Center" Text="{Binding TallyDescription}"/>
+                                <Label HorizontalTextAlignment="Center" BackgroundColor="White" TextColor="Black" Text="{Binding TreeCount}"/>
+                                <Label HorizontalTextAlignment="Center" Text="{Binding TallyHotKey}"/>
+                            </StackLayout>
+                        </DataTemplate>
+                    </flow:FlowListView.FlowColumnTemplate>
+                </flow:FlowListView>
+            </ScrollView>
+
+            <flow:FlowListView x:Name="StratumFilterListView" 
+                               FlowColumnCount="6" SeparatorVisibility="None" HasUnevenRows="False"
+                               FlowItemsSource="{Binding StrataFilterOptions}" FlowItemTappedCommand="{Binding StratumSelectedCommand}"
+                               VerticalOptions="End"
+                               HeightRequest="40">
+                <flow:FlowListView.FlowColumnTemplate>
+                    <DataTemplate>
+                        <Label HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="{Binding .}"></Label>
+                    </DataTemplate>
+                </flow:FlowListView.FlowColumnTemplate>
+            </flow:FlowListView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

@@ -5,16 +5,27 @@
              xmlns:cm="clr-namespace:Caliburn.Micro.Xamarin.Forms;assembly=Caliburn.Micro.Platform.Xamarin.Forms"
              x:Name="TopPage">
     <StackLayout>
-        <Label>FScruiser</Label>
-        <Label>Cruise Files:</Label>
-        <ListView x:Name="ListView" ItemsSource="{Binding CruiseFiles}" ItemSelected="ListView_ItemSelected">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <TextCell Text="{Binding FileName}"
-                              Command="{Binding BindingContext.ShowCruiseCommand, Source={x:Reference TopPage}}"
-                              CommandParameter="{Binding .}" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <Button Command="{Binding OpenFileCommand}">Open File</Button>
+        <Label>Cutting Units:</Label>
+        <ScrollView>
+            <ListView x:Name="UnitListView" ItemsSource="{Binding Units}" ItemSelected="UnitListView_ItemSelected">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout>
+                                <StackLayout Orientation="Horizontal">
+                                    <Label>Cutting Unit:</Label>
+                                    <Label Text="{Binding Code}"></Label>
+                                </StackLayout>
+                                <StackLayout Orientation="Horizontal">
+                                    <Label>Strata:</Label>
+                                    <Label Text="{Binding StrataNames}"></Label>
+                                </StackLayout>
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </ScrollView>
     </StackLayout>
 </ContentPage>

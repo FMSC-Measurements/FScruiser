@@ -1,4 +1,5 @@
-﻿using FScruiser.ViewModels;
+﻿using FScruiser.Models;
+using FScruiser.XF.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,8 @@ namespace FScruiser.Pages
 {
     public partial class MainPage : ContentPage
     {
+        protected MainViewModel ViewModel => (MainViewModel)BindingContext;
+
         public MainPage()
         {
             InitializeComponent();
@@ -22,8 +25,17 @@ namespace FScruiser.Pages
             //};
         }
 
-        private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
+        private void UnitListView_ItemSelected(object sender, SelectedItemChangedEventArgs eventArgs)
         {
+            if (sender == null) { throw new ArgumentNullException(nameof(sender)); }
+            if (eventArgs == null) { throw new ArgumentNullException(nameof(eventArgs)); }
+            if(eventArgs.SelectedItem == null) { return; } //selected item may be null, do nothing if it is
+
+            var unit = (CuttingUnit)eventArgs.SelectedItem;
+
+            ViewModel.ShowUnit(unit);
+
+
             ((ListView)sender).SelectedItem = null;
         }
     }
