@@ -1,48 +1,49 @@
-﻿using FScruiser.Models;
-using System;
+﻿using CruiseDAL.DataObjects;
+using FScruiser.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
-    public interface ICuttingUnitDataService : IDataService
+    public interface ICuttingUnitDataService
     {
-        void AddTree(Tree tree);
+        #region
 
-        Plot CreateNewPlot(string stratumCode);
+        Tree CreateTree(TallyPopulation tallyPopulation);
 
-        Tree CreateNewTree(TallyPopulation tallyPop, Plot plot = null);
+        TreeEstimateDO LogTreeEstimate(CountTreeDO count, int kpi);
 
-        void LogTreeEstimate(int KPI, TallyPopulation tallyPop);
+        #endregion
 
-        void LogTreeEstimate(int KPI, string stratumCode, string sampleGroupCode, string species);
+        #region query methods
 
-        IEnumerable<UnitStratum> GetAllUnitStrata();
+        IEnumerable<UnitStratum> QueryStrataByUnitCode(string unitCode);
 
-        #region Tree
+        IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratum(string stratumCode);
 
-        Tree GetTree(long tree_CN);
+        IEnumerable<SampleGroup> GetSampleGroupsByStratum(string stratumCode);
 
-        Tree GetTree(Guid tree_GUID);
+        IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sampleGroupCode);
 
-        IEnumerable<Tree> GetAllTrees();
+        IEnumerable<TallyPopulation> GetTalliesByStratum(string stratumCode);
 
-        IEnumerable<Tree> GetTrees(Stratum stratum, Plot plot = null);
+        #endregion query methods
 
-        #endregion Tree
+        #region update methods
 
-        Plot GetPlot(string stratumCode, int plotNumber);
+        void UpdateTree(Tree tree);
 
-        IEnumerable<TreeField> GetTreeFieldsByStratum(string code);
+        #endregion
 
-        IEnumerable<TallyPopulation> GetAllTallyPopulations();
+        #region insert methods
 
-        IEnumerable<TallyPopulation> GetTallyPopulationByStratum(string code);
+        void InsertTree(Tree tree);
 
-        IEnumerable<TreeDefaultValue> GetTreeDefaultsBySampleGroup(SampleGroup sg);
+        void InsertTreeEstimate(TreeEstimateDO treeEstimate);
+        TallyPopulation GetCount(long countCN);
+        Tree GetTree(long treeCN);
+        TreeEstimateDO GetTreeEstimate(long treeEstimateCN);
+        void UpdateCount(TallyPopulation count);
 
-        IEnumerable<SampleGroup> GetSampleGroupsByStratum(Stratum stratum);
+        #endregion
     }
 }

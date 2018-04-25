@@ -1,5 +1,5 @@
-﻿using FScruiser.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using CruiseDAL;
+using FScruiser.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,39 +8,27 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
-    public class CruiseDataService : DbContext, ICruiseDataService
+    public class CruiseDataService : ICruiseDataService
     {
-        public CruiseDataService(CruiseFile cf) : this(cf.Path)
-        { }
+        private IEnumerable<CuttingUnit> _units;
 
-        protected CruiseDataService(string path)
+        protected DAL Datastore {  get; set; }
+
+        public string Path => Datastore.Path;
+    
+        public CruiseDataService(string path)
         {
-            var builder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder
-            {
-                DataSource = path
-            };
-            _connectionString = builder.ToString();
+            if(path == null) { throw new ArgumentNullException(nameof(path)); }
+
+            Datastore = new DAL(path);
         }
 
-        string _connectionString;
+        public IEnumerable<CuttingUnit> Units => _units ?? (_units = ReadUnits());
 
-        public DbSet<Sale> Sale { get; protected set; }
-
-        public DbSet<CuttingUnit> Units { get; protected set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        private IEnumerable<CuttingUnit> ReadUnits()
         {
-            optionsBuilder.UseSqlite(_connectionString);
-        }
-
-        public Sale GetSale()
-        {
-            return Sale.FirstOrDefault();
-        }
-
-        public IEnumerable<CuttingUnit> GetUnits()
-        {
-            return Units;
+            return Datastore.From<CuttingUnit>()
+                .Query().ToList();
         }
     }
 }
