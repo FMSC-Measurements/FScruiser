@@ -1,17 +1,12 @@
 ﻿using Android.App;
 using Android.Content.PM;
 using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using FScruiser.XF;
-using System;
-using System.Linq;
 using Xamarin.Forms.Platform.Android;
 
 namespace FScruiser.Droid
 {
-    [Activity(Label = "FScruiser", Icon = "@drawable/fscruiser_32dp", MainLauncher = false, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Label = "FScruiser", Icon = "@drawable/fscruiser_32dp", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : FormsApplicationActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
@@ -20,9 +15,7 @@ namespace FScruiser.Droid
 
             Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            FreshMvvm.FreshIOC.Container.Register<ICruiseFolderService, CruiseFolderService>();
-
-            var app = new App();
+            var app = new App(new AndroidServiceService());
 
             LoadApplication(app);
         }
