@@ -1,4 +1,5 @@
-﻿using FScruiser.Models;
+﻿using CruiseDAL.DataObjects;
+using FScruiser.Models;
 using FScruiser.Services;
 using System;
 using System.Collections.Generic;
@@ -12,13 +13,13 @@ namespace FScruiser.ViewModels
 {
     public class TreeEditViewModel : FreshMvvm.FreshBasePageModel, INotifyPropertyChanged
     {
-        private Stratum _stratum;
+        private StratumDO _stratum;
         private Tree _tree;
-        private IEnumerable<TreeField> _treeFields;
+        private IEnumerable<TreeFieldSetupDO> _treeFields;
 
         public ICuttingUnitDataService Dataservice { get; set; }
 
-        public IEnumerable<TreeField> TreeFields
+        public IEnumerable<TreeFieldSetupDO> TreeFields
         {
             get
             {
@@ -31,12 +32,12 @@ namespace FScruiser.ViewModels
             }
         }
 
-        public IEnumerable<TreeDefaultValue> TreeDefaults
+        public IEnumerable<TreeDefaultValueDO> TreeDefaults
         {
             get
             {
                 var sg = Tree?.SampleGroup;
-                if (sg == null) { return new TreeDefaultValue[0]; }
+                if (sg == null) { return new TreeDefaultValueDO[0]; }
                 if (sg.TreeDefaults == null)
                 {
                     sg.TreeDefaults = Dataservice.GetTreeDefaultsBySampleGroup(sg).ToList();
@@ -46,15 +47,15 @@ namespace FScruiser.ViewModels
             }
         }
 
-        public IEnumerable<SampleGroup> SampleGroups
+        public IEnumerable<SampleGroupDO> SampleGroups
         {
             get
             {
                 var stratum = Tree?.Stratum;
-                if (stratum == null) { return new SampleGroup[0]; }
+                if (stratum == null) { return new SampleGroupDO[0]; }
                 if (stratum.SampleGroups == null)
                 {
-                    stratum.SampleGroups = Dataservice.GetSampleGroupsByStratum(stratum).ToList();
+                    stratum.SampleGroups = Dataservice.GetSampleGroupsByStratum(stratum.Code).ToList();
                 }
                 return stratum.SampleGroups;
             }
@@ -64,7 +65,7 @@ namespace FScruiser.ViewModels
 
         public event EventHandler<Tree> TreeChanged;
 
-        public Stratum Stratum
+        public StratumDO Stratum
         {
             get { return _stratum; }
             set
