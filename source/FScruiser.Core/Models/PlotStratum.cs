@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    public class Tree : TreeDO
+    public class StratumPlot : PlotDO
     {
         
     }

@@ -1,7 +1,8 @@
-﻿using System;
+﻿using CruiseDAL.DataObjects;
+using FMSC.ORM.EntityModel;
+using FMSC.ORM.EntityModel.Attributes;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,12 +10,15 @@ using System.Windows.Input;
 
 namespace FScruiser.Models
 {
-    [Table("CuttingUnit")]
-    public class CuttingUnit
+    public class CuttingUnit : CuttingUnitDO
     {
-        [Key]
-        public long CuttingUnit_CN { get; set; }
 
-        public string Code { get; set; }
+        public override string ToString()
+        {
+            return string.Format("{0}: {1} Area: {2}"
+                , base.Code
+                , base.Description
+                , base.Area);
+        }
     }
 }

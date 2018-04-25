@@ -1,39 +1,31 @@
-﻿using System;
+﻿using CruiseDAL.DataObjects;
+using FMSC.ORM.EntityModel.Attributes;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    //[EntitySource(SourceName = "CuttingUnitStratum", JoinCommands = "JOIN Stratum USING (Stratum_CN)")]
-    [Table("CuttingUnitStratum")]
-    public class UnitStratum
+
+    public class UnitStratum : CuttingUnitStratumDO
     {
-        [Key]
-        public long RowID { get; set; }
+        #region stratum members
+        [Field(SQLExpression = "Stratum.Code", Alias = "StratumCode")]
+        public string StratumCode { get; set; }
 
-        public long CuttingUnit_CN { get; set; }
+        [Field(SQLExpression = "Stratum.Description", Alias = "StratumDescription")]
+        public string StratumDescription { get; set; }
 
-        public long Stratum_CN { get; set; }
+        [Field(SQLExpression = "Stratum.Method", Alias = "StratumMethod")]
+        public string Method { get; set; }
 
-        [ForeignKey(nameof(Stratum_CN))]
-        public Stratum Stratum { get; set; }
+        [Field(SQLExpression = "Stratum.HotKey", Alias = "StratumHotKey")]
+        public string HotKey { get; set; }
+        #endregion
 
-        [ForeignKey(nameof(CuttingUnit_CN))]
-        public CuttingUnit Unit { get; set; }
-
-        List<Plot> _plots;
-
-        public List<Plot> Plots
-        {
-            get { return _plots ?? (_plots = new List<Plot>()); }
-            set { _plots = value; }
-        }
-
-        [NotMapped]
-        public List<Tree> Trees { get; set; }
+        [Field(SQLExpression = "CuttingUnit.Code", Alias = "UnitCode")]
+        public string UnitCode { get; set; }
     }
 }
