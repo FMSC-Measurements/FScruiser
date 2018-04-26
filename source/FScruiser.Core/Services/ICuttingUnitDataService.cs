@@ -12,21 +12,17 @@ namespace FScruiser.Services
 
         TreeEstimateDO LogTreeEstimate(CountTreeDO count, int kpi);
 
+        void RefreshData(bool force = false);
+
         #endregion
 
-        #region query methods
+        CuttingUnit Unit { get; }
 
-        IEnumerable<UnitStratum> QueryStrataByUnitCode(string unitCode);
+        IEnumerable<StratumDO> Strata { get; }
 
-        IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratum(string stratumCode);
+        IEnumerable<SampleGroup> SampleGroups { get; }
 
-        IEnumerable<SampleGroup> GetSampleGroupsByStratum(string stratumCode);
-
-        IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sampleGroupCode);
-
-        IEnumerable<TallyPopulation> GetTalliesByStratum(string stratumCode);
-
-        #endregion query methods
+        IEnumerable<TallyPopulation> TallyPopulations { get; }
 
         #region update methods
 

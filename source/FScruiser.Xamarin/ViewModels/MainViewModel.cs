@@ -82,12 +82,12 @@ namespace FScruiser.XF.ViewModels
             if (unit == null) { throw new ArgumentNullException(nameof(unit)); }
 
 
-            var dataService = new CuttingUnitDataService(DataService.Path);
+            var dataService = new CuttingUnitDataService(DataService.Path, unit);
 
             var view = new UnitTreeTallyPage();
             var viewModel = new UnitTreeTallyViewModel(view.Navigation, App.ServiceService);
             view.BindingContext = viewModel;
-            viewModel.Init(dataService, unit.Code);
+            viewModel.Init(dataService);
 
             Navigation.PushAsync(view);
         }

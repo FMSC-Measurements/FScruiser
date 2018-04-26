@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace FScruiser.Models
 {
 
-    public class UnitStratum : CuttingUnitStratumDO
+    public class UnitStratum : StratumDO
     {
         #region stratum members
         [Field(SQLExpression = "Stratum.Code", Alias = "StratumCode")]

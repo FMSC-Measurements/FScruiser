@@ -10,67 +10,103 @@ namespace FScruiser.Services
 {
     public class CuttingUnitDataService : ICuttingUnitDataService
     {
-        private IEnumerable<UnitStratum> _strata;
+        public DAL Datastore { get; set; }
 
-        protected DAL Datastore { get; set; }
+        public CuttingUnit Unit { get; protected set; }
 
-        public CuttingUnit Unit { get; set; }
+        public IEnumerable<StratumDO> Strata { get; protected set; }
+        public Dictionary<long?, TreeDefaultValueDO> TreeDefaultValues { get; private set; }
+        public IEnumerable<SampleGroup> SampleGroups { get; protected set; }
 
-        public CuttingUnitDataService(string path)
+        public IEnumerable<TallyPopulation> TallyPopulations { get; protected set; }
+
+        //public IList<Tree> Trees { get; set; }
+
+        public CuttingUnitDataService(CuttingUnit unit)
+        { Unit = unit; }
+
+        public CuttingUnitDataService(string path, CuttingUnit unit) : this(unit)
         {
             if (path == null) { throw new ArgumentNullException(path); }
 
             Datastore = new DAL(path);
         }
 
+        public void RefreshData(bool force = false)
+        {
+            Strata = QueryStrataByUnitCode(Unit.Code).ToArray();
+
+            var tdv = Datastore.From<TreeDefaultValueDO>()
+                .Query().ToArray();
+
+            TreeDefaultValues = tdv.ToDictionary(x => x.TreeDefaultValue_CN);
+
+            SampleGroups = GetSampleGroupsByUnitCode(Unit.Code).ToArray();
+
+            foreach (var sg in SampleGroups)
+            {
+                sg.Stratum = Strata.Where(x => x.Stratum_CN == sg.Stratum_CN).Single();
+                sg.Sampler = SampleSelectorFactory.MakeSampleSelecter(sg);
+            }
+
+            TallyPopulations = GetTallyPopulationsByUnitCode(Unit.Code).ToArray();
+
+            foreach (var tally in TallyPopulations)
+            {
+                tally.CuttingUnit = Unit;
+                if (tally.TreeDefaultValue_CN != null)
+                {
+                    tally.TreeDefaultValue = TreeDefaultValues[tally.TreeDefaultValue_CN];
+                }
+                tally.SampleGroup = SampleGroups.Where(x => tally.SampleGroup_CN == x.SampleGroup_CN).Single();
+            }
+
+            //Trees
+        }
+
         #region query methods
 
-        public IEnumerable<UnitStratum> QueryStrataByUnitCode(string unitCode)
+        public IEnumerable<StratumDO> QueryStrataByUnitCode(string unitCode)
         {
-            var query = Datastore.From<UnitStratum>()
+            var query = Datastore.From<StratumDO>()
+                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Join("Stratum", "USING (Stratum_CN)")
                 .Where("CuttingUnit.Code = @p1");
 
             return query.Query(unitCode).ToList();
         }
 
-        public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratum(string stratumCode)
+        //public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratum(string stratumCode)
+        //{
+        //    return Datastore.From<TreeFieldSetupDO>()
+        //        .Join("Stratum", "USING (Stratum_CN)")
+        //        .Where("Stratum.Code = @p1").Query(stratumCode);
+        //}
+
+        //public IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sampleGroupCode)
+        //{
+        //    return Datastore.From<TreeDefaultValueDO>()
+        //        .Join("SampleGroup", "USING (SampleGroup_CN)")
+        //        .Where("SampleGroup.Code = @p1").Query(sampleGroupCode);
+        //}
+
+        public IEnumerable<SampleGroup> GetSampleGroupsByUnitCode(string unitCode)
         {
-            return Datastore.From<TreeFieldSetupDO>()
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum.Code = @p1").Query(stratumCode);
+            return Datastore.From<SampleGroup>()
+                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
+                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+                .Where("CuttingUnit.Code = @p1").Query(unitCode).ToArray();
         }
 
-        public IEnumerable<SampleGroup> GetSampleGroupsByStratum(string stratumCode)
-        {
-            var sampleGroups = Datastore.From<SampleGroup>()
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum.Code = @p1").Query(stratumCode).ToArray();
-
-            foreach (var sg in sampleGroups)
-            {
-                sg.Sampler = SampleSelectorFactory.DeserializeSamplerState(sg);
-            }
-
-            return sampleGroups;
-        }
-
-        public IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sampleGroupCode)
-        {
-            return Datastore.From<TreeDefaultValueDO>()
-                .Join("SampleGroup", "USING (SampleGroup_CN)")
-                .Where("SampleGroup.Code = @p1").Query(sampleGroupCode);
-        }
-
-        public IEnumerable<TallyPopulation> GetTalliesByStratum(string stratumCode)
+        public IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode)
         {
             return Datastore.From<TallyPopulation>()
                 .Join("Tally", "USING (Tally_CN)")
                 .Join("SampleGroup", "USING (SampleGroup_CN)")
                 .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum.Code = @p1")
-                .Query(stratumCode);
+                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+                .Where("CuttingUnit.Code = @p1")
+                .Query(unitCode);
         }
 
         public TallyPopulation GetCount(long countCN)
@@ -143,10 +179,8 @@ namespace FScruiser.Services
 
         public void UpdateCount(TallyPopulation tallyPopulation)
         {
-            if(tallyPopulation.IsPersisted == false) { throw new InvalidOperationException("count is not persisted"); }
+            if (tallyPopulation.IsPersisted == false) { throw new InvalidOperationException("count is not persisted"); }
             Datastore.Update(tallyPopulation);
         }
-
-
     }
 }

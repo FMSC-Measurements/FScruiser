@@ -1,4 +1,5 @@
-﻿using FScruiser.Logic;
+﻿using CruiseDAL.DataObjects;
+using FScruiser.Logic;
 using FScruiser.Models;
 using FScruiser.Services;
 using System;
@@ -19,7 +20,7 @@ namespace FScruiser.XF.ViewModels
         private string _selectedStratum = STRATUM_FILTER_ALL;
         private IEnumerable<string> _stratumCodes;
         private ICommand _stratumSelectedCommand;
-        private IEnumerable<UnitStratum> _strata;
+        private IEnumerable<StratumDO> _strata;
         private ICommand _tallyCommand;
         private IEnumerable<string> _strataFilterOptions;
 
@@ -32,7 +33,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public IEnumerable<UnitStratum> Strata
+        public IEnumerable<StratumDO> Strata
         {
             get { return _strata; }
             set { SetValue(ref _strata, value); }
@@ -97,31 +98,23 @@ namespace FScruiser.XF.ViewModels
             ServiceService = serviceService;
         }
 
-        public void Init(ICuttingUnitDataService dataService, string cuttingUnitCode)
+        public void Init(ICuttingUnitDataService dataService)
         {
-            var strata = dataService.QueryStrataByUnitCode(cuttingUnitCode);
-
-            var tallyLookup = new Dictionary<string, IEnumerable<TallyPopulation>>();
-
-            foreach (var s in strata)
-            {
-                var tallies = dataService.GetTalliesByStratum(s.StratumCode).ToArray();
-                var sampleGroups = dataService.GetSampleGroupsByStratum(s.StratumCode).ToArray();
-
-                foreach (var tally in tallies)
-                {
-                    tally.SampleGroup = sampleGroups.Where(x => x.Code == tally.SampleGroupCode).Single();
-                }
-
-                tallyLookup.Add(s.StratumCode, tallies);
-            }
-
-            StrataFilterOptions = strata.Select(x => x.StratumCode).Append(STRATUM_FILTER_ALL).ToArray();
-
-            StratumCodes = strata.Select(x => x.StratumCode);
-            Strata = strata;
-            Tallies = tallyLookup;
+            dataService.RefreshData();
             DataService = dataService;
+
+            StratumCodes = dataService.Strata.Select(x => x.Code);
+            Strata = dataService.Strata;
+
+            var tallyLookup = dataService.TallyPopulations
+                .GroupBy(x => x.StratumCode)
+                .ToDictionary(x => x.Key, x => (IEnumerable<TallyPopulation>)x.ToArray());
+            Tallies = tallyLookup;
+            
+
+            StrataFilterOptions = Strata.Select(x => x.Code)
+                .Append(STRATUM_FILTER_ALL)
+                .ToArray();
         }
 
         private void Tally(TallyPopulation obj)
