@@ -12,7 +12,7 @@ namespace FScruiser.Logic
 {
     public class TreeBasedTallyLogic
     {
-        public static void OnTally(TallyPopulation count,
+        public static async Task OnTallyAsync(TallyPopulation count,
             ICuttingUnitDataService dataService, ICollection<TallyFeedItem> tallyHistory,
             ITallySettingsDataService tallySettings,
             IDialogService dialogService, ISoundService soundService)
@@ -37,16 +37,17 @@ namespace FScruiser.Logic
                 }
                 catch (FMSC.ORM.SQLException e) //count save fail
                 {
-                    dialogService.ShowMessage("File error");
+                    await dialogService.ShowMessageAsync("File error");
+                    return;
                 }
             }
             else if (count.Is3P)//threeP sampling
             {
-                action = TallyThreeP(count, sg.Sampler, sg, dataService, dialogService);
+                action = await TallyThreePAsync(count, sg.Sampler, sg, dataService, dialogService);
             }
             else//non 3P sampling (STR)
             {
-                action = TallyStandard(count, sg.Sampler, dataService, dialogService);
+                action = await TallyStandardAsync(count, sg.Sampler, dataService, dialogService);
             }
 
             //action may be null if cruising 3P and user doesn't enter a kpi
@@ -67,19 +68,19 @@ namespace FScruiser.Logic
 
                     if (tallySettings.EnableCruiserPopup)
                     {
-                        dialogService.AskCruiser(tree);
-                        dataService.UpdateTree(tree);
+                        await dialogService.AskCruiserAsync(tree);
+                        await dataService.UpdateTreeAsync(tree);
                     }
                     else
                     {
                         var sampleType = (tree.CountOrMeasure == "M") ? "Measure Tree" :
                                  (tree.CountOrMeasure == "I") ? "Insurance Tree" : String.Empty;
-                        dialogService.ShowMessage("Tree #" + tree.TreeNumber.ToString(), sampleType);
+                        await dialogService.ShowMessageAsync("Tree #" + tree.TreeNumber.ToString(), sampleType);
                     }
 
-                    if (tree.CountOrMeasure == "M" && AskEnterMeasureTreeData(tallySettings, dialogService))
+                    if (tree.CountOrMeasure == "M" && await AskEnterMeasureTreeDataAsync(tallySettings, dialogService))
                     {
-                        dialogService.ShowEditTree(tree);
+                        var task = dialogService.ShowEditTreeAsync(tree);//allow method to contiue from show edit tree we will allow tally history action to be added in the background
                     }
                 }
                 tallyHistory.Add(action);
@@ -88,13 +89,13 @@ namespace FScruiser.Logic
 
         //DataService (CreateNewTreeEntry)
         //SampleGroup (MinKPI/MaxKPI)
-        public static TallyFeedItem TallyThreeP(TallyPopulation count, SampleSelecter sampler, SampleGroup sg, ICuttingUnitDataService dataService, IDialogService dialogService)
+        public static async Task<TallyFeedItem> TallyThreePAsync(TallyPopulation count, SampleSelecter sampler, SampleGroup sg, ICuttingUnitDataService dataService, IDialogService dialogService)
         {
             var action = new TallyFeedItem()
             { Count = count };
 
             int kpi = 0;
-            int? value = dialogService.AskKPI((int)sg.MinKPI, (int)sg.MaxKPI);
+            int? value = await dialogService.AskKPI((int)sg.MinKPI, (int)sg.MaxKPI);
             if (value == null)
             {
                 return null;
@@ -148,7 +149,7 @@ namespace FScruiser.Logic
                 count.SumKPI    = originalSumKPI;
                 count.TreeCount = originalCount;
 
-                dialogService.ShowMessage("File error");
+                await dialogService.ShowMessageAsync("File error");
 
                 return null;
             }
@@ -156,7 +157,7 @@ namespace FScruiser.Logic
 
         //DataService (CreateNewTreeEntry)
         //
-        public static TallyFeedItem TallyStandard(TallyPopulation count, SampleSelecter sampleSelecter, ICuttingUnitDataService dataService, IDialogService dialogService)
+        public static async Task<TallyFeedItem> TallyStandardAsync(TallyPopulation count, SampleSelecter sampleSelecter, ICuttingUnitDataService dataService, IDialogService dialogService)
         {
             var action = new TallyFeedItem()
             { Count = count };
@@ -190,17 +191,17 @@ namespace FScruiser.Logic
             {
                 count.TreeCount = originalCount;
 
-                dialogService.ShowMessage("File error", e.GetType().Name);
+                await dialogService.ShowMessageAsync("File error", e.GetType().Name);
 
                 return null;
             }
         }
 
-        protected static bool AskEnterMeasureTreeData(ITallySettingsDataService appSettings, IDialogService dialogService)
+        protected static async Task<bool> AskEnterMeasureTreeDataAsync(ITallySettingsDataService appSettings, IDialogService dialogService)
         {
             if (!appSettings.EnableAskEnterTreeData) { return false; }
 
-            return dialogService.AskYesNo("Would you like to enter tree data now?", "Sample", false);
+            return await dialogService.AskYesNoAsync("Would you like to enter tree data now?", "Sample", false);
         }
 
     }

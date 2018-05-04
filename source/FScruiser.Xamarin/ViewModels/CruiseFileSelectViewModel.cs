@@ -36,9 +36,9 @@ namespace FScruiser.XF.ViewModels
             set { SetValue(ref _fileGroups, value); }
         }
 
-        public CruiseFileSelectViewModel(INavigation navigation) : base(navigation)
+        public CruiseFileSelectViewModel(INavigation navigation, ICruiseFileService folderService) : base(navigation)
         {
-
+            FolderService = folderService;
         }
 
         public void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs eventArgs)
@@ -56,9 +56,8 @@ namespace FScruiser.XF.ViewModels
             App.ServiceService.CruiseDataService = dataService;
         }
 
-        public void Init(ICruiseFileService folderService)
+        public override void Init()
         {
-            FolderService = folderService;
             FileGroups = FolderService.CruiseFilesGroups.ToArray();
             SelectedFolder = FileGroups.FirstOrDefault();
         }

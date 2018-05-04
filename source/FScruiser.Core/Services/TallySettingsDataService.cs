@@ -1,11 +1,12 @@
-﻿using FScruiser.Util;
+﻿using System.Collections.Generic;
+using FScruiser.Util;
 
 namespace FScruiser.Services
 {
     public class TallySettingsDataService : INPC_Base, ITallySettingsDataService
     {
-        private bool _enableCruisePopup;
-        private bool _enableAskEnterTreeData;
+        private bool _enableCruisePopup = true;
+        private bool _enableAskEnterTreeData = true;
 
         public bool EnableCruiserPopup
         {
@@ -17,6 +18,12 @@ namespace FScruiser.Services
         {
             get { return _enableAskEnterTreeData; }
             set { SetValue(ref _enableAskEnterTreeData, value); }
+        }
+
+        public ICollection<string> Cruisers
+        {
+            get => new string[] { "BC", "AB", "CD" };
+            set => throw new System.NotImplementedException();
         }
     }
 }

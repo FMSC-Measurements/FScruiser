@@ -1,7 +1,5 @@
 ﻿using FScruiser.Models;
 using FScruiser.XF.ViewModels;
-using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Xamarin.Forms;
@@ -19,31 +17,48 @@ namespace FScruiser.XF.Pages
         public UnitTreeTallyPage()
         {
             InitializeComponent();
-
-            _tallyFeedListView.BindingContextChanged += TallyFeedListView_BindingContextChanged;
         }
 
-        private void TallyFeedListView_BindingContextChanged(object sender, EventArgs e)
+        protected override void OnAppearing()
         {
-            if (sender == null) { return; }
-            var view = (ListView)sender;
+            base.OnAppearing();
 
-
-            var tallyFeedCollection = view.BindingContext as INotifyCollectionChanged;
-            if(tallyFeedCollection == null) { return; }
-
-            tallyFeedCollection.CollectionChanged += TallyFeedCollection_CollectionChanged;
-        }
-
-        private void TallyFeedCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            var tallyFeed = sender as IEnumerable<TallyFeedItem>;
-
-            if (e.Action == NotifyCollectionChangedAction.Add)
+            var viewMedel = ViewModel;
+            if (viewMedel != null)
             {
-                _tallyFeedListView.ScrollTo(tallyFeed.LastOrDefault(), ScrollToPosition.End, false);
+                ViewModel.TallyFeed.CollectionChanged += TallyFeed_CollectionChanged;
             }
         }
+
+        private void TallyFeed_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                var lastItem = _tallyFeedListView.ItemsSource.OfType<object>().Last();
+                _tallyFeedListView.ScrollTo(lastItem, ScrollToPosition.End, false);
+            }
+        }
+
+        //private void TallyFeedListView_BindingContextChanged(object sender, EventArgs e)
+        //{
+        //    if (sender == null) { return; }
+        //    var view = (ListView)sender;
+
+        //    var tallyFeedCollection = view.BindingContext as INotifyCollectionChanged;
+        //    if(tallyFeedCollection == null) { return; }
+
+        //    tallyFeedCollection.CollectionChanged += TallyFeedCollection_CollectionChanged;
+        //}
+
+        //private void TallyFeedCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        //{
+        //    var tallyFeed = sender as IEnumerable<TallyFeedItem>;
+
+        //    if (e.Action == NotifyCollectionChangedAction.Add)
+        //    {
+        //        _tallyFeedListView.ScrollTo(tallyFeed.LastOrDefault(), ScrollToPosition.End, false);
+        //    }
+        //}
 
         public void TallyFeedListView_ItemSelected(object sender, SelectedItemChangedEventArgs eventArgs)
         {

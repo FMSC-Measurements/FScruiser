@@ -1,10 +1,12 @@
 ﻿using CruiseDAL;
 using CruiseDAL.DataObjects;
+using CruiseDAL.Schema;
 using FScruiser.Logic;
 using FScruiser.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
@@ -14,11 +16,15 @@ namespace FScruiser.Services
 
         public CuttingUnit Unit { get; protected set; }
 
-        public IEnumerable<StratumDO> Strata { get; protected set; }
+        public IEnumerable<Stratum> Strata { get; protected set; }
         public Dictionary<long?, TreeDefaultValueDO> TreeDefaultValues { get; private set; }
         public IEnumerable<SampleGroup> SampleGroups { get; protected set; }
 
         public IEnumerable<TallyPopulation> TallyPopulations { get; protected set; }
+        public IEnumerable<TreeFieldSetupDO> TreeFields { get; protected set; }
+
+        public IList<Tree> Trees { get; set; }
+        public List<TallyFeedItem> TallyFeed { get; protected set; }
 
         //public IList<Tree> Trees { get; set; }
 
@@ -36,10 +42,10 @@ namespace FScruiser.Services
         {
             Strata = QueryStrataByUnitCode(Unit.Code).ToArray();
 
-            var tdv = Datastore.From<TreeDefaultValueDO>()
+            var tdvs = Datastore.From<TreeDefaultValueDO>()
                 .Query().ToArray();
 
-            TreeDefaultValues = tdv.ToDictionary(x => x.TreeDefaultValue_CN);
+            TreeDefaultValues = tdvs.ToDictionary(x => x.TreeDefaultValue_CN);
 
             SampleGroups = GetSampleGroupsByUnitCode(Unit.Code).ToArray();
 
@@ -61,19 +67,34 @@ namespace FScruiser.Services
                 tally.SampleGroup = SampleGroups.Where(x => tally.SampleGroup_CN == x.SampleGroup_CN).Single();
             }
 
-            //Trees
+            TreeFields = GetTreeFieldsByUnitCode(Unit.Code).ToArray();
+
+            Trees = Datastore.From<Tree>()
+                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+                .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
+                .Query(Unit.Code).ToList();
+
+            foreach(var tree in Trees)
+            {
+                tree.CuttingUnit = Unit;
+                tree.Stratum = Strata.Where(x => x.Stratum_CN == tree.Stratum_CN).Single();
+                tree.SampleGroup = SampleGroups.Where(x => x.SampleGroup_CN == tree.SampleGroup_CN).SingleOrDefault();
+                if(tree.TreeDefaultValue_CN != null && TreeDefaultValues.TryGetValue(tree.TreeDefaultValue_CN, out var tdv))
+                { tree.TreeDefaultValue = tdv; }
+            }
+
+            TallyFeed = new List<TallyFeedItem>();
         }
 
         #region query methods
 
-        public IEnumerable<StratumDO> QueryStrataByUnitCode(string unitCode)
+        public IEnumerable<Stratum> QueryStrataByUnitCode(string unitCode)
         {
-            var query = Datastore.From<StratumDO>()
+            return Datastore.From<Stratum>()
                 .Join("CuttingUnitStratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1");
-
-            return query.Query(unitCode).ToList();
+                .Where("CuttingUnit.Code = @p1")
+                .Query(unitCode).ToList();
         }
 
         //public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratum(string stratumCode)
@@ -147,11 +168,20 @@ namespace FScruiser.Services
             return treeEstimate;
         }
 
+        public int GetNextTreeNumber(TallyPopulation tallyPopulation)
+        {
+            var cuttingUnit = tallyPopulation.CuttingUnit;
+            return Datastore.ExecuteScalar<int>($"SELECT max(TreeNumber) + 1 FROM Tree WHERE CuttingUnit_CN = {cuttingUnit.CuttingUnit_CN} AND Plot_CN IS NULL;");
+
+        }
+
         //just a helper method, does this belong here?
         public Tree CreateTree(TallyPopulation population)
         {
+            var treeNumber = GetNextTreeNumber(population);
             return new Tree()
             {
+                TreeNumber = treeNumber,
                 TreeDefaultValue = population.TreeDefaultValue,
                 SampleGroup = population.SampleGroup,
                 Stratum = population.SampleGroup.Stratum,
@@ -163,6 +193,11 @@ namespace FScruiser.Services
         {
             if (tree.IsPersisted == false) { throw new InvalidOperationException("tree is not persisted before calling update"); }
             Datastore.Update(tree);
+        }
+
+        public Task UpdateTreeAsync(Tree tree)
+        {
+            return Task.Run(() => UpdateTree(tree));
         }
 
         public void InsertTree(Tree tree)
@@ -181,6 +216,46 @@ namespace FScruiser.Services
         {
             if (tallyPopulation.IsPersisted == false) { throw new InvalidOperationException("count is not persisted"); }
             Datastore.Update(tallyPopulation);
+        }
+
+        public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode)
+        {
+            var fields = Datastore.From<TreeFieldSetupDO>()
+                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
+                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+                .Join("Stratum", "USING (Stratum_CN)")
+                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({string.Join(",", CruiseMethods.PLOT_METHODS.Select(s => "'" + s + "'").ToArray())})")
+                .GroupBy("Field")
+                .OrderBy("FieldOrder")
+                .Query(unitCode).ToList();
+
+            if (fields.Count == 0)
+            {
+                fields.AddRange(Constants.DEFAULT_TREE_FIELDS);
+            }
+
+            //if unit has multiple tree strata
+            //but stratum column is missing
+            if (Strata.Count() > 1
+                && !fields.Any(x => x.Field == "Stratum"))
+            {
+                //find the location of the tree number field
+                int indexOfTreeNum = fields.FindIndex(x => x.Field == CruiseDAL.Schema.TREE.TREENUMBER);
+                //if user doesn't have a tree number field, fall back to the last field index
+                if (indexOfTreeNum == -1) { indexOfTreeNum = fields.Count - 1; }//last item index
+                                                                                //add the stratum field to the filed list
+                TreeFieldSetupDO tfs = new TreeFieldSetupDO() { Field = "Stratum", Heading = "St", Format = "[Code]" };
+                fields.Insert(indexOfTreeNum + 1, tfs);
+            }
+
+            if (Strata.Any(st => st.Is3P)
+                && !fields.Any(f => f.Field == "STM"))
+            {
+                fields.Add(new TreeFieldSetupDO() { Field = "STM", Heading = "STM" });
+            }
+
+            return fields;
+
         }
     }
 }

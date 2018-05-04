@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
-namespace FScruiser.Pages
+namespace FScruiser.XF.Pages
 {
     public partial class TreeListPage : ContentPage
     {
@@ -17,14 +17,9 @@ namespace FScruiser.Pages
         public TreeListPage()
         {
             InitializeComponent();
-        }
 
-        protected override void OnBindingContextChanged()
-        {
-            base.OnBindingContextChanged();
-
-            _listViewLast = ListView.ItemsSource?.Cast<object>().LastOrDefault();
-            _listViewFirst = ListView.ItemsSource?.Cast<object>().LastOrDefault();
+            GoToEndButton.Clicked += GoToEndButton_Clicked;
+            GoToTopButton.Clicked += GoToTopButton_Clicked;
         }
 
         private void GoToEndButton_Clicked(object sender, EventArgs e)

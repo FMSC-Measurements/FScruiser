@@ -1,19 +1,13 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
 using FScruiser.Services;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Xamarin.Forms;
 
-namespace FScruiser.ViewModels
+namespace FScruiser.XF.ViewModels
 {
-    public class TreeEditViewModel : FreshMvvm.FreshBasePageModel, INotifyPropertyChanged
+    public class TreeEditViewModel : ViewModelBase
     {
-        private StratumDO _stratum;
         private Tree _tree;
         private IEnumerable<TreeFieldSetupDO> _treeFields;
 
@@ -27,99 +21,39 @@ namespace FScruiser.ViewModels
             }
             set
             {
-                _treeFields = value;
-                base.RaisePropertyChanged();
+                SetValue(ref _treeFields, value);
             }
         }
 
-        public IEnumerable<TreeDefaultValueDO> TreeDefaults
-        {
-            get
-            {
-                var sg = Tree?.SampleGroup;
-                if (sg == null) { return new TreeDefaultValueDO[0]; }
-                if (sg.TreeDefaults == null)
-                {
-                    sg.TreeDefaults = Dataservice.GetTreeDefaultsBySampleGroup(sg).ToList();
-                }
-                Debug.Assert(sg.TreeDefaults != null);
-                return sg.TreeDefaults;
-            }
-        }
+        public IEnumerable<SampleGroupDO> SampleGroups { get; protected set; }
 
-        public IEnumerable<SampleGroupDO> SampleGroups
-        {
-            get
-            {
-                var stratum = Tree?.Stratum;
-                if (stratum == null) { return new SampleGroupDO[0]; }
-                if (stratum.SampleGroups == null)
-                {
-                    stratum.SampleGroups = Dataservice.GetSampleGroupsByStratum(stratum.Code).ToList();
-                }
-                return stratum.SampleGroups;
-            }
-        }
+        public IEnumerable<TreeDefaultValueDO> TreeDefaults { get; protected set; }
 
-        public event EventHandler<Tree> TreeChanging;
-
-        public event EventHandler<Tree> TreeChanged;
-
-        public StratumDO Stratum
-        {
-            get { return _stratum; }
-            set
-            {
-                if (_stratum == value) { return; }
-                _stratum = value;
-                OnStratumChanged();
-                base.RaisePropertyChanged();
-            }
-        }
-
-        private void OnStratumChanged()
-        {
-            if (Stratum != null)
-            {
-                TreeFields = Dataservice.GetTreeFieldsByStratum(Stratum.Code);
-            }
-        }
+        public IEnumerable<string> SpeciesOptions { get; protected set; }
 
         public Tree Tree
         {
             get { return _tree; }
             set
             {
-                OnTreeChanging();
-                _tree = value;
-                OnTreeChanged();
-                RaisePropertyChanged();
+                SetValue(ref _tree, value);
             }
         }
 
-        public TreeEditViewModel(ICuttingUnitDataService ds)
+        public TreeEditViewModel(Tree tree, ICuttingUnitDataService ds, INavigation navigation) : base(navigation)
         {
             Dataservice = ds;
+            Tree = tree;
         }
 
-        private void OnTreeChanged()
+        public override void Init()
         {
-            Stratum = _tree?.Stratum;
-            TreeChanged?.Invoke(this, _tree);
-        }
+            var strata = Dataservice.Strata;
+            var sampleGroups = Dataservice.SampleGroups;
+            //var speciesOptions = Dataservice.
 
-        private void OnTreeChanging()
-        {
-            TreeChanging?.Invoke(this, _tree);
-        }
-
-        public override void Init(object initData)
-        {
-            var tree = initData as Tree;
-            if (tree != null)
-            {
-                Tree = tree;
-            }
+            var stratum = Tree.Stratum;
+            TreeFields = Dataservice.TreeFields;
         }
     }
 }

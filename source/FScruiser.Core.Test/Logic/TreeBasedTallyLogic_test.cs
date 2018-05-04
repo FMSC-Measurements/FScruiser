@@ -41,17 +41,17 @@ namespace FScruiser.Core.Test.Logic
                 appSettingsMock.Setup(x => x.EnableAskEnterTreeData).Returns(enterMeasureTreeData);
 
                 var dialogServiceMock = new Mock<IDialogService>();
-                dialogServiceMock.Setup(x => x.AskYesNo(It.Is<string>(s => s == "Would you like to enter tree data now?"), It.IsAny<string>(), It.IsAny<bool>()))
-                    .Returns(enterMeasureTreeData);
-                dialogServiceMock.Setup(x => x.ShowEditTree(It.IsAny<Tree>()));
+                dialogServiceMock.Setup(x => x.AskYesNoAsync(It.Is<string>(s => s == "Would you like to enter tree data now?"), It.IsAny<string>(), It.IsAny<bool>()))
+                    .Returns(Task.FromResult(enterMeasureTreeData));
+                dialogServiceMock.Setup(x => x.ShowEditTreeAsync(It.IsAny<Tree>()));
 
                 var soundServiceMock = new Mock<ISoundService>();
 
 
-                TreeBasedTallyLogic.OnTally(count, dataService, tallyFeed,
+                TreeBasedTallyLogic.OnTallyAsync(count, dataService, tallyFeed,
                     appSettingsMock.Object,
                     dialogServiceMock.Object,
-                    soundServiceMock.Object);
+                    soundServiceMock.Object).Wait();
 
 
 
@@ -82,16 +82,16 @@ namespace FScruiser.Core.Test.Logic
 
                     if (enterMeasureTreeData)
                     {
-                        dialogServiceMock.Verify(x => x.ShowEditTree(It.IsNotNull<Tree>()));
+                        dialogServiceMock.Verify(x => x.ShowEditTreeAsync(It.IsNotNull<Tree>()));
                     }
 
                     if (enableCruiserPopup)
                     {
-                        dialogServiceMock.Verify(x => x.AskCruiser(It.IsNotNull<Tree>()));
+                        dialogServiceMock.Verify(x => x.AskCruiserAsync(It.IsNotNull<Tree>()));
                     }
                     else
                     {
-                        dialogServiceMock.Verify(x => x.ShowMessage(It.Is<string>(s => s.Contains("Tree #")), It.IsAny<string>()));
+                        dialogServiceMock.Verify(x => x.ShowMessageAsync(It.Is<string>(s => s.Contains("Tree #")), It.IsAny<string>()));
                     }
                 }
             }

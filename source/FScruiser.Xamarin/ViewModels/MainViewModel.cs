@@ -1,14 +1,10 @@
 ﻿using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.XF.Pages;
-using FScruiser.XF.ViewModels;
 using Plugin.FilePicker;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -16,14 +12,12 @@ namespace FScruiser.XF.ViewModels
 {
     public class MainViewModel : ViewModelBase, IDisposable
     {
-        private ICruiseDataService _dataService;
+        private IEnumerable<CuttingUnit> _units;
         private Command _openFileCommand;
 
-        public ICruiseDataService DataService
-        {
-            get { return _dataService; }
-            set { SetValue(ref _dataService, value); }
-        }
+        public ServiceService ServiceService { get; protected set; }
+
+        public ICruiseDataService DataService => ServiceService.CruiseDataService;
 
         public IEnumerable<CuttingUnit> Units
         {
@@ -33,25 +27,32 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand OpenFileCommand => _openFileCommand ?? (_openFileCommand = new Command(ShowSelectCruiseAsync));
 
-        public MainViewModel(INavigation navigation) : base(navigation)
+        public MainViewModel(ServiceService serviceService, INavigation navigation) : base(navigation)
         {
-            DataService = App.ServiceService.CruiseDataService;
+            ServiceService = serviceService;
 
             MessagingCenter.Subscribe<MainViewModel>(this, "FileChanged", (sender) =>
             {
-                DataService = App.ServiceService.CruiseDataService;
+                Init();
             });
         }
 
-        public void Init() { }
+        public override void Init()
+        {
+            var dataService = DataService;
+            if (dataService != null)
+            {
+                Units = DataService.Units;
+            }
+        }
 
-        async void ShowSelectCruiseAsync()
+        private async void ShowSelectCruiseAsync()
         {
             //var viewModel = new CruiseFileSelectViewModel(Navigation);
             //var view = new CruiseFileSelectPage() { BindingContext = viewModel };
 
             //viewModel.Init(App.ServiceService.CruiseFileService);
-            //Navigation.PushModalAsync(view);           
+            //Navigation.PushModalAsync(view);
 
             try
             {
@@ -60,41 +61,44 @@ namespace FScruiser.XF.ViewModels
 
                 var filePath = fileData.FilePath;
 
-                await LoadCruiseAsync(filePath);
+                LoadCruiseAsync(filePath);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-
             }
         }
 
-        async Task LoadCruiseAsync(string path)
+        private void LoadCruiseAsync(string path)
         {
             if (File.Exists(path) == false) { throw new FileNotFoundException($"Could Not Locate Cruise at {path}"); }
 
-            //await Task.Run(() => { DataService = new CruiseDataService(path); });
-            DataService = new CruiseDataService(path);
-            Units = DataService.Units;
+            ServiceService.CruiseDataService = new CruiseDataService(path);
+
+            Init();
         }
 
         public void ShowUnit(CuttingUnit unit)
         {
             if (unit == null) { throw new ArgumentNullException(nameof(unit)); }
 
+            var cruiseDataService = DataService;
+            var unitDataService = new CuttingUnitDataService(cruiseDataService.Path, unit);
+            ServiceService.CuttingUnitDataSercie = unitDataService;
 
-            var dataService = new CuttingUnitDataService(DataService.Path, unit);
+            MessagingCenter.Send(this, "UnitSelected");
 
-            var view = new UnitTreeTallyPage();
-            var viewModel = new UnitTreeTallyViewModel(view.Navigation, App.ServiceService);
-            view.BindingContext = viewModel;
-            viewModel.Init(dataService);
+            //var view = new UnitTreeTallyPage();
+            //var viewModel = new UnitTreeTallyViewModel(view.Navigation, App.ServiceService);
+            //view.BindingContext = viewModel;
+            //viewModel.Init(dataService);
 
-            Navigation.PushAsync(view);
+            //Navigation.PushAsync(view);
         }
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
-        private IEnumerable<CuttingUnit> _units;
+        
 
         protected virtual void Dispose(bool disposing)
         {
@@ -126,7 +130,8 @@ namespace FScruiser.XF.ViewModels
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
-        #endregion
+
+        #endregion IDisposable Support
 
         //void ShowCruise(CruiseModel cruise)
         //{

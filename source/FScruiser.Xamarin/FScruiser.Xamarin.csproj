@@ -11,16 +11,11 @@
 
   <ItemGroup>
     <Compile Remove="Pages\PlotEditPage.xaml.cs" />
-    <Compile Remove="Pages\TreeEditPage.xaml.cs" />
-    <Compile Remove="Pages\TreeListPage.xaml.cs" />
     <Compile Remove="Properties\AssemblyInfo.cs" />
-    <Compile Remove="ViewModels\TreeEditViewModel.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="Pages\PlotEditPage.xaml" />
-    <EmbeddedResource Remove="Pages\TreeEditPage.xaml" />
-    <EmbeddedResource Remove="Pages\TreeListPage.xaml" />
   </ItemGroup>
 
   <!--<ItemGroup>
@@ -95,6 +90,9 @@
     <Compile Update="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Pages\UnitTallyMasterDetailPageMenuItem.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -104,6 +102,18 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Pages\CruiseFileSelectPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\TreeEditPage2.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\UnitTallyMasterDetailPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\UnitTallyMasterDetailPageDetail.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\UnitTallyMasterDetailPageMaster.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\UnitTreeTallyPage.xaml">

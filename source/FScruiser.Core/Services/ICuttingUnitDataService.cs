@@ -1,6 +1,7 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
@@ -18,15 +19,23 @@ namespace FScruiser.Services
 
         CuttingUnit Unit { get; }
 
-        IEnumerable<StratumDO> Strata { get; }
+        IEnumerable<Stratum> Strata { get; }
 
         IEnumerable<SampleGroup> SampleGroups { get; }
 
         IEnumerable<TallyPopulation> TallyPopulations { get; }
 
+        IEnumerable<TreeFieldSetupDO> TreeFields { get; }
+
+        IList<Tree> Trees { get; }
+
+        List<TallyFeedItem> TallyFeed { get; }
+
         #region update methods
 
         void UpdateTree(Tree tree);
+
+        Task UpdateTreeAsync(Tree tree);
 
         #endregion
 

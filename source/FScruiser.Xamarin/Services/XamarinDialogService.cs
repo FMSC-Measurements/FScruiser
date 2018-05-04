@@ -10,48 +10,58 @@ namespace FScruiser.XF.Services
 {
     public class XamarinDialogService : IDialogService
     {
-        public bool AskCancel(string message, string caption, bool defaultCancel)
+        public Task<bool> AskCancelAsync(string message, string caption, bool defaultCancel)
         {
             //throw new NotImplementedException();
-            return false;
+            return Task.FromResult(false);
         }
 
-        public void AskCruiser(Tree tree)
+        public async Task AskCruiserAsync(Tree tree)
         {
-            //throw new NotImplementedException();
+            var tallySettings = App.ServiceService.TallySettingsDataService;
+            var cruisers = tallySettings.Cruisers.ToArray();
+
+            var result = await App.Current.MainPage.DisplayActionSheet("Select Cruiser", "Cancel", null, cruisers);
+
+            if (result == "Cancel") { return; }
+
+            tree.Initials = result;
         }
 
-        public int? AskKPI(int min, int max)
+        public Task<int?> AskKPI(int min, int max)
         {
             //throw new NotImplementedException();
-            return 0;
+            return Task.FromResult((int?)1);
         }
 
-        public bool AskYesNo(string message, string caption)
+        public Task<bool> AskYesNoAsync(string message, string caption)
         {
             //throw new NotImplementedException();
-            return false;
+            return Task.FromResult(false);
         }
 
-        public bool AskYesNo(string message, string caption, bool defaultNo)
+        public Task<bool> AskYesNoAsync(string message, string caption, bool defaultNo)
         {
             //throw new NotImplementedException();
-            return false;
+            return Task.FromResult(false);
         }
 
-        public void ShowEditTree(Tree tree)
+        public Task ShowEditTreeAsync(Tree tree)
         {
             //throw new NotImplementedException();
+            return Task.FromResult(false);
         }
 
-        public void ShowMessage(string message)
+        public Task ShowMessageAsync(string message)
         {
             //throw new NotImplementedException();
+            return Task.FromResult(false);
         }
 
-        public void ShowMessage(string message, string caption)
+        public Task ShowMessageAsync(string message, string caption)
         {
             //throw new NotImplementedException();
+            return Task.FromResult(false);
         }
     }
 }

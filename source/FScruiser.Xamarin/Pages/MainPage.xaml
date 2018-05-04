@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FScruiser.Pages.MainPage"
+             x:Class="FScruiser.XF.Pages.MainPage"
              xmlns:cm="clr-namespace:Caliburn.Micro.Xamarin.Forms;assembly=Caliburn.Micro.Platform.Xamarin.Forms"
              x:Name="TopPage">
     <StackLayout>
-        <Button Command="{Binding OpenFileCommand}">Open File</Button>
+        <Button Text="Select Cruise File" Command="{Binding OpenFileCommand}"/>
         <Label>Cutting Units:</Label>
         <ScrollView>
             <ListView x:Name="UnitListView" ItemsSource="{Binding Units}" ItemSelected="UnitListView_ItemSelected">

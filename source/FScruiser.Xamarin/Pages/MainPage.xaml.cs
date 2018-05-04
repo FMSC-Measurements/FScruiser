@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms;
 
-namespace FScruiser.Pages
+namespace FScruiser.XF.Pages
 {
     public partial class MainPage : ContentPage
     {

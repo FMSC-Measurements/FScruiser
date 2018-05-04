@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
-             x:Class="FScruiser.XF.Pages.UnitTreeTallyPage">
+             x:Class="FScruiser.XF.Pages.UnitTreeTallyPage"
+             NavigationPage.HasNavigationBar="False">
     <ContentPage.Resources>
         <ResourceDictionary>
             <Color x:Key="tallyButtonBgColor">Green</Color>
@@ -17,12 +18,20 @@
                         <ViewCell>
                             <StackLayout Orientation="Horizontal">
                                 <BoxView Color="#30C1BC" WidthRequest="3" />
-                                <Label VerticalTextAlignment="Center" Text="{Binding StratumCode, StringFormat='St:{0}'}"/>
-                                <Label VerticalTextAlignment="Center" Text="{Binding TallyDescription}, StringFormat='| {0}'}"/>
-                                <Label VerticalTextAlignment="Center" Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" IsVisible="{Binding HasTree}" />
-                                <Frame HorizontalOptions="EndAndExpand" BackgroundColor="#30C1BC" IsVisible="{Binding HasTree}" >
-                                    <Label x:Name="CruiserInitialsLabel" TextColor="Black" Text="{Binding Initials}"/>
-                                </Frame>
+                                <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding TallyDescription}, StringFormat='| {0}'}" VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" VerticalTextAlignment="Center" IsVisible="{Binding HasTree}" />
+                                <!--<Frame HorizontalOptions="EndAndExpand" BackgroundColor="#30C1BC" IsVisible="{Binding HasTree}" >
+                                    <Label x:Name="CruiserInitialsLabel" Text="{Binding Initials}" TextColor="Black"/>
+                                </Frame>-->
+                                <AbsoluteLayout IsVisible="{Binding HasTree}" HorizontalOptions="EndAndExpand">
+                                    <BoxView Color="#30C1BC" AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.8, 0.8" AbsoluteLayout.LayoutFlags="All"/>
+                                    <BoxView Color="White" AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.5" AbsoluteLayout.LayoutFlags="All"/>
+                                    <Label x:Name="CruiserInitialsLabel" Text="{Binding Initials}" TextColor="Black" 
+                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center" 
+                                           AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.5" AbsoluteLayout.LayoutFlags="All"/>
+                                </AbsoluteLayout>
+
                             </StackLayout>
                         </ViewCell>
                     </DataTemplate>
@@ -30,19 +39,28 @@
             </ListView>
 
             <ScrollView VerticalOptions="FillAndExpand">
-                <flow:FlowListView x:Name="TallyListView"
-                                       
-                                FlowColumnCount="3" SeparatorVisibility="None" HasUnevenRows="True"  
-                                FlowItemsSource="{Binding TalliesFiltered}"
-                                       BackgroundColor="White"
-                                       VerticalOptions="CenterAndExpand"
-                                   FlowItemTappedCommand="{Binding TallyCommand}">
+                <flow:FlowListView x:Name="TallyListView" 
+                                   FlowItemsSource="{Binding TalliesFiltered}"
+                                   FlowItemTappedCommand="{Binding TallyCommand}"
+                                   FlowColumnCount="3" 
+                                   SeparatorVisibility="None" 
+                                   HasUnevenRows="True"  
+                                   BackgroundColor="White"
+                                   VerticalOptions="CenterAndExpand">
                     <flow:FlowListView.FlowColumnTemplate>
                         <DataTemplate>
-                            <StackLayout Margin="3" HorizontalOptions="Fill" VerticalOptions="Fill" Padding="3" BackgroundColor="{StaticResource tallyButtonBgColor}">
-                                <Label HorizontalTextAlignment="Center" Text="{Binding TallyDescription}"/>
-                                <Label HorizontalTextAlignment="Center" BackgroundColor="White" TextColor="Black" Text="{Binding TreeCount}"/>
-                                <Label HorizontalTextAlignment="Center" Text="{Binding TallyHotKey}"/>
+                            <StackLayout Margin="3" 
+                                         HorizontalOptions="Fill" 
+                                         VerticalOptions="Fill" Padding="3" 
+                                         BackgroundColor="{StaticResource tallyButtonBgColor}">
+                                <Label Text="{Binding TallyDescription}" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="{Binding TreeCount}" 
+                                       HorizontalTextAlignment="Center" 
+                                       BackgroundColor="White" 
+                                       TextColor="Black" />
+                                <Label Text="{Binding TallyHotKey}"
+                                       HorizontalTextAlignment="Center" />
                             </StackLayout>
                         </DataTemplate>
                     </flow:FlowListView.FlowColumnTemplate>
