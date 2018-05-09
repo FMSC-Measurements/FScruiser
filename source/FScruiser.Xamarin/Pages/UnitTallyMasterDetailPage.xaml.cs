@@ -13,12 +13,15 @@ namespace FScruiser.XF.Pages
     {
         public ServiceService ServiceService { get; private set; }
 
-        public UnitTallyMasterDetailPage(ServiceService serviceService)
+        public UnitTallyMasterDetailPage()
         {
             InitializeComponent();
 
             MenuItemsListView.ItemSelected += ListView_ItemSelected;
+        }
 
+        public UnitTallyMasterDetailPage(ServiceService serviceService) : this()
+        {
             ServiceService = serviceService;
 
             var viewModel = new MasterViewModel(serviceService, Navigation);
@@ -68,7 +71,7 @@ namespace FScruiser.XF.Pages
                 ServiceService = serviceService;
                 NavigationListItems = new NavigationListItem[]
                 {
-                    new NavigationListItem {Title = "Cutting Units", MakePage = () => new MainPage(), MakeViewModel = () => new MainViewModel(ServiceService, navigation) },
+                    new NavigationListItem {Title = "Cutting Units", MakePage = () => new CuttingUnitListPage(), MakeViewModel = () => new CuttingUnitListViewModel(ServiceService, navigation) },
                     new NavigationListItem {Title = "Tally", MakePage = () => new UnitTreeTallyPage(), MakeViewModel = () => new UnitTreeTallyViewModel(ServiceService, navigation)},
                     new NavigationListItem {Title="Trees", MakePage = ()=> new TreeListPage(), MakeViewModel = ()=> new TreeListViewModel(serviceService)}
                 };

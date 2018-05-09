@@ -10,7 +10,7 @@ using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
-    public class MainViewModel : ViewModelBase, IDisposable
+    public class CuttingUnitListViewModel : ViewModelBase, IDisposable
     {
         private IEnumerable<CuttingUnit> _units;
         private Command _openFileCommand;
@@ -27,11 +27,11 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand OpenFileCommand => _openFileCommand ?? (_openFileCommand = new Command(ShowSelectCruiseAsync));
 
-        public MainViewModel(ServiceService serviceService, INavigation navigation) : base(navigation)
+        public CuttingUnitListViewModel(ServiceService serviceService, INavigation navigation) : base(navigation)
         {
             ServiceService = serviceService;
 
-            MessagingCenter.Subscribe<MainViewModel>(this, "FileChanged", (sender) =>
+            MessagingCenter.Subscribe<CuttingUnitListViewModel>(this, "FileChanged", (sender) =>
             {
                 Init();
             });

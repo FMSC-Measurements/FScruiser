@@ -90,6 +90,12 @@
     <Compile Update="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Pages\AskKpiPage.xaml.cs">
+      <DependentUpon>AskKpiPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\CuttingUnitListPage.xaml.cs">
+      <DependentUpon>CuttingUnitListPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Pages\UnitTallyMasterDetailPageMenuItem.cs">
       <SubType>Code</SubType>
     </Compile>

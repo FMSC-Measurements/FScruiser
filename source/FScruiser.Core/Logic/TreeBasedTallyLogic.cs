@@ -80,8 +80,9 @@ namespace FScruiser.Logic
 
                     if (tree.CountOrMeasure == "M" && await AskEnterMeasureTreeDataAsync(tallySettings, dialogService))
                     {
-                        var task = dialogService.ShowEditTreeAsync(tree);//allow method to contiue from show edit tree we will allow tally history action to be added in the background
+                        var task = dialogService.ShowEditTreeAsync(tree, dataService);//allow method to contiue from show edit tree we will allow tally history action to be added in the background
                     }
+                    tree.HasFieldData = false;
                 }
                 tallyHistory.Add(action);
             }
@@ -95,7 +96,7 @@ namespace FScruiser.Logic
             { Count = count };
 
             int kpi = 0;
-            int? value = await dialogService.AskKPI((int)sg.MinKPI, (int)sg.MaxKPI);
+            int? value = await dialogService.AskKPIAsync((int)sg.MaxKPI, (int)sg.MinKPI);
             if (value == null)
             {
                 return null;

@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FScruiser.XF.Pages.CuttingUnitListPage"
+             xmlns:cm="clr-namespace:Caliburn.Micro.Xamarin.Forms;assembly=Caliburn.Micro.Platform.Xamarin.Forms"
+             x:Name="TopPage">
+    <StackLayout>
+        <ListView x:Name="UnitListView" 
+                  ItemsSource="{Binding Units}" 
+                  ItemSelected="UnitListView_ItemSelected" 
+                  HasUnevenRows="True">
+            <ListView.Header>
+                <Label Text="Cutting Units:" />
+            </ListView.Header>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Grid.Row="0" Text="{Binding Code}" FontSize="24" />
+                            <Label Grid.Column="0" Grid.Row="1" Text="{Binding StrataNames, StringFormat='Strata: {0}'}"/>
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <Button Text="Select Cruise File" Command="{Binding OpenFileCommand}" HorizontalOptions="EndAndExpand" />
+    </StackLayout>
+</ContentPage>

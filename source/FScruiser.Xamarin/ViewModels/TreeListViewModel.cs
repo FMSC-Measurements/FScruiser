@@ -45,7 +45,7 @@ namespace FScruiser.XF.ViewModels
 
         private void ShowEditTree(Tree obj)
         {
-            throw new NotImplementedException();
+            
         }
 
         private void DeleteTree(Tree tree)

@@ -10,16 +10,12 @@ namespace FScruiser.Services
 
         Task AskCruiserAsync(Tree tree);
 
-        Task<int?> AskKPI(int min, int max);
+        Task<int?> AskKPIAsync(int max, int min = 1);
 
-        Task<bool> AskYesNoAsync(String message, String caption);
+        Task<bool> AskYesNoAsync(string message, String caption, bool defaultNo = false);
 
-        Task<bool> AskYesNoAsync(string message, String caption, bool defaultNo);
+        Task ShowMessageAsync(string message, string caption = null);
 
-        Task ShowMessageAsync(string message);
-
-        Task ShowMessageAsync(string message, string caption);
-
-        Task ShowEditTreeAsync(Tree tree);
+        Task ShowEditTreeAsync(Tree tree, ICuttingUnitDataService dataService);
     }
 }

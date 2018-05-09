@@ -24,8 +24,7 @@ namespace FScruiser.XF.Pages
         {
             base.OnAppearing();
 
-            var viewModel = BindingContext as TreeEditViewModel;
-            if(viewModel != null)
+            if (BindingContext is TreeEditViewModel viewModel)
             {
                 UpdateTreeFields(viewModel);
             }

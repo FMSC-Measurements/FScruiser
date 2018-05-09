@@ -10,11 +10,11 @@ using Xamarin.Forms;
 
 namespace FScruiser.XF.Pages
 {
-    public partial class MainPage : ContentPage
+    public partial class CuttingUnitListPage : ContentPage
     {
-        protected MainViewModel ViewModel => (MainViewModel)BindingContext;
+        protected CuttingUnitListViewModel ViewModel => (CuttingUnitListViewModel)BindingContext;
 
-        public MainPage()
+        public CuttingUnitListPage()
         {
             InitializeComponent();
 

@@ -43,7 +43,7 @@ namespace FScruiser.Core.Test.Logic
                 var dialogServiceMock = new Mock<IDialogService>();
                 dialogServiceMock.Setup(x => x.AskYesNoAsync(It.Is<string>(s => s == "Would you like to enter tree data now?"), It.IsAny<string>(), It.IsAny<bool>()))
                     .Returns(Task.FromResult(enterMeasureTreeData));
-                dialogServiceMock.Setup(x => x.ShowEditTreeAsync(It.IsAny<Tree>()));
+                dialogServiceMock.Setup(x => x.ShowEditTreeAsync(It.IsAny<Tree>(), It.IsAny<ICuttingUnitDataService>()));
 
                 var soundServiceMock = new Mock<ISoundService>();
 
@@ -82,7 +82,7 @@ namespace FScruiser.Core.Test.Logic
 
                     if (enterMeasureTreeData)
                     {
-                        dialogServiceMock.Verify(x => x.ShowEditTreeAsync(It.IsNotNull<Tree>()));
+                        dialogServiceMock.Verify(x => x.ShowEditTreeAsync(It.IsNotNull<Tree>(), It.IsAny<ICuttingUnitDataService>()));
                     }
 
                     if (enableCruiserPopup)

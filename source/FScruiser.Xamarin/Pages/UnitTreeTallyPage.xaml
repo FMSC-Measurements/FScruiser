@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
              x:Class="FScruiser.XF.Pages.UnitTreeTallyPage"
-             NavigationPage.HasNavigationBar="False">
+             BackgroundColor ="White">
     <ContentPage.Resources>
         <ResourceDictionary>
             <Color x:Key="tallyButtonBgColor">Green</Color>
@@ -11,8 +11,10 @@
     </ContentPage.Resources>
     <ContentPage.Content>
         <StackLayout>
-            <ListView x:Name="_tallyFeedListView" HasUnevenRows="False"
-                          ItemsSource="{Binding TallyFeed}" ItemSelected="TallyFeedListView_ItemSelected">
+            <ListView x:Name="_tallyFeedListView" 
+                      HasUnevenRows="False"
+                      ItemsSource="{Binding TallyFeed}" 
+                      ItemSelected="TallyFeedListView_ItemSelected">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
@@ -26,33 +28,40 @@
                                 </Frame>-->
                                 <AbsoluteLayout IsVisible="{Binding HasTree}" HorizontalOptions="EndAndExpand">
                                     <BoxView Color="#30C1BC" AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.8, 0.8" AbsoluteLayout.LayoutFlags="All"/>
-                                    <BoxView Color="White" AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.5" AbsoluteLayout.LayoutFlags="All"/>
+                                    <BoxView Color="White" AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.5" AbsoluteLayout.LayoutFlags="All">
+                                        <BoxView.Triggers>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding Tree.TallyFeedStatus}" Value="Error">
+                                                <Setter Property="Color" Value="Red"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding Tree.TallyFeedStatus}" Value="HasData">
+                                                <Setter Property="BoxView.Color" Value="#30C1BC"/>
+                                            </DataTrigger>
+                                        </BoxView.Triggers>
+                                    </BoxView>
                                     <Label x:Name="CruiserInitialsLabel" Text="{Binding Initials}" TextColor="Black" 
                                            HorizontalTextAlignment="Center" VerticalTextAlignment="Center" 
                                            AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.5" AbsoluteLayout.LayoutFlags="All"/>
                                 </AbsoluteLayout>
-
                             </StackLayout>
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
 
-            <ScrollView VerticalOptions="FillAndExpand">
-                <flow:FlowListView x:Name="TallyListView" 
-                                   FlowItemsSource="{Binding TalliesFiltered}"
-                                   FlowItemTappedCommand="{Binding TallyCommand}"
-                                   FlowColumnCount="3" 
-                                   SeparatorVisibility="None" 
-                                   HasUnevenRows="True"  
-                                   BackgroundColor="White"
-                                   VerticalOptions="CenterAndExpand">
-                    <flow:FlowListView.FlowColumnTemplate>
-                        <DataTemplate>
-                            <StackLayout Margin="3" 
-                                         HorizontalOptions="Fill" 
-                                         VerticalOptions="Fill" Padding="3" 
-                                         BackgroundColor="{StaticResource tallyButtonBgColor}">
+
+            <flow:FlowListView  x:Name="TallyListView" 
+                                FlowItemsSource="{Binding TalliesFiltered}"
+                                FlowItemTappedCommand="{Binding TallyCommand}"
+                                FlowColumnCount="3" 
+                                SeparatorVisibility="None" 
+                                HasUnevenRows="True"  
+                                BackgroundColor="Gray"
+                                VerticalOptions="CenterAndExpand">
+                <flow:FlowListView.FlowColumnTemplate>
+                    <DataTemplate>
+                        <Frame CornerRadius="5" BackgroundColor="Green" Margin ="3">
+                            <StackLayout HorizontalOptions="Fill" 
+                                         VerticalOptions="Fill" Padding="3">
                                 <Label Text="{Binding TallyDescription}" 
                                        HorizontalTextAlignment="Center" />
                                 <Label Text="{Binding TreeCount}" 
@@ -62,19 +71,22 @@
                                 <Label Text="{Binding TallyHotKey}"
                                        HorizontalTextAlignment="Center" />
                             </StackLayout>
-                        </DataTemplate>
-                    </flow:FlowListView.FlowColumnTemplate>
-                </flow:FlowListView>
-            </ScrollView>
+                        </Frame>
+                    </DataTemplate>
+                </flow:FlowListView.FlowColumnTemplate>
+            </flow:FlowListView>
 
             <flow:FlowListView x:Name="StratumFilterListView" 
                                FlowColumnCount="6" SeparatorVisibility="None" HasUnevenRows="False"
-                               FlowItemsSource="{Binding StrataFilterOptions}" FlowItemTappedCommand="{Binding StratumSelectedCommand}"
+                               FlowItemTappedCommand="{Binding StratumSelectedCommand}"
                                VerticalOptions="End"
-                               HeightRequest="40">
+                               HeightRequest="40"
+                               FlowItemsSource="{Binding StrataFilterOptions}">
                 <flow:FlowListView.FlowColumnTemplate>
                     <DataTemplate>
-                        <Label HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Text="{Binding .}"></Label>
+                        <Frame  CornerRadius="5" BackgroundColor="{StaticResource primary_500}">
+                            <Label Text="{Binding .}" TextColor="#E1FFFFFF"/>
+                        </Frame>
                     </DataTemplate>
                 </flow:FlowListView.FlowColumnTemplate>
             </flow:FlowListView>

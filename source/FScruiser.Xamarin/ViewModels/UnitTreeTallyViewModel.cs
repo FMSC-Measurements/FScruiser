@@ -1,5 +1,4 @@
-﻿using CruiseDAL.DataObjects;
-using FScruiser.Logic;
+﻿using FScruiser.Logic;
 using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.XF.Pages;
@@ -16,13 +15,17 @@ namespace FScruiser.XF.ViewModels
     {
         public static readonly string STRATUM_FILTER_ALL = "All";
 
-        private ICuttingUnitDataService _dataService;
         private Dictionary<string, IEnumerable<TallyPopulation>> _tallies;
-        private string _selectedStratum = STRATUM_FILTER_ALL;
+        private string _selectedStratumCode = STRATUM_FILTER_ALL;
         private ICommand _stratumSelectedCommand;
-        //private IEnumerable<StratumDO> _strata;
         private ICommand _tallyCommand;
         private ObservableCollection<TallyFeedItem> _tallyFeed;
+
+        public ObservableCollection<TallyFeedItem> TallyFeed
+        {
+            get { return _tallyFeed; }
+            set { SetValue(ref _tallyFeed, value); }
+        }
 
         public Dictionary<string, IEnumerable<TallyPopulation>> Tallies
         {
@@ -35,12 +38,6 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        //public IEnumerable<StratumDO> Strata
-        //{
-        //    get { return _strata; }
-        //    set { SetValue(ref _strata, value); }
-        //}
-
         public IEnumerable<string> StrataFilterOptions
         {
             get
@@ -51,12 +48,12 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public string StratumFilter
+        public string SelectedStratumCode
         {
-            get { return _selectedStratum; }
+            get { return _selectedStratumCode; }
             set
             {
-                SetValue(ref _selectedStratum, value);
+                SetValue(ref _selectedStratumCode, value);
                 RaisePropertyChanged(nameof(TalliesFiltered));
             }
         }
@@ -66,29 +63,24 @@ namespace FScruiser.XF.ViewModels
             get
             {
                 if (Tallies == null) { return Enumerable.Empty<TallyPopulation>(); }
-                if (StratumFilter == STRATUM_FILTER_ALL)
+                if (SelectedStratumCode == STRATUM_FILTER_ALL)
                 {
                     return Tallies.Values.SelectMany(x => x).ToArray();
                 }
                 else
                 {
-                    return Tallies[StratumFilter];
+                    return Tallies[SelectedStratumCode];
                 }
             }
         }
 
-        public ICommand TallyCommand => _tallyCommand ?? (_tallyCommand = new Command<TallyPopulation>(this.Tally));
-
-        public ObservableCollection<TallyFeedItem> TallyFeed
-        {
-            get { return _tallyFeed; }
-            set { SetValue(ref _tallyFeed, value); }
-        }
-
-        public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataSercie;
+        public ICommand TallyCommand => _tallyCommand
+            ?? (_tallyCommand = new Command<TallyPopulation>(this.Tally));
 
         public ICommand StratumSelectedCommand => _stratumSelectedCommand
             ?? (_stratumSelectedCommand = new Command<string>(x => SetStratumFilter(x)));
+
+        public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataSercie;
 
         protected ServiceService ServiceService { get; set; }
 
@@ -96,7 +88,7 @@ namespace FScruiser.XF.ViewModels
         {
             ServiceService = serviceService;
 
-            MessagingCenter.Subscribe<MainPage>(this, "UnitSelected", (x) =>
+            MessagingCenter.Subscribe<CuttingUnitListPage>(this, "UnitSelected", (x) =>
             {
                 Init();
             });
@@ -132,7 +124,7 @@ namespace FScruiser.XF.ViewModels
 
         public void SetStratumFilter(string code)
         {
-            StratumFilter = code ?? STRATUM_FILTER_ALL;
+            SelectedStratumCode = code ?? STRATUM_FILTER_ALL;
         }
 
         public void ShowTallyFeedItem(TallyFeedItem selectedItem)
@@ -140,15 +132,15 @@ namespace FScruiser.XF.ViewModels
             if (selectedItem == null) { throw new ArgumentNullException(nameof(selectedItem)); }
             var tree = selectedItem.Tree;
 
-            if(tree != null)
+            if (tree != null)
             {
-                var view = new TreeEditPage2();
-                var viewModel = new TreeEditViewModel(tree, DataService, Navigation);
-                view.BindingContext = viewModel;
-                viewModel.Init();
-
-                Navigation.PushModalAsync(view);
+                ShowEditTree(tree);
             }
+        }
+
+        private void ShowEditTree(Tree tree)
+        {
+            ServiceService.DialogService.ShowEditTreeAsync(tree, DataService);
         }
     }
 }
