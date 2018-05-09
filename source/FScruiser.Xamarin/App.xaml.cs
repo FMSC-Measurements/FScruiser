@@ -1,10 +1,12 @@
 ﻿using FScruiser.Services;
 using FScruiser.XF.Pages;
 using FScruiser.XF.Services;
+using Xamarin.Forms.Xaml;
 
 namespace FScruiser.XF
 {
-    public class App : Xamarin.Forms.Application
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class App : Xamarin.Forms.Application
     {
         public static ServiceService ServiceService { get; set; }
 
@@ -15,8 +17,14 @@ namespace FScruiser.XF
         //        = false;
         //#endif
 
-        public App(ServiceService serviceService)
+        public App()
         {
+            this.InitializeComponent();
+        }
+
+        public App(ServiceService serviceService) : this()
+        {
+            
             serviceService.DialogService = new XamarinDialogService();
             serviceService.TallySettingsDataService = new TallySettingsDataService();
 
