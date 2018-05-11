@@ -18,11 +18,9 @@ namespace FScruiser.XF.Pages
         {
             InitializeComponent();
 
-            //disable selection on list view
-            //ListView.ItemSelected += (sender, e) =>
-            //{
-            //    ((ListView)sender).SelectedItem = null;
-            //};
+            UnitListView.ItemSelected += UnitListView_ItemSelected;
+
+            BindingContext = new CuttingUnitListViewModel();
         }
 
         private void UnitListView_ItemSelected(object sender, SelectedItemChangedEventArgs eventArgs)
@@ -33,9 +31,9 @@ namespace FScruiser.XF.Pages
 
             var unit = (CuttingUnit)eventArgs.SelectedItem;
 
-            ViewModel.ShowUnit(unit);
+            ViewModel.SelectUnit(unit);
 
-
+            
             ((ListView)sender).SelectedItem = null;
         }
     }

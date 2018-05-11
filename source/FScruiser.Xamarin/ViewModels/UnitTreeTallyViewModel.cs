@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -82,24 +83,20 @@ namespace FScruiser.XF.ViewModels
 
         public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataSercie;
 
-        protected ServiceService ServiceService { get; set; }
-
-        public UnitTreeTallyViewModel(ServiceService serviceService, INavigation navigation) : base(navigation)
+        public UnitTreeTallyViewModel()
         {
-            ServiceService = serviceService;
-
-            MessagingCenter.Subscribe<CuttingUnitListPage>(this, "UnitSelected", (x) =>
+            MessagingCenter.Subscribe<object>(this, Messages.CUTTING_UNIT_SELECTED, async (x) =>
             {
-                Init();
+                await InitAsync();
             });
         }
 
-        public override void Init()
+        public override async Task InitAsync()
         {
             var dataService = DataService;
             if (DataService != null)
             {
-                dataService.RefreshData();
+                await dataService.RefreshDataAsync();
 
                 var tallyLookup = dataService.TallyPopulations
                     .GroupBy(x => x.StratumCode)

@@ -2,6 +2,7 @@
 using FScruiser.Services;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -27,25 +28,26 @@ namespace FScruiser.XF.ViewModels
         public ICommand EditTreeCommand => _editTreeCommand ?? (_editTreeCommand = new Command<Tree>(ShowEditTree));
 
         public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataSercie;
-        public ServiceService ServiceService { get; private set; }
 
-        public TreeListViewModel(ServiceService serviceService) : base(null)
+        public TreeListViewModel()
         {
-            ServiceService = serviceService;
         }
 
-        public override void Init()
+        public async override Task InitAsync()
         {
             var dataService = DataService;
             if (dataService != null)
             {
+                await dataService.RefreshDataAsync();
                 Trees = DataService.Trees;
             }
         }
 
-        private void ShowEditTree(Tree obj)
+        public void ShowEditTree(Tree obj)
         {
-            
+            var dialogSerive = ServiceService.DialogService;
+
+            dialogSerive.ShowEditTreeAsync(obj, DataService);
         }
 
         private void DeleteTree(Tree tree)

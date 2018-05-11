@@ -19,7 +19,14 @@
                     <DataTemplate>
                         <ViewCell>
                             <StackLayout Orientation="Horizontal">
-                                <BoxView Color="#30C1BC" WidthRequest="3" />
+                                <StackLayout.Resources>
+                                    <ResourceDictionary>
+                                        <Style TargetType="Label">
+                                            <Setter Property="TextColor" Value="Black"/>
+                                        </Style>
+                                    </ResourceDictionary>
+                                </StackLayout.Resources>
+                                <BoxView Color="#Black" WidthRequest="3" />
                                 <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" VerticalTextAlignment="Center"/>
                                 <Label Text="{Binding TallyDescription}, StringFormat='| {0}'}" VerticalTextAlignment="Center"/>
                                 <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" VerticalTextAlignment="Center" IsVisible="{Binding HasTree}" />

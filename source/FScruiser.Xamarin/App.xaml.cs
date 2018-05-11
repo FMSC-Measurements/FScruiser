@@ -30,7 +30,7 @@ namespace FScruiser.XF
 
             ServiceService = serviceService;
 
-            var view = new UnitTallyMasterDetailPage(serviceService);
+            var view = new UnitTallyMasterDetailPage();
 
             MainPage = view;
         }

@@ -2,6 +2,7 @@
 using FScruiser.Models;
 using FScruiser.Services;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
@@ -11,7 +12,7 @@ namespace FScruiser.XF.ViewModels
         private Tree _tree;
         private IEnumerable<TreeFieldSetupDO> _treeFields;
 
-        public ICuttingUnitDataService Dataservice { get; set; }
+        public ICuttingUnitDataService Dataservice => ServiceService.CuttingUnitDataSercie;
 
         public IEnumerable<TreeFieldSetupDO> TreeFields
         {
@@ -40,13 +41,12 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public TreeEditViewModel(Tree tree, ICuttingUnitDataService ds, INavigation navigation) : base(navigation)
+        public TreeEditViewModel(Tree tree)
         {
-            Dataservice = ds;
             Tree = tree;
         }
 
-        public override void Init()
+        public override Task InitAsync()
         {
             var strata = Dataservice.Strata;
             var sampleGroups = Dataservice.SampleGroups;
@@ -54,6 +54,7 @@ namespace FScruiser.XF.ViewModels
 
             var stratum = Tree.Stratum;
             TreeFields = Dataservice.TreeFields;
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,23 +1,27 @@
-﻿using System.ComponentModel;
+﻿using FScruiser.Services;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Xamarin.Forms;
+using System.Threading.Tasks;
 
 namespace FScruiser.XF.ViewModels
 {
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
-        public INavigation Navigation { get; set; }
+        public ServiceService ServiceService { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-
-        public ViewModelBase(INavigation navigation)
+        public ViewModelBase()
         {
-            Navigation = navigation;
+            ServiceService = App.ServiceService;
         }
 
-        public abstract void Init();
+        public ViewModelBase(ServiceService serviceService)
+        {
+            ServiceService = serviceService;
+        }
 
+        public abstract Task InitAsync();
 
         protected virtual void RaisePropertyChanged(string propName)
         {

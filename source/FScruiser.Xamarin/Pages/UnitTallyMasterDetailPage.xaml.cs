@@ -1,8 +1,13 @@
 ﻿using FScruiser.Services;
 using FScruiser.XF.ViewModels;
+using Plugin.FilePicker;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -11,87 +16,149 @@ namespace FScruiser.XF.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class UnitTallyMasterDetailPage : MasterDetailPage
     {
-        public ServiceService ServiceService { get; private set; }
 
         public UnitTallyMasterDetailPage()
         {
             InitializeComponent();
 
             MenuItemsListView.ItemSelected += ListView_ItemSelected;
-        }
 
-        public UnitTallyMasterDetailPage(ServiceService serviceService) : this()
-        {
-            ServiceService = serviceService;
-
-            var viewModel = new MasterViewModel(serviceService, Navigation);
+            var serviceService = App.ServiceService;
+            var viewModel = new MasterViewModel(Navigation);
             MasterPage.BindingContext = viewModel;
 
-            ShowPageFromNavigationListItem(viewModel.NavigationListItems.First());
-
-            //var unitTallyViewModel = new UnitTreeTallyViewModel(Navigation, App.ServiceService, dataService);
-            //var unitTallyPage = new UnitTreeTallyPage();
-            //unitTallyPage.BindingContext = unitTallyViewModel;
-            //unitTallyViewModel.Init();
+            MessagingCenter.Subscribe<object>(this, Messages.CRUISE_FILE_SELECTED, (o) =>
+            {
+                IsPresented = false;
+            });
         }
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-        }
-
-        private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
+        private async void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             var item = e.SelectedItem as NavigationListItem;
             if (item == null)
                 return;
 
-            ShowPageFromNavigationListItem(item);
+            await ShowPageFromNavigationListItemAsync(item);
 
             MenuItemsListView.SelectedItem = null;
         }
 
-        private void ShowPageFromNavigationListItem(NavigationListItem item)
+        private void _selectFile_Tapped(object sender, EventArgs ea)
         {
-            var page = item.MakePage();
-            page.Title = item.Title;
-
-            var viewModel = item.MakeViewModel();
-            viewModel.Init();
-            page.BindingContext = viewModel;
-
-            Detail = page;
             IsPresented = false;
         }
 
-        private class MasterViewModel : ViewModelBase
+        private async System.Threading.Tasks.Task ShowPageFromNavigationListItemAsync(NavigationListItem item)
         {
-            public MasterViewModel(ServiceService serviceService, INavigation navigation) : base(navigation)
+            var navigation = Detail.Navigation;
+            if (item.ResetsNavigation)
             {
-                ServiceService = serviceService;
-                NavigationListItems = new NavigationListItem[]
+                await navigation.PopToRootAsync();
+            }
+            else
+            {
+                var page = item.MakePage();
+                page.Title = item.Title;
+
+                page.SetValue(NavigationPage.HasBackButtonProperty, false);
+
+                await Detail.Navigation.PushAsync(page);
+            }
+
+            IsPresented = false;
+        }
+    }
+
+    public class MasterViewModel : NavigationViewModelBase
+    {
+        private Command _selectFileCommand;
+
+        public ICommand SelectFileCommand => _selectFileCommand ?? (_selectFileCommand = new Command(SelectFileAsync));
+
+        public IEnumerable<NavigationListItem> NavigationListItems { get; set; }
+
+        public string CurrentFilePath
+        {
+            get
+            {
+                var cruiseDataService = ServiceService?.CruiseDataService;
+                if(cruiseDataService != null)
                 {
-                    new NavigationListItem {Title = "Cutting Units", MakePage = () => new CuttingUnitListPage(), MakeViewModel = () => new CuttingUnitListViewModel(ServiceService, navigation) },
-                    new NavigationListItem {Title = "Tally", MakePage = () => new UnitTreeTallyPage(), MakeViewModel = () => new UnitTreeTallyViewModel(ServiceService, navigation)},
-                    new NavigationListItem {Title="Trees", MakePage = ()=> new TreeListPage(), MakeViewModel = ()=> new TreeListViewModel(serviceService)}
-                };
+                    var path = cruiseDataService.Path ?? "Open File";
+
+                    return (path.Length > 20) ? "..." + path.Substring(path.Length - 20) : path;
+                }
+                else
+                {
+                    return "Open File";
+                }
             }
+        }
 
-            public ServiceService ServiceService { get; private set; }
-            public IEnumerable<NavigationListItem> NavigationListItems { get; set; }
+        public MasterViewModel(INavigation navigation) : base(navigation)
+        {
 
-            public override void Init()
+
+            NavigationListItems = new NavigationListItem[]
+            {
+                    new NavigationListItem {Title = "Cutting Units", MakePage = () => new CuttingUnitListPage(), MakeViewModel = () => new ViewModels.CuttingUnitListViewModel(), ResetsNavigation = true },
+                    new NavigationListItem {Title = "Tally", MakePage = () => new UnitTreeTallyPage(), MakeViewModel = () => new UnitTreeTallyViewModel()},
+                    new NavigationListItem {Title="Trees", MakePage = ()=> new TreeListPage(), MakeViewModel = ()=> new TreeListViewModel()}
+            };
+
+            MessagingCenter.Subscribe<object>(this, Messages.CRUISE_FILE_SELECTED, (o) =>{
+                RaisePropertyChanged(nameof(this.CurrentFilePath));
+            });
+        }
+
+        public override Task InitAsync()
+        {
+            return null;
+        }
+
+        private async void SelectFileAsync(object obj)
+        {
+            try
+            {
+                var fileData = await CrossFilePicker.Current.PickFile();
+                if (fileData == null) { return; }//user canceled file picking
+
+                var filePath = fileData.FilePath;
+
+                LoadCruiseAsync(filePath);
+            }
+            catch (Exception ex)
             {
             }
         }
 
-        private class NavigationListItem
+        private void LoadCruiseAsync(string path)
         {
-            public string Title { get; set; }
+            //Check path is valid
+            if (File.Exists(path) == false)
+            {
+                Debug.WriteLine($"           Cruise File Not Found {path}");
+                return;
+            }
 
-            public Func<Page> MakePage { get; set; }
+            ServiceService.CruiseDataService = new CruiseDataService(path);
+            ServiceService.CuttingUnitDataSercie = null;
 
-            public Func<ViewModelBase> MakeViewModel { get; set; }
+            MessagingCenter.Send<object>(this, Messages.CRUISE_FILE_SELECTED);
         }
+    }
+
+    public class NavigationListItem
+    {
+        public string Title { get; set; }
+
+        public Func<Page> MakePage { get; set; }
+
+        public Func<ViewModelBase> MakeViewModel { get; set; }
+
+        public bool ResetsNavigation { get; set; } = false;
+
+        public bool IsEnabled { get; set; }
     }
 }

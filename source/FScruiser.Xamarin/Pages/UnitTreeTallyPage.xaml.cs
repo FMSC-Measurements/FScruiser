@@ -1,6 +1,5 @@
 ﻿using FScruiser.Models;
 using FScruiser.XF.ViewModels;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Xamarin.Forms;
@@ -10,26 +9,22 @@ namespace FScruiser.XF.Pages
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class UnitTreeTallyPage : ContentPage
-    {        
-
-        private INotifyCollectionChanged _tallyFeedCollection;
-
+    {
         protected UnitTreeTallyViewModel ViewModel => (UnitTreeTallyViewModel)BindingContext;
 
         public UnitTreeTallyPage()
         {
             InitializeComponent();
-        }
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-
-            var viewMedel = ViewModel;
-            if (viewMedel != null)
+            BindingContext = new UnitTreeTallyViewModel();
+            Appearing += async (sender, ea) =>
             {
-                ViewModel.TallyFeed.CollectionChanged += TallyFeed_CollectionChanged;
-            }
+                if (BindingContext is UnitTreeTallyViewModel vm)
+                {
+                    await vm.InitAsync();
+                    ViewModel.TallyFeed.CollectionChanged += TallyFeed_CollectionChanged;
+                }
+            };
         }
 
         private void TallyFeed_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

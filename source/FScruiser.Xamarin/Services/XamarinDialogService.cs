@@ -80,9 +80,9 @@ namespace FScruiser.XF.Services
             var navigation = App.Current.MainPage.Navigation;
 
             var view = new TreeEditPage2();
-            var viewModel = new TreeEditViewModel(tree, dataService, navigation);
+            var viewModel = new TreeEditViewModel(tree);
             view.BindingContext = viewModel;
-            viewModel.Init();
+            viewModel.InitAsync();
 
             return App.Current.MainPage.Navigation.PushModalAsync(view);
         }

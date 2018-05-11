@@ -35,7 +35,9 @@ namespace FScruiser.XF.Pages
             if (viewModel != null)
             {
                 var view = await MakeTreeFields(viewModel.TreeFields);
-                this.Content = new ScrollView { Content = view };
+                _editViewsHost.Content = view;
+
+                //this.Content = new ScrollView { Content = view };
             }
         }
 

@@ -12,6 +12,8 @@ namespace FScruiser.Services
 {
     public class CuttingUnitDataService : ICuttingUnitDataService
     {
+        private bool _dataLoading;
+
         public DAL Datastore { get; set; }
 
         public CuttingUnit Unit { get; protected set; }
@@ -26,6 +28,8 @@ namespace FScruiser.Services
         public IList<Tree> Trees { get; set; }
         public List<TallyFeedItem> TallyFeed { get; protected set; }
 
+        private bool _dataLoaded;
+
         //public IList<Tree> Trees { get; set; }
 
         public CuttingUnitDataService(CuttingUnit unit)
@@ -38,52 +42,70 @@ namespace FScruiser.Services
             Datastore = new DAL(path);
         }
 
+        public Task RefreshDataAsync(bool force = false)
+        {
+            return Task.Run(() => RefreshData(force));
+        }
+
         public void RefreshData(bool force = false)
         {
-            Strata = QueryStrataByUnitCode(Unit.Code).ToArray();
+            if(_dataLoaded == true || _dataLoading == true) { return; }
 
-            var tdvs = Datastore.From<TreeDefaultValueDO>()
-                .Query().ToArray();
-
-            TreeDefaultValues = tdvs.ToDictionary(x => x.TreeDefaultValue_CN);
-
-            SampleGroups = GetSampleGroupsByUnitCode(Unit.Code).ToArray();
-
-            foreach (var sg in SampleGroups)
+            try
             {
-                sg.Stratum = Strata.Where(x => x.Stratum_CN == sg.Stratum_CN).Single();
-                sg.Sampler = SampleSelectorFactory.MakeSampleSelecter(sg);
-            }
+                _dataLoading = true;
 
-            TallyPopulations = GetTallyPopulationsByUnitCode(Unit.Code).ToArray();
+                Strata = QueryStrataByUnitCode(Unit.Code).ToArray();
 
-            foreach (var tally in TallyPopulations)
-            {
-                tally.CuttingUnit = Unit;
-                if (tally.TreeDefaultValue_CN != null)
+                var tdvs = Datastore.From<TreeDefaultValueDO>()
+                    .Query().ToArray();
+
+                TreeDefaultValues = tdvs.ToDictionary(x => x.TreeDefaultValue_CN);
+
+                SampleGroups = GetSampleGroupsByUnitCode(Unit.Code).ToArray();
+
+                foreach (var sg in SampleGroups)
                 {
-                    tally.TreeDefaultValue = TreeDefaultValues[tally.TreeDefaultValue_CN];
+                    sg.Stratum = Strata.Where(x => x.Stratum_CN == sg.Stratum_CN).Single();
+                    sg.Sampler = SampleSelectorFactory.MakeSampleSelecter(sg);
                 }
-                tally.SampleGroup = SampleGroups.Where(x => tally.SampleGroup_CN == x.SampleGroup_CN).Single();
+
+                TallyPopulations = GetTallyPopulationsByUnitCode(Unit.Code).ToArray();
+
+                foreach (var tally in TallyPopulations)
+                {
+                    tally.CuttingUnit = Unit;
+                    if (tally.TreeDefaultValue_CN != null)
+                    {
+                        tally.TreeDefaultValue = TreeDefaultValues[tally.TreeDefaultValue_CN];
+                    }
+                    tally.SampleGroup = SampleGroups.Where(x => tally.SampleGroup_CN == x.SampleGroup_CN).Single();
+                }
+
+                TreeFields = GetTreeFieldsByUnitCode(Unit.Code).ToArray();
+
+                Trees = Datastore.From<Tree>()
+                    .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+                    .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
+                    .Query(Unit.Code).ToList();
+
+                foreach (var tree in Trees)
+                {
+                    tree.CuttingUnit = Unit;
+                    tree.Stratum = Strata.Where(x => x.Stratum_CN == tree.Stratum_CN).Single();
+                    tree.SampleGroup = SampleGroups.Where(x => x.SampleGroup_CN == tree.SampleGroup_CN).SingleOrDefault();
+                    if (tree.TreeDefaultValue_CN != null && TreeDefaultValues.TryGetValue(tree.TreeDefaultValue_CN, out var tdv))
+                    { tree.TreeDefaultValue = tdv; }
+                }
+
+                TallyFeed = new List<TallyFeedItem>();
+
+                _dataLoaded = true;
             }
-
-            TreeFields = GetTreeFieldsByUnitCode(Unit.Code).ToArray();
-
-            Trees = Datastore.From<Tree>()
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
-                .Query(Unit.Code).ToList();
-
-            foreach(var tree in Trees)
+            finally
             {
-                tree.CuttingUnit = Unit;
-                tree.Stratum = Strata.Where(x => x.Stratum_CN == tree.Stratum_CN).Single();
-                tree.SampleGroup = SampleGroups.Where(x => x.SampleGroup_CN == tree.SampleGroup_CN).SingleOrDefault();
-                if(tree.TreeDefaultValue_CN != null && TreeDefaultValues.TryGetValue(tree.TreeDefaultValue_CN, out var tdv))
-                { tree.TreeDefaultValue = tdv; }
+                _dataLoading = false;
             }
-
-            TallyFeed = new List<TallyFeedItem>();
         }
 
         #region query methods
@@ -172,7 +194,6 @@ namespace FScruiser.Services
         {
             var cuttingUnit = tallyPopulation.CuttingUnit;
             return Datastore.ExecuteScalar<int>($"SELECT max(TreeNumber) + 1 FROM Tree WHERE CuttingUnit_CN = {cuttingUnit.CuttingUnit_CN} AND Plot_CN IS NULL;");
-
         }
 
         //just a helper method, does this belong here?
@@ -255,7 +276,6 @@ namespace FScruiser.Services
             }
 
             return fields;
-
         }
     }
 }

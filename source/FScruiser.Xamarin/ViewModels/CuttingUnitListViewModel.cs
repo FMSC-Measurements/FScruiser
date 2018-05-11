@@ -5,6 +5,7 @@ using Plugin.FilePicker;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -13,11 +14,10 @@ namespace FScruiser.XF.ViewModels
     public class CuttingUnitListViewModel : ViewModelBase, IDisposable
     {
         private IEnumerable<CuttingUnit> _units;
-        private Command _openFileCommand;
-
-        public ServiceService ServiceService { get; protected set; }
 
         public ICruiseDataService DataService => ServiceService.CruiseDataService;
+
+        public bool IsFileNotOpen => Units == null;
 
         public IEnumerable<CuttingUnit> Units
         {
@@ -25,59 +25,31 @@ namespace FScruiser.XF.ViewModels
             set { SetValue(ref _units, value); }
         }
 
-        public ICommand OpenFileCommand => _openFileCommand ?? (_openFileCommand = new Command(ShowSelectCruiseAsync));
-
-        public CuttingUnitListViewModel(ServiceService serviceService, INavigation navigation) : base(navigation)
+        public CuttingUnitListViewModel()
         {
-            ServiceService = serviceService;
-
-            MessagingCenter.Subscribe<CuttingUnitListViewModel>(this, "FileChanged", (sender) =>
+            MessagingCenter.Subscribe<object>(this, Messages.CRUISE_FILE_SELECTED, (sender) =>
             {
-                Init();
+                LoadData();
             });
         }
 
-        public override void Init()
+        private void LoadData()
         {
             var dataService = DataService;
             if (dataService != null)
             {
                 Units = DataService.Units;
+                base.RaisePropertyChanged(nameof(IsFileNotOpen));
             }
         }
 
-        private async void ShowSelectCruiseAsync()
+        public override Task InitAsync()
         {
-            //var viewModel = new CruiseFileSelectViewModel(Navigation);
-            //var view = new CruiseFileSelectPage() { BindingContext = viewModel };
-
-            //viewModel.Init(App.ServiceService.CruiseFileService);
-            //Navigation.PushModalAsync(view);
-
-            try
-            {
-                var fileData = await CrossFilePicker.Current.PickFile();
-                if (fileData == null) { return; }//user canceled file picking
-
-                var filePath = fileData.FilePath;
-
-                LoadCruiseAsync(filePath);
-            }
-            catch (Exception ex)
-            {
-            }
+            LoadData();
+            return Task.CompletedTask;
         }
 
-        private void LoadCruiseAsync(string path)
-        {
-            if (File.Exists(path) == false) { throw new FileNotFoundException($"Could Not Locate Cruise at {path}"); }
-
-            ServiceService.CruiseDataService = new CruiseDataService(path);
-
-            Init();
-        }
-
-        public void ShowUnit(CuttingUnit unit)
+        public void SelectUnit(CuttingUnit unit)
         {
             if (unit == null) { throw new ArgumentNullException(nameof(unit)); }
 
@@ -85,14 +57,7 @@ namespace FScruiser.XF.ViewModels
             var unitDataService = new CuttingUnitDataService(cruiseDataService.Path, unit);
             ServiceService.CuttingUnitDataSercie = unitDataService;
 
-            MessagingCenter.Send(this, "UnitSelected");
-
-            //var view = new UnitTreeTallyPage();
-            //var viewModel = new UnitTreeTallyViewModel(view.Navigation, App.ServiceService);
-            //view.BindingContext = viewModel;
-            //viewModel.Init(dataService);
-
-            //Navigation.PushAsync(view);
+            MessagingCenter.Send<object>(this, Messages.CUTTING_UNIT_SELECTED);
         }
 
         #region IDisposable Support
@@ -132,16 +97,5 @@ namespace FScruiser.XF.ViewModels
         }
 
         #endregion IDisposable Support
-
-        //void ShowCruise(CruiseModel cruise)
-        //{
-        //    var cruiseFile = new CruiseFile { Path = cruise.Path };
-        //    FreshMvvm.FreshIOC.Container.Register<CruiseFile>(cruiseFile);
-
-        //    FreshMvvm.FreshIOC.Container.Register<ICruiseDataService>(new CruiseDataService(cruiseFile));
-
-        //    Task t = CoreMethods.PushPageModel<CruiseViewModel>(cruise);
-        //    var ex = t.Exception;
-        //}
     }
 }

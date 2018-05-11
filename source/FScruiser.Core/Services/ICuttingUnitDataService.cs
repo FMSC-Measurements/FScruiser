@@ -13,7 +13,7 @@ namespace FScruiser.Services
 
         TreeEstimateDO LogTreeEstimate(CountTreeDO count, int kpi);
 
-        void RefreshData(bool force = false);
+        Task RefreshDataAsync(bool force = false);
 
         #endregion
 

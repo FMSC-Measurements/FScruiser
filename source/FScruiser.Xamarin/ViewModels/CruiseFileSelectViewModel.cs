@@ -11,18 +11,10 @@ namespace FScruiser.XF.ViewModels
 {
     public class CruiseFileSelectViewModel : ViewModelBase
     {
-        private ICruiseFileService _folderService;
         private IEnumerable<FileGroup> _fileGroups;
         private FileGroup _selectedFolder;
 
-        public ICruiseFileService FolderService
-        {
-            get { return _folderService; }
-            set {
-                SetValue(ref _folderService, value);
-                RaisePropertyChanged(nameof(FileGroups));
-            }
-        }
+        public ICruiseFileService FileService => ServiceService.CruiseFileService;
 
         public FileGroup SelectedFolder
         {
@@ -36,9 +28,8 @@ namespace FScruiser.XF.ViewModels
             set { SetValue(ref _fileGroups, value); }
         }
 
-        public CruiseFileSelectViewModel(INavigation navigation, ICruiseFileService folderService) : base(navigation)
+        public CruiseFileSelectViewModel()
         {
-            FolderService = folderService;
         }
 
         public void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs eventArgs)
@@ -52,14 +43,21 @@ namespace FScruiser.XF.ViewModels
         {
             if (file.Exists == false) { throw new FileNotFoundException("cruise file not found", file.FullName); }
 
-            var dataService = new CruiseDataService(file.FullName);
-            App.ServiceService.CruiseDataService = dataService;
+            ServiceService.CruiseDataService = new CruiseDataService(file.FullName);
+            ServiceService.CuttingUnitDataSercie = null;
+            MessagingCenter.Send<object>(this, Messages.CRUISE_FILE_SELECTED);
         }
 
-        public override void Init()
+        public override Task InitAsync()
         {
-            FileGroups = FolderService.CruiseFilesGroups.ToArray();
-            SelectedFolder = FileGroups.FirstOrDefault();
+            return Task.Run(() =>
+            {
+                var fileService = FileService;
+                var fileGroups = FileService.CruiseFilesGroups.ToArray();
+
+                FileGroups = fileGroups;
+                SelectedFolder = fileGroups.FirstOrDefault();
+            });
         }
     }
 }
