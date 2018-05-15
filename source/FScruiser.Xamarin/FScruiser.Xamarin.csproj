@@ -96,9 +96,6 @@
     <Compile Update="Pages\CuttingUnitListPage.xaml.cs">
       <DependentUpon>CuttingUnitListPage.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Pages\UnitTallyMasterDetailPageMenuItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -120,12 +117,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\UnitTallyMasterDetailPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Pages\UnitTallyMasterDetailPageDetail.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Pages\UnitTallyMasterDetailPageMaster.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\UnitTreeTallyPage.xaml">
