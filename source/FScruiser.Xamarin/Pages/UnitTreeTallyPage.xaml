@@ -85,15 +85,16 @@
 
             <flow:FlowListView x:Name="StratumFilterListView" 
                                FlowColumnCount="6" SeparatorVisibility="None" HasUnevenRows="False"
-                               FlowItemTappedCommand="{Binding StratumSelectedCommand}"
                                VerticalOptions="End"
-                               HeightRequest="40"
+                               HeightRequest="44"
                                FlowItemsSource="{Binding StrataFilterOptions}">
                 <flow:FlowListView.FlowColumnTemplate>
                     <DataTemplate>
-                        <Frame  CornerRadius="5" BackgroundColor="{StaticResource primary_500}">
-                            <Label Text="{Binding .}" TextColor="#E1FFFFFF"/>
-                        </Frame>
+                        <Button Text="{Binding .}" 
+                                TextColor="{StaticResource white_90}" BackgroundColor="{StaticResource primary_500}" 
+                                Margin="2" HeightRequest="40" 
+                                Command="{Binding BindingContext.StratumSelectedCommand, Source={x:Reference StratumFilterListView}}"
+                                CommandParameter="{Binding .}"/>
                     </DataTemplate>
                 </flow:FlowListView.FlowColumnTemplate>
             </flow:FlowListView>
