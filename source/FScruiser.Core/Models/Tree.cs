@@ -27,9 +27,29 @@ namespace FScruiser.Models
         {
             base.NotifyPropertyChanged(name);
 
-            if (!base.PropertyChangedEventsDisabled && name != nameof(HasFieldData) && name != nameof(TallyFeedStatus))
-            { HasFieldData = true; }
+            if (PropertyChangedEventsDisabled) { return; }//HACK/DEBT the base class implementation requires us to check that PropertyChangedEventsDisabled
 
+            //forward property changed events
+            switch (name)
+            {
+                case nameof(TotalHeight):
+                case nameof(MerchHeightPrimary):
+                case nameof(UpperStemHeight):
+                    {
+                        NotifyPropertyChanged(nameof(Height));
+                        break;
+                    }
+                case nameof(DBH):
+                case nameof(DRC):
+                case nameof(DBHDoubleBarkThickness):
+                    {
+                        NotifyPropertyChanged(nameof(Diameter));
+                        break;
+                    }
+            }
+
+            if (name != nameof(HasFieldData) && name != nameof(TallyFeedStatus))
+            { HasFieldData = true; }
         }
 
         [IgnoreField]
@@ -51,5 +71,9 @@ namespace FScruiser.Models
                 }
             }
         }
+
+        public double Height => new float[] { TotalHeight, MerchHeightPrimary, UpperStemHeight }.Max();
+
+        public float Diameter => new float[] { DBH, DRC, DBHDoubleBarkThickness }.Max();
     }
 }
