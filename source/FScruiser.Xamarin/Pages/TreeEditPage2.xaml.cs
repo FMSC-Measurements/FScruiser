@@ -30,6 +30,17 @@ namespace FScruiser.XF.Pages
             }
         }
 
+        
+
+        protected override void OnDisappearing()
+        {           
+            if (BindingContext is TreeEditViewModel viewModel)
+            {
+                viewModel.SaveTree();
+            }
+            base.OnDisappearing();
+        }
+
         protected async void UpdateTreeFields(TreeEditViewModel viewModel)
         {
             if (viewModel != null)
@@ -73,6 +84,11 @@ namespace FScruiser.XF.Pages
             View editView = null;
             switch (field.Field)
             {
+                case nameof(Tree.Stratum):
+                    {
+                        editView = MakeStratumPicker();
+                        break;
+                    }
                 case nameof(Tree.SampleGroup):
                     {
                         editView = MakeSampleGroupPicker();
@@ -138,6 +154,16 @@ namespace FScruiser.XF.Pages
             return editView;
         }
 
+        private View MakeStratumPicker()
+        {
+            var view = new Picker();
+            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.Strata));
+            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.Stratum));
+            view.ItemDisplayBinding = new Binding(nameof(SampleGroup.Code));
+
+            return view;
+        }
+
         Picker MakeCountMeasurePicker()
         {
             var picker = new Picker();
@@ -153,7 +179,7 @@ namespace FScruiser.XF.Pages
         {
             var view = new Picker();
             view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.SampleGroups));
-            view.SetBinding(Picker.SelectedItemProperty, $"Tree.{nameof(Tree.SampleGroup)}");
+            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.SampleGroup));
             view.ItemDisplayBinding = new Binding(nameof(SampleGroup.Code));
 
             return view;
@@ -163,7 +189,7 @@ namespace FScruiser.XF.Pages
         {
             var view = new Picker();
             view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.TreeDefaults));
-            view.SetBinding(Picker.SelectedItemProperty, $"Tree.{nameof(Tree.TreeDefaultValue)}");
+            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.TreeDefaultValue));
             view.ItemDisplayBinding = new Binding(nameof(TreeDefaultValueDO.Species));
 
             return view;

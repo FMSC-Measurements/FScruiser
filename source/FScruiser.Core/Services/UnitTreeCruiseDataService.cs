@@ -1,6 +1,5 @@
-﻿using CruiseDAL;
-using CruiseDAL.DataObjects;
-using CruiseDAL.Schema;
+﻿using CruiseDAL.DataObjects;
+using FScruiser.Core.Util;
 using FScruiser.Logic;
 using FScruiser.Models;
 using System;
@@ -13,25 +12,37 @@ namespace FScruiser.Services
     public class CuttingUnitDataService : ICuttingUnitDataService
     {
         private bool _dataLoading;
+        private bool _dataLoaded;
 
-        public DAL Datastore { get; set; }
+        protected ICuttingUnitDatastore Datastore { get; }
+
+        Dictionary<long, SampleGroup> _sampleGroups;
+        Dictionary<long, Stratum> _strata;
+        Dictionary<long, TallyPopulation> _tallyPopulations;
+        Dictionary<long, Tree> _trees;
+        Dictionary<long, TreeDefaultValueDO> _treeDefaultValues;
+        Dictionary<string, IEnumerable<TreeDefaultValueDO>> _treeDefaultSampleGroupLookup = new Dictionary<string, IEnumerable<TreeDefaultValueDO>>();
+        Dictionary<int, CountTree> _counts;
+
+        TreeFieldSetupDO[] _treeFields;
+        IList<TallyEntry> _tallyFeed;
 
         public CuttingUnit Unit { get; protected set; }
 
-        public IEnumerable<Stratum> Strata { get; protected set; }
-        public Dictionary<long?, TreeDefaultValueDO> TreeDefaultValues { get; private set; }
-        public IEnumerable<SampleGroup> SampleGroups { get; protected set; }
+        public IEnumerable<Stratum> Strata => _strata?.Values;
+        public IEnumerable<TreeDefaultValueDO> TreeDefaultValues => _treeDefaultValues?.Values;
+        public Dictionary<string, IEnumerable<TreeDefaultValueDO>> TreeDefaultSampleGroupLookup => _treeDefaultSampleGroupLookup;
+        public IEnumerable<SampleGroup> SampleGroups => _sampleGroups?.Values;
+        
+        public IEnumerable<Tree> Trees => _trees?.Values;
+        public IEnumerable<CountTree> Counts => _counts?.Values;
 
-        public IEnumerable<TallyPopulation> TallyPopulations { get; protected set; }
-        public IEnumerable<TreeFieldSetupDO> TreeFields { get; protected set; }
+        public IEnumerable<TreeFieldSetupDO> TreeFields => _treeFields;
+        public IEnumerable<TallyEntry> TallyFeed => _tallyFeed;
 
-        public IList<Tree> Trees { get; set; }
-        public List<TallyFeedItem> TallyFeed { get; protected set; }
+        public IEnumerable<TallyPopulation> TallyPopulations { get; set; }
 
-        private bool _dataLoaded;
-
-        //public IList<Tree> Trees { get; set; }
-
+        #region ctor
         public CuttingUnitDataService(CuttingUnit unit)
         { Unit = unit; }
 
@@ -39,8 +50,14 @@ namespace FScruiser.Services
         {
             if (path == null) { throw new ArgumentNullException(path); }
 
-            Datastore = new DAL(path);
+            Datastore = new CuttingUnitDatastore(path);
         }
+
+        public CuttingUnitDataService(ICuttingUnitDatastore datastore, CuttingUnit unit) : this(unit)
+        {
+            Datastore = datastore ?? throw new ArgumentNullException(nameof(datastore));
+        }
+        #endregion
 
         public Task RefreshDataAsync(bool force = false)
         {
@@ -49,56 +66,52 @@ namespace FScruiser.Services
 
         public void RefreshData(bool force = false)
         {
-            if(_dataLoaded == true || _dataLoading == true) { return; }
+            if (_dataLoaded == true || _dataLoading == true) { return; }
 
             try
             {
                 _dataLoading = true;
+                var unitCode = Unit.Code;
 
-                Strata = QueryStrataByUnitCode(Unit.Code).ToArray();
+                _strata = Datastore.GetStrataByUnitCode(unitCode).ToDictionary(x => x.Stratum_CN.Value);
 
-                var tdvs = Datastore.From<TreeDefaultValueDO>()
-                    .Query().ToArray();
+                _sampleGroups = Datastore.GetSampleGroupsByUnitCode(unitCode).ToDictionary(x => x.SampleGroup_CN.Value);
 
-                TreeDefaultValues = tdvs.ToDictionary(x => x.TreeDefaultValue_CN);
-
-                SampleGroups = GetSampleGroupsByUnitCode(Unit.Code).ToArray();
+                _treeDefaultValues = Datastore.GetTreeDefaultsByUnitCode(unitCode).ToDictionary(x => x.TreeDefaultValue_CN.Value);
 
                 foreach (var sg in SampleGroups)
                 {
-                    sg.Stratum = Strata.Where(x => x.Stratum_CN == sg.Stratum_CN).Single();
+                    sg.Stratum = _strata.Where(x => x.Key == sg.Stratum_CN.Value).Single().Value;
                     sg.Sampler = SampleSelectorFactory.MakeSampleSelecter(sg);
+
+                    var treeDefaults = Datastore.GetTreeDefaultsBySampleGroup(sg.Code);
+                    _treeDefaultSampleGroupLookup.Add(sg.Code, treeDefaults);
                 }
 
-                TallyPopulations = GetTallyPopulationsByUnitCode(Unit.Code).ToArray();
+                _counts = Datastore.GetCountTreeByUnitCode(unitCode).ToDictionary(x => x.CountTree_CN);
+                TallyPopulations = Datastore.GetTallyPopulationsByUnitCode(unitCode);                
 
                 foreach (var tally in TallyPopulations)
                 {
-                    tally.CuttingUnit = Unit;
-                    if (tally.TreeDefaultValue_CN != null)
-                    {
-                        tally.TreeDefaultValue = TreeDefaultValues[tally.TreeDefaultValue_CN];
-                    }
-                    tally.SampleGroup = SampleGroups.Where(x => tally.SampleGroup_CN == x.SampleGroup_CN).Single();
+                    tally.Count = _counts[tally.CountTree_CN];
+                    tally.SampleGroup = _sampleGroups[tally.SampleGroup_CN];
                 }
 
-                TreeFields = GetTreeFieldsByUnitCode(Unit.Code).ToArray();
+                _treeFields = Datastore.GetTreeFieldsByUnitCode(unitCode).ToArray();
 
-                Trees = Datastore.From<Tree>()
-                    .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                    .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
-                    .Query(Unit.Code).ToList();
+                _trees = Datastore.GetTreesByUnitCode(unitCode).ToDictionary(x => x.Tree_CN.Value);
 
                 foreach (var tree in Trees)
                 {
                     tree.CuttingUnit = Unit;
-                    tree.Stratum = Strata.Where(x => x.Stratum_CN == tree.Stratum_CN).Single();
-                    tree.SampleGroup = SampleGroups.Where(x => x.SampleGroup_CN == tree.SampleGroup_CN).SingleOrDefault();
-                    if (tree.TreeDefaultValue_CN != null && TreeDefaultValues.TryGetValue(tree.TreeDefaultValue_CN, out var tdv))
-                    { tree.TreeDefaultValue = tdv; }
+                    tree.Stratum = _strata[tree.Stratum_CN.Value];
+                    tree.SampleGroup = _sampleGroups.Where(x => tree.SampleGroup_CN.HasValue && x.Key == tree.SampleGroup_CN.Value)
+                        .Select(x => x.Value).SingleOrDefault();
+                    tree.TreeDefaultValue = _treeDefaultValues.Where(x => tree.TreeDefaultValue_CN.HasValue &&  x.Key == tree.TreeDefaultValue_CN.Value)
+                        .Select(x => x.Value).SingleOrDefault();
                 }
 
-                TallyFeed = new List<TallyFeedItem>();
+                _tallyFeed = Datastore.GetTallyEntriesByUnitCode(unitCode).ToObservableCollection();
 
                 _dataLoaded = true;
             }
@@ -108,75 +121,31 @@ namespace FScruiser.Services
             }
         }
 
-        #region query methods
+        #region inflate tallyFeed item methods
 
-        public IEnumerable<Stratum> QueryStrataByUnitCode(string unitCode)
+        public void InflateTallyFeedItem(TallyFeedItem tfi)
         {
-            return Datastore.From<Stratum>()
-                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1")
-                .Query(unitCode).ToList();
-        }
-
-        //public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratum(string stratumCode)
-        //{
-        //    return Datastore.From<TreeFieldSetupDO>()
-        //        .Join("Stratum", "USING (Stratum_CN)")
-        //        .Where("Stratum.Code = @p1").Query(stratumCode);
-        //}
-
-        //public IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sampleGroupCode)
-        //{
-        //    return Datastore.From<TreeDefaultValueDO>()
-        //        .Join("SampleGroup", "USING (SampleGroup_CN)")
-        //        .Where("SampleGroup.Code = @p1").Query(sampleGroupCode);
-        //}
-
-        public IEnumerable<SampleGroup> GetSampleGroupsByUnitCode(string unitCode)
-        {
-            return Datastore.From<SampleGroup>()
-                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1").Query(unitCode).ToArray();
-        }
-
-        public IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode)
-        {
-            return Datastore.From<TallyPopulation>()
-                .Join("Tally", "USING (Tally_CN)")
-                .Join("SampleGroup", "USING (SampleGroup_CN)")
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1")
-                .Query(unitCode);
+            tfi.Count = GetCount(tfi.Data.CountCN);
+            tfi.Tree = GetTree(tfi.Data.TreeCN);
+            tfi.TreeEstimate = GetTreeEstimate(tfi.Data.TreeEstimateCN);
         }
 
         public TallyPopulation GetCount(long countCN)
         {
-            return Datastore.From<TallyPopulation>()
-                .Join("Tally", "USING (Tally_CN)")
-                .Join("SampleGroup", "USING (SampleGroup_CN)")
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("CountTree_CN = @p1")
-                .Query(countCN).FirstOrDefault();
+            return TallyPopulations.Where(x => x.CountTree_CN == countCN).SingleOrDefault();
         }
 
         public Tree GetTree(long treeCN)
         {
-            return Datastore.From<Tree>()
-                .Where("Tree.Tree_CN = @p1")
-                .Query(treeCN).FirstOrDefault();
+            return Trees.Where(x => x.Tree_CN == treeCN).SingleOrDefault();
         }
 
         public TreeEstimateDO GetTreeEstimate(long treeEstimateCN)
         {
-            return Datastore.From<TreeEstimateDO>()
-                .Where("TreeEstimate_CN = @p1")
-                .Query(treeEstimateCN).FirstOrDefault();
+            return Datastore.GetTreeEstimate(treeEstimateCN);
         }
 
-        #endregion query methods
+        #endregion inflate tallyFeed item methods
 
         public TreeEstimateDO LogTreeEstimate(CountTreeDO count, int kpi)
         {
@@ -186,69 +155,97 @@ namespace FScruiser.Services
                 KPI = kpi
             };
 
-            InsertTreeEstimate(treeEstimate);
+            Datastore.InsertTreeEstimate(treeEstimate);
             return treeEstimate;
         }
 
-        public int GetNextTreeNumber(TallyPopulation tallyPopulation)
+        public int GetNextTreeNumber()
         {
-            var cuttingUnit = tallyPopulation.CuttingUnit;
-            return Datastore.ExecuteScalar<int>($"SELECT max(TreeNumber) + 1 FROM Tree WHERE CuttingUnit_CN = {cuttingUnit.CuttingUnit_CN} AND Plot_CN IS NULL;");
+            if (Trees.IsNullOrEmpty()) { return 1; }
+            return Trees.Max(x => (int)x.TreeNumber) + 1;
         }
 
         //just a helper method, does this belong here?
         public Tree CreateTree(TallyPopulation population)
         {
-            var treeNumber = GetNextTreeNumber(population);
+            var count = population.Count;
+            var treeNumber = GetNextTreeNumber();
             return new Tree()
             {
                 TreeNumber = treeNumber,
-                TreeDefaultValue = population.TreeDefaultValue,
                 SampleGroup = population.SampleGroup,
                 Stratum = population.SampleGroup.Stratum,
-                CuttingUnit = population.CuttingUnit
+                CuttingUnit_CN = count.CuttingUnit_CN,
+                TreeDefaultValue_CN = count.TreeDefaultValue_CN,
+                Species = count.Species
             };
+        }
+
+        public void AddTallyEntry(TallyEntry tallyEntry)
+        {
+            var unitCode = tallyEntry.UnitCode;
+            var stCode = tallyEntry.StratumCode;
+            var sgCode = tallyEntry.SGCode;
+
+
+            var count = Counts.Where(x => x.UnitCode == unitCode 
+                            && x.StratumCode == stCode 
+                            && x.SampleGroupCode == sgCode).Single();
+
+            var treeCount = count.TreeCount;
+            var sumKPI    = count.SumKPI;
+
+            count.TreeCount = treeCount + tallyEntry.TreeCount;
+            count.SumKPI    = sumKPI + tallyEntry.KPI;
+
+            var tree = tallyEntry.Tree;
+
+            if (tree != null)
+            {
+                Datastore.InsertTree(tree);
+                _trees.Add(tree.Tree_CN.Value, tree);
+            }
+            Datastore.UpdateCount(count);
+
+            //TODO compleate implemtentation
+
+        }
+
+        public void AddTree(Tree tree)
+        {
+            Datastore.InsertTree(tree);
+
+            _trees.Add(tree.Tree_CN.Value, tree);
         }
 
         public void UpdateTree(Tree tree)
         {
-            if (tree.IsPersisted == false) { throw new InvalidOperationException("tree is not persisted before calling update"); }
-            Datastore.Update(tree);
+            Datastore.UpdateTree(tree);
         }
 
         public Task UpdateTreeAsync(Tree tree)
         {
-            return Task.Run(() => UpdateTree(tree));
+            return Datastore.UpdateTreeAsync(tree);
         }
 
         public void InsertTree(Tree tree)
         {
-            if (tree.IsPersisted == true) { throw new InvalidOperationException("tree is persisted, should be calling update instead of insert"); }
-            Datastore.Insert(tree);
+            Datastore.InsertTree(tree);
         }
 
-        public void InsertTreeEstimate(TreeEstimateDO treeEstimate)
+        public void UpdateCount(CountTree tallyPopulation)
         {
-            if (treeEstimate.IsPersisted == true) { throw new InvalidOperationException("treeEstimate is persisted, should be calling update instead of insert"); }
-            Datastore.Insert(treeEstimate);
+            Datastore.UpdateCount(tallyPopulation);
         }
 
-        public void UpdateCount(TallyPopulation tallyPopulation)
+        public void LogMessage(string message, string level)
         {
-            if (tallyPopulation.IsPersisted == false) { throw new InvalidOperationException("count is not persisted"); }
-            Datastore.Update(tallyPopulation);
+            Datastore.LogMessage(message, level);
         }
 
         public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode)
         {
-            var fields = Datastore.From<TreeFieldSetupDO>()
-                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({string.Join(",", CruiseMethods.PLOT_METHODS.Select(s => "'" + s + "'").ToArray())})")
-                .GroupBy("Field")
-                .OrderBy("FieldOrder")
-                .Query(unitCode).ToList();
+            var fields = Datastore.GetTreeFieldsByUnitCode(unitCode).ToList();
 
             if (fields.Count == 0)
             {

@@ -1,209 +1,170 @@
-﻿using CruiseDAL.DataObjects;
+﻿using CruiseDAL.Schema;
 using FMSC.Sampling;
 using FScruiser.Models;
 using FScruiser.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FScruiser.Logic
 {
     public class TreeBasedTallyLogic
     {
-        public static async Task OnTallyAsync(TallyPopulation count,
-            ICuttingUnitDataService dataService, ICollection<TallyFeedItem> tallyHistory,
-            ITallySettingsDataService tallySettings,
-            IDialogService dialogService, ISoundService soundService)
+        public static async Task<TallyEntry> TallyAsync(TallyPopulation count,
+            ICuttingUnitDataService dataService,
+            IDialogService dialogService)
         {
-            TallyFeedItem action = null;
+            TallyEntry action = null;
             var sg = count.SampleGroup;
 
             //if doing a manual tally create a tree and jump out
             if (sg.SampleSelectorType == CruiseDAL.Schema.CruiseMethods.CLICKER_SAMPLER_TYPE)
             {
-                try
-                {
-                    action = new TallyFeedItem()
-                    {
-                        Count = count
-                    };
-                    var newTree = dataService.CreateTree(count); //create measure tree
-                    newTree.CountOrMeasure = "M";
-                    newTree.TreeCount      = sg.SamplingFrequency;     //increment tree count on tally
-                    action.Tree = newTree;
-                    dataService.InsertTree(newTree);
-                }
-                catch (FMSC.ORM.SQLException e) //count save fail
-                {
-                    await dialogService.ShowMessageAsync("File error");
-                    return;
-                }
+                action = new TallyEntry(count);
+
+                var newTree = dataService.CreateTree(count); //create measure tree
+                newTree.CountOrMeasure = "M";
+                newTree.TreeCount = sg.SamplingFrequency;     //increment tree count on tally
+                action.SetTree(newTree);
+            }
+            else if (count.Method == CruiseMethods.S3P)
+            {
+                action = await TallyS3P(count, dataService, dialogService);
             }
             else if (count.Is3P)//threeP sampling
             {
-                action = await TallyThreePAsync(count, sg.Sampler, sg, dataService, dialogService);
+                int? kpi = await dialogService.AskKPIAsync((int)sg.MaxKPI, (int)sg.MinKPI);
+                if (kpi != null)
+                {
+                    action = TallyThreeP(count, kpi.Value, dataService);
+                }
             }
             else//non 3P sampling (STR)
             {
-                action = await TallyStandardAsync(count, sg.Sampler, dataService, dialogService);
+                action = TallyStandard(count, dataService);
             }
 
-            //action may be null if cruising 3P and user doesn't enter a kpi
-            if (action != null)
-            {
-                soundService.SignalTally();
-                var tree = action.Tree;
-                if (tree != null)
-                {
-                    if (tree.CountOrMeasure == "M")
-                    {
-                        soundService.SignalMeasureTree();
-                    }
-                    else if (tree.CountOrMeasure == "I")
-                    {
-                        soundService.SignalInsuranceTree();
-                    }
+            return action;
+        }
 
-                    if (tallySettings.EnableCruiserPopup)
+        public static async Task<TallyEntry> TallyS3P(TallyPopulation pop,
+            ICuttingUnitDataService dataService,
+            IDialogService dialogService)
+        {
+            var sg = pop.SampleGroup;
+            var sampler = sg.Sampler;
+
+            var tallyEntry = new TallyEntry(pop)
+            {
+                TreeCount = 1
+            };
+
+            boolItem item = (boolItem)sampler.NextItem();
+
+            Tree tree = null;
+            //If we receive nothing from the sampler, we don't have a sample
+            if (item != null)//&& (item.IsSelected || item.IsInsuranceItem))
+            {
+                var secondarySampler = sg.SecondarySampler;
+
+                int? kpi = await dialogService.AskKPIAsync((int)sg.MaxKPI, (int)sg.MinKPI);
+                if (kpi != null)
+                {
+                    if (kpi == -1)  //user entered sure to measure
                     {
-                        await dialogService.AskCruiserAsync(tree);
-                        await dataService.UpdateTreeAsync(tree);
+                        tree = dataService.CreateTree(pop);
+                        tree.STM = "Y";
+                        tallyEntry.IsSTM = true;
+                        tallyEntry.SetTree(tree);
                     }
                     else
                     {
-                        var sampleType = (tree.CountOrMeasure == "M") ? "Measure Tree" :
-                                 (tree.CountOrMeasure == "I") ? "Insurance Tree" : String.Empty;
-                        await dialogService.ShowMessageAsync("Tree #" + tree.TreeNumber.ToString(), sampleType);
-                    }
+                        tallyEntry.KPI = kpi.Value;
 
-                    if (tree.CountOrMeasure == "M" && await AskEnterMeasureTreeDataAsync(tallySettings, dialogService))
-                    {
-                        var task = dialogService.ShowEditTreeAsync(tree, dataService);//allow method to contiue from show edit tree we will allow tally history action to be added in the background
+                        ThreePItem item3p = (ThreePItem)((ThreePSelecter)sampler).NextItem();
+                        if (item3p != null && kpi.Value > item3p.KPI)
+                        {
+                            bool isInsuranceTree = sampler.IsSelectingITrees && sampler.InsuranceCounter.Next();
+
+                            tree = dataService.CreateTree(pop);
+                            tree.KPI = kpi.Value;
+                            tree.CountOrMeasure = (isInsuranceTree) ? "I" : "M";
+                            tallyEntry.SetTree(tree);
+                        }
                     }
-                    tree.HasFieldData = false;
                 }
-                tallyHistory.Add(action);
+                else
+                {
+                    return null;
+                }
             }
+
+            return tallyEntry;
         }
 
         //DataService (CreateNewTreeEntry)
         //SampleGroup (MinKPI/MaxKPI)
-        public static async Task<TallyFeedItem> TallyThreePAsync(TallyPopulation count, SampleSelecter sampler, SampleGroup sg, ICuttingUnitDataService dataService, IDialogService dialogService)
+        public static TallyEntry TallyThreeP(TallyPopulation pop,
+            int kpi,
+            ICuttingUnitDataService dataService)
         {
-            var action = new TallyFeedItem()
-            { Count = count };
+            var sampler = pop.SampleGroup.Sampler;
 
-            int kpi = 0;
-            int? value = await dialogService.AskKPIAsync((int)sg.MaxKPI, (int)sg.MinKPI);
-            if (value == null)
+            var tallyEntry = new TallyEntry(pop)
             {
-                return null;
-            }
-            else
-            {
-                kpi = value.Value;
-            }
-
-            var originalCount  = count.TreeCount;
-            var originalSumKPI = count.SumKPI;
+                TreeCount = 1
+            };
 
             Tree tree = null;
             if (kpi == -1)  //user entered sure to measure
             {
-                tree = dataService.CreateTree(count);
+                tree = dataService.CreateTree(pop);
                 tree.STM = "Y";
+                tallyEntry.IsSTM = true;
+                tallyEntry.SetTree(tree);
             }
             else
             {
-                action.TreeEstimate = dataService.LogTreeEstimate(count, kpi);
-                //action.KPI = kpi; //kpi on tally action is redundent since we have both tree estimate and tree
-                count.SumKPI += kpi;
+                tallyEntry.KPI = kpi;
 
                 ThreePItem item = (ThreePItem)((ThreePSelecter)sampler).NextItem();
                 if (item != null && kpi > item.KPI)
                 {
                     bool isInsuranceTree = sampler.IsSelectingITrees && sampler.InsuranceCounter.Next();
 
-                    tree                = dataService.CreateTree(count);
-                    tree.KPI            = kpi;
+                    tree = dataService.CreateTree(pop);
+                    tree.KPI = kpi;
                     tree.CountOrMeasure = (isInsuranceTree) ? "I" : "M";
+                    tallyEntry.SetTree(tree);
                 }
             }
 
-            try
-            {
-                if (tree != null)
-                {
-                    dataService.InsertTree(tree);
-                    action.Tree = tree;
-                }
-
-                count.TreeCount++;
-                dataService.UpdateCount(count);
-
-                return action;
-            }
-            catch (FMSC.ORM.SQLException e) //count save fail
-            {
-                count.SumKPI    = originalSumKPI;
-                count.TreeCount = originalCount;
-
-                await dialogService.ShowMessageAsync("File error");
-
-                return null;
-            }
+            return tallyEntry;
         }
 
         //DataService (CreateNewTreeEntry)
         //
-        public static async Task<TallyFeedItem> TallyStandardAsync(TallyPopulation count, SampleSelecter sampleSelecter, ICuttingUnitDataService dataService, IDialogService dialogService)
+        public static TallyEntry TallyStandard(TallyPopulation pop,
+            ICuttingUnitDataService dataService)
         {
-            var action = new TallyFeedItem()
-            { Count = count };
+            var sg = pop.SampleGroup;
+            var sampler = sg.Sampler;
 
-            boolItem item = (boolItem)sampleSelecter.NextItem();
+            boolItem item = (boolItem)sampler.NextItem();
 
-            var originalCount = count.TreeCount;
+            var tallyEntry = new TallyEntry(pop)
+            {
+                TreeCount = 1
+            };
 
             Tree tree = null;
             //If we receive nothing from the sampler, we don't have a sample
             if (item != null)//&& (item.IsSelected || item.IsInsuranceItem))
             {
-                tree = dataService.CreateTree(count);
+                tree = dataService.CreateTree(pop);
                 tree.CountOrMeasure = (item.IsInsuranceItem) ? "I" : "M";
+                tallyEntry.SetTree(tree);
             }
 
-            try
-            {
-                if (tree != null)
-                {
-                    dataService.InsertTree(tree);
-                    action.Tree = tree;
-                }
-
-                count.TreeCount++;
-                dataService.UpdateCount(count);
-
-                return action;
-            }
-            catch (FMSC.ORM.SQLException e) //count save fail
-            {
-                count.TreeCount = originalCount;
-
-                await dialogService.ShowMessageAsync("File error", e.GetType().Name);
-
-                return null;
-            }
+            return tallyEntry;
         }
-
-        protected static async Task<bool> AskEnterMeasureTreeDataAsync(ITallySettingsDataService appSettings, IDialogService dialogService)
-        {
-            if (!appSettings.EnableAskEnterTreeData) { return false; }
-
-            return await dialogService.AskYesNoAsync("Would you like to enter tree data now?", "Sample", false);
-        }
-
     }
 }

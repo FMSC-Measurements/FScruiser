@@ -27,9 +27,13 @@ namespace FScruiser.Services
 
         IEnumerable<TreeFieldSetupDO> TreeFields { get; }
 
-        IList<Tree> Trees { get; }
+        IEnumerable<Tree> Trees { get; }
 
-        List<TallyFeedItem> TallyFeed { get; }
+        IEnumerable<TallyEntry> TallyFeed { get; }
+
+        IEnumerable<CountTree> Counts { get; }
+
+        Dictionary<string, IEnumerable<TreeDefaultValueDO>> TreeDefaultSampleGroupLookup { get; }
 
         #region update methods
 
@@ -39,16 +43,21 @@ namespace FScruiser.Services
 
         #endregion
 
+        void AddTallyEntry(TallyEntry tallyEntry);
+
+        void AddTree(Tree tree);
+
         #region insert methods
 
         void InsertTree(Tree tree);
 
-        void InsertTreeEstimate(TreeEstimateDO treeEstimate);
         TallyPopulation GetCount(long countCN);
         Tree GetTree(long treeCN);
         TreeEstimateDO GetTreeEstimate(long treeEstimateCN);
-        void UpdateCount(TallyPopulation count);
+        void UpdateCount(CountTree count);
 
         #endregion
+
+        void LogMessage(string message, string level);
     }
 }

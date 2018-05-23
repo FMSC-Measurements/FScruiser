@@ -55,7 +55,7 @@ namespace FScruiser.XF.ViewModels
 
             var cruiseDataService = DataService;
             var unitDataService = new CuttingUnitDataService(cruiseDataService.Path, unit);
-            ServiceService.CuttingUnitDataSercie = unitDataService;
+            ServiceService.CuttingUnitDataService = unitDataService;
 
             MessagingCenter.Send<object>(this, Messages.CUTTING_UNIT_SELECTED);
         }

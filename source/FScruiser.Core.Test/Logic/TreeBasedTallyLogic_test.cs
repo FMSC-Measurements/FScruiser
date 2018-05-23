@@ -17,85 +17,136 @@ namespace FScruiser.Core.Test.Logic
     public class TreeBasedTallyLogic_test
     {
         [Theory]
-        [InlineData(1, 0, "M", false, false)]
-        //TODO it would be nice to have a better way to guarntee a insurance sample
-        [InlineData(2, 1, "I", false, false)]//if freq is 1 sampler wont do insurance
-        [InlineData(1, 0, "M", true, true)]
+        //WHEN frequency 1 in 1 (guarintee sample)
+        //AND no insurance trees
+        //THEN expect measure tree
+        [InlineData(1, 0, "M")]
+
+        //WHEN frequency is 1 in 2 
+        //AND insurance frequency is 1 in 1
+        [InlineData(2, 1, "I")]//if freq is 1 sampler wont do insurance //TODO it would be nice to have a better way to guarntee a insurance sample
+
         //[InlineData(0,0, "C", false, false)]//frequency of 0 is not allowed and breaks the OnTally
-        public void OnTallyTest_STR(int frequency, int insuranceFreq, string resultCountMeasure, bool enableCruiserPopup, bool enterMeasureTreeData)
+        public void TallyStandard(int frequency, int insuranceFreq, string resultCountMeasure)
         {
 
             using (var ds = CreateDatastore(CruiseDAL.Schema.CruiseMethods.STR, frequency, insuranceFreq))
             {
+                var unitDs = new CuttingUnitDatastore(ds);
+
                 var unit = ds.From<CuttingUnit>().Query().First();
 
-                var dataService = new CuttingUnitDataService(unit) { Datastore = ds };
+                var dataService = new CuttingUnitDataService(unitDs, unit);
                 dataService.RefreshData();
 
                 var count = dataService.TallyPopulations.FirstOrDefault();
 
-                var tallyFeed = new List<TallyFeedItem>();
+                //var tallyFeed = new List<TallyFeedItem>();
 
-                var appSettingsMock = new Mock<ITallySettingsDataService>();
-                appSettingsMock.Setup(x => x.EnableCruiserPopup).Returns(enableCruiserPopup);
-                appSettingsMock.Setup(x => x.EnableAskEnterTreeData).Returns(enterMeasureTreeData);
+                //var appSettingsMock = new Mock<ITallySettingsDataService>();
+                //appSettingsMock.Setup(x => x.EnableCruiserPopup).Returns(enableCruiserPopup);
+                //appSettingsMock.Setup(x => x.EnableAskEnterTreeData).Returns(enterMeasureTreeData);
 
-                var dialogServiceMock = new Mock<IDialogService>();
-                dialogServiceMock.Setup(x => x.AskYesNoAsync(It.Is<string>(s => s == "Would you like to enter tree data now?"), It.IsAny<string>(), It.IsAny<bool>()))
-                    .Returns(Task.FromResult(enterMeasureTreeData));
-                dialogServiceMock.Setup(x => x.ShowEditTreeAsync(It.IsAny<Tree>(), It.IsAny<ICuttingUnitDataService>()));
+                //var dialogServiceMock = new Mock<IDialogService>();
+                //dialogServiceMock.Setup(x => x.AskYesNoAsync(It.Is<string>(s => s == "Would you like to enter tree data now?"), It.IsAny<string>(), It.IsAny<bool>()))
+                //    .Returns(Task.FromResult(enterMeasureTreeData));
+                //dialogServiceMock.Setup(x => x.ShowEditTreeAsync(It.IsAny<Tree>(), It.IsAny<ICuttingUnitDataService>()));
 
-                var soundServiceMock = new Mock<ISoundService>();
+                //var soundServiceMock = new Mock<ISoundService>();
 
+                var tallyEntry = TreeBasedTallyLogic.TallyStandard(count, dataService);
+                tallyEntry.UnitCode.Should().Be(unit.Code);
+                tallyEntry.StratumCode.Should().Be(count.StratumCode);
+                tallyEntry.SGCode.Should().Be(count.SampleGroupCode);
+                tallyEntry.Species.Should().Be(count.Species);
+                tallyEntry.TreeCount.Should().Be(1);
 
-                TreeBasedTallyLogic.OnTallyAsync(count, dataService, tallyFeed,
-                    appSettingsMock.Object,
-                    dialogServiceMock.Object,
-                    soundServiceMock.Object).Wait();
-
-
-
-                tallyFeed.Should().HaveCount(1);
-                var tallyAction = tallyFeed.Single();
-
-                var treeCount = ds.ExecuteScalar<int>("SELECT Sum(TreeCount) FROM CountTree;");
-                treeCount.Should().Be(1);
-
-                soundServiceMock.Verify(x => x.SignalTally(It.IsAny<bool>()));
-
+                var tree = tallyEntry.Tree;
                 if (resultCountMeasure == "M" || resultCountMeasure == "I")
                 {
-                    tallyAction.Tree.Should().NotBeNull();
-
-                    var tree = ds.From<Tree>().Read().Single();
+                    
                     tree.Should().NotBeNull();
                     tree.CountOrMeasure.Should().Be(resultCountMeasure);
-
-                    if (resultCountMeasure == "M")
-                    {
-                        soundServiceMock.Verify(x => x.SignalMeasureTree());
-                    }
-                    else
-                    {
-                        soundServiceMock.Verify(x => x.SignalInsuranceTree());
-                    }
-
-                    if (enterMeasureTreeData)
-                    {
-                        dialogServiceMock.Verify(x => x.ShowEditTreeAsync(It.IsNotNull<Tree>(), It.IsAny<ICuttingUnitDataService>()));
-                    }
-
-                    if (enableCruiserPopup)
-                    {
-                        dialogServiceMock.Verify(x => x.AskCruiserAsync(It.IsNotNull<Tree>()));
-                    }
-                    else
-                    {
-                        dialogServiceMock.Verify(x => x.ShowMessageAsync(It.Is<string>(s => s.Contains("Tree #")), It.IsAny<string>()));
-                    }
+                    tallyEntry.TreeNumber.Should().NotBeNull();
+                    tallyEntry.TreeNumber.Should().Be((int)tree.TreeNumber);
+                }
+                else
+                {
+                    tree.Should().BeNull();
+                    tallyEntry.TreeNumber.Should().BeNull();
                 }
             }
         }
+
+        [Theory]
+        [InlineData(2, 0, "M")]
+        public void TallyThreeP(int kpi, int insuranceFreq, string resultCountMeasure)
+        {
+            var unit = new CuttingUnit();
+
+            var sampleGroup = new SampleGroup
+            {
+                Sampler = new FMSC.Sampling.ThreePSelecter(1, 1, 0)
+            };
+
+            var count = new CountTree()
+            {
+                CuttingUnit_CN = 1
+            };
+
+            var pop = new TallyPopulation
+            {
+                Method = "3P",
+                SampleGroup = sampleGroup,
+                Count = count
+            };
+
+
+            var dataServiceMock = new Mock<ICuttingUnitDataService>();
+            dataServiceMock.Setup(x => x.CreateTree(It.IsAny<TallyPopulation>())).Returns(() => new Tree());
+
+            ICuttingUnitDataService dataService = dataServiceMock.Object;
+
+            var tallyEntry = TreeBasedTallyLogic.TallyThreeP(pop, kpi, dataService);
+            var tree = tallyEntry.Tree;
+            tree.KPI.Should().Be(kpi);
+            tree.CountOrMeasure.Should().Be(resultCountMeasure);
+        }
+
+        [Fact]
+        public void TallyThreeP_STM()
+        {
+            int kpi = -1;
+
+            var unit = new CuttingUnit();
+            var sampleGroup = new SampleGroup
+            {
+                Sampler = new FMSC.Sampling.ThreePSelecter(0, 0, 0)
+            };
+            var count = new CountTree()
+            {
+                CuttingUnit_CN = 1
+            };
+            var pop = new TallyPopulation
+            {
+                Method = "3P",
+                SampleGroup = sampleGroup,
+                Count = count
+            };
+
+
+            var dataServiceMock = new Mock<ICuttingUnitDataService>();
+            dataServiceMock.Setup(x => x.CreateTree(It.IsAny<TallyPopulation>())).Returns(() => new Tree());
+
+            ICuttingUnitDataService dataService = dataServiceMock.Object;
+
+            var tallyEntry = TreeBasedTallyLogic.TallyThreeP(pop, kpi, dataService);
+            var tree = tallyEntry.Tree;
+            tree.STM.Should().Be("Y");
+            tree.KPI.Should().Be(0);
+            tree.CountOrMeasure.Should().Be("M");
+        }
+
 
         private CruiseDAL.DAL CreateDatastore(string cruiseMethod, int freqORkz, int insuranceFreq)
         {

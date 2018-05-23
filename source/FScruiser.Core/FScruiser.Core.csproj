@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <PackageReference Include="CruiseDAL" Version="2.2.1.2" />
+    <PackageReference Include="FMSC.ORM" Version="2.0.0.4" />
+    <PackageReference Include="SqlBuilder" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>

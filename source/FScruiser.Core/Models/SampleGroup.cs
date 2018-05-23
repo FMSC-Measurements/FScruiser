@@ -10,5 +10,7 @@ namespace FScruiser.Models
     public class SampleGroup : SampleGroupDO
     {
         public SampleSelecter Sampler { get; set; }
+
+        public SampleSelecter SecondarySampler { get; set; }
     }
 }

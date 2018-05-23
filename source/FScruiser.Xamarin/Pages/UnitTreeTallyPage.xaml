@@ -27,9 +27,9 @@
                                     </ResourceDictionary>
                                 </StackLayout.Resources>
                                 <BoxView Color="#Black" WidthRequest="3" />
-                                <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" VerticalTextAlignment="Center"/>
-                                <Label Text="{Binding TallyDescription}, StringFormat='| {0}'}" VerticalTextAlignment="Center"/>
-                                <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" VerticalTextAlignment="Center" IsVisible="{Binding HasTree}" />
+                                <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20" VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding TallyDescription, StringFormat='| {0}'}" FontSize="30" VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" TextColor="Blue" FontSize="30" VerticalTextAlignment="Center" IsVisible="{Binding HasTree}" />
                                 <!--<Frame HorizontalOptions="EndAndExpand" BackgroundColor="#30C1BC" IsVisible="{Binding HasTree}" >
                                     <Label x:Name="CruiserInitialsLabel" Text="{Binding Initials}" TextColor="Black"/>
                                 </Frame>-->
@@ -45,7 +45,7 @@
                                             </DataTrigger>
                                         </BoxView.Triggers>
                                     </BoxView>
-                                    <Label x:Name="CruiserInitialsLabel" Text="{Binding Initials}" TextColor="Black" 
+                                    <Label x:Name="CruiserInitialsLabel" Text="{Binding Tree.Initials}" TextColor="Black" 
                                            HorizontalTextAlignment="Center" VerticalTextAlignment="Center" 
                                            AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.5" AbsoluteLayout.LayoutFlags="All"/>
                                 </AbsoluteLayout>
@@ -71,7 +71,7 @@
                                          VerticalOptions="Fill" Padding="3">
                                 <Label Text="{Binding TallyDescription}" 
                                        HorizontalTextAlignment="Center" />
-                                <Label Text="{Binding TreeCount}" 
+                                <Label Text="{Binding Count.TreeCount}" 
                                        HorizontalTextAlignment="Center" 
                                        BackgroundColor="White" 
                                        TextColor="Black" />

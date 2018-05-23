@@ -143,7 +143,7 @@ namespace FScruiser.XF.Pages
             }
 
             ServiceService.CruiseDataService = new CruiseDataService(path);
-            ServiceService.CuttingUnitDataSercie = null;
+            ServiceService.CuttingUnitDataService = null;
 
             MessagingCenter.Send<object>(this, Messages.CRUISE_FILE_SELECTED);
         }

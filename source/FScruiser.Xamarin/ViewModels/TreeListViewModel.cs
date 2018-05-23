@@ -27,7 +27,7 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand EditTreeCommand => _editTreeCommand ?? (_editTreeCommand = new Command<Tree>(ShowEditTree));
 
-        public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataSercie;
+        public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataService;
 
         public TreeListViewModel()
         {

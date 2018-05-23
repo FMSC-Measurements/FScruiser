@@ -1,12 +1,19 @@
-﻿using CruiseDAL.DataObjects;
-using CruiseDAL.Schema;
+﻿using CruiseDAL.Schema;
 using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Util;
 using System.Linq;
 
 namespace FScruiser.Models
 {
-    public class TallyPopulation : CountTreeDO
+    [EntitySource("CountTree")]
+    public class TallyPopulation : INPC_Base
     {
+        int _treeCount;
+        int _sumKPI;
+
+        [Field("CountTree_CN")]
+        public int CountTree_CN { get; set; }
+
         [Field(Alias = "TallyDescription", SQLExpression = "Tally.Description", PersistanceFlags = PersistanceFlags.Never)]
         public string TallyDescription { get; set; }
 
@@ -24,6 +31,14 @@ namespace FScruiser.Models
         [Field(Alias = "SampleGroupCode", SQLExpression = "SampleGroup.Code", PersistanceFlags = PersistanceFlags.Never)]
         public string SampleGroupCode { get; set; }
 
+        [Field("SampleGroup_CN")]
+        public int SampleGroup_CN { get; set; }
+
+        [Field(Alias = "tdvSpecies", SQLExpression = "TreeDefaultValue.Species", PersistanceFlags = PersistanceFlags.Never)]
+        public string Species { get; set; }
+
         public SampleGroup SampleGroup { get; set; }
+
+        public CountTree Count { get; set; }
     }
 }

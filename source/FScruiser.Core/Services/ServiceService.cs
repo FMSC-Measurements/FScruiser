@@ -4,7 +4,7 @@
     {
         public ICruiseFileService CruiseFileService { get; set; }
         public ICruiseDataService CruiseDataService { get; set; }
-        public ICuttingUnitDataService CuttingUnitDataSercie { get; set; }
+        public ICuttingUnitDataService CuttingUnitDataService { get; set; }
         public ITallySettingsDataService TallySettingsDataService { get; set; }
 
         public ISoundService SoundService { get; set; }

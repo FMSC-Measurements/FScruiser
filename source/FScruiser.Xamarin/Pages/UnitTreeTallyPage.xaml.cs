@@ -59,12 +59,12 @@ namespace FScruiser.XF.Pages
 
         public void TallyFeedListView_ItemSelected(object sender, SelectedItemChangedEventArgs eventArgs)
         {
-            var selectedItem = (TallyFeedItem)eventArgs.SelectedItem;
+            var selectedItem = (TallyEntry)eventArgs.SelectedItem;
 
             if (selectedItem != null)
             {
                 var viewModel = ViewModel;
-                viewModel.ShowTallyFeedItem(selectedItem);
+                viewModel.ShowTree(selectedItem.Tree);
             }
 
             var view = (ListView)sender;
