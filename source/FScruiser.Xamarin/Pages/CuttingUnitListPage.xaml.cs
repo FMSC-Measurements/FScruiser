@@ -32,9 +32,6 @@ namespace FScruiser.XF.Pages
             var unit = (CuttingUnit)eventArgs.SelectedItem;
 
             ViewModel.SelectUnit(unit);
-
-            
-            ((ListView)sender).SelectedItem = null;
         }
     }
 }
