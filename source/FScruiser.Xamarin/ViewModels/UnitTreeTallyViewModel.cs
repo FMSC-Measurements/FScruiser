@@ -85,10 +85,10 @@ namespace FScruiser.XF.ViewModels
 
         public UnitTreeTallyViewModel()
         {
-            MessagingCenter.Subscribe<object>(this, Messages.CUTTING_UNIT_SELECTED, async (x) =>
-            {
-                await InitAsync();
-            });
+            //MessagingCenter.Subscribe<object>(this, Messages.CUTTING_UNIT_SELECTED, async (x) =>
+            //{
+            //    await InitAsync();
+            //});
         }
 
         public override async Task InitAsync()

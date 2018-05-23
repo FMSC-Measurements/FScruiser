@@ -11,21 +11,21 @@ namespace FScruiser.Services
 {
     public class CuttingUnitDataService : ICuttingUnitDataService
     {
-        private bool _dataLoading;
+        private object _dataLoadingLock = new Object();
         private bool _dataLoaded;
 
         protected ICuttingUnitDatastore Datastore { get; }
 
-        Dictionary<long, SampleGroup> _sampleGroups;
-        Dictionary<long, Stratum> _strata;
-        Dictionary<long, TallyPopulation> _tallyPopulations;
-        Dictionary<long, Tree> _trees;
-        Dictionary<long, TreeDefaultValueDO> _treeDefaultValues;
-        Dictionary<string, IEnumerable<TreeDefaultValueDO>> _treeDefaultSampleGroupLookup = new Dictionary<string, IEnumerable<TreeDefaultValueDO>>();
-        Dictionary<int, CountTree> _counts;
+        private Dictionary<long, SampleGroup> _sampleGroups;
+        private Dictionary<long, Stratum> _strata;
+        private Dictionary<long, TallyPopulation> _tallyPopulations;
+        private Dictionary<long, Tree> _trees;
+        private Dictionary<long, TreeDefaultValueDO> _treeDefaultValues;
+        private Dictionary<string, IEnumerable<TreeDefaultValueDO>> _treeDefaultSampleGroupLookup = new Dictionary<string, IEnumerable<TreeDefaultValueDO>>();
+        private Dictionary<int, CountTree> _counts;
 
-        TreeFieldSetupDO[] _treeFields;
-        IList<TallyEntry> _tallyFeed;
+        private TreeFieldSetupDO[] _treeFields;
+        private IList<TallyEntry> _tallyFeed;
 
         public CuttingUnit Unit { get; protected set; }
 
@@ -33,7 +33,7 @@ namespace FScruiser.Services
         public IEnumerable<TreeDefaultValueDO> TreeDefaultValues => _treeDefaultValues?.Values;
         public Dictionary<string, IEnumerable<TreeDefaultValueDO>> TreeDefaultSampleGroupLookup => _treeDefaultSampleGroupLookup;
         public IEnumerable<SampleGroup> SampleGroups => _sampleGroups?.Values;
-        
+
         public IEnumerable<Tree> Trees => _trees?.Values;
         public IEnumerable<CountTree> Counts => _counts?.Values;
 
@@ -43,6 +43,7 @@ namespace FScruiser.Services
         public IEnumerable<TallyPopulation> TallyPopulations { get; set; }
 
         #region ctor
+
         public CuttingUnitDataService(CuttingUnit unit)
         { Unit = unit; }
 
@@ -57,7 +58,8 @@ namespace FScruiser.Services
         {
             Datastore = datastore ?? throw new ArgumentNullException(nameof(datastore));
         }
-        #endregion
+
+        #endregion ctor
 
         public Task RefreshDataAsync(bool force = false)
         {
@@ -66,11 +68,9 @@ namespace FScruiser.Services
 
         public void RefreshData(bool force = false)
         {
-            if (_dataLoaded == true || _dataLoading == true) { return; }
-
-            try
+            if (_dataLoaded == true) { return; }
+            lock (_dataLoadingLock)
             {
-                _dataLoading = true;
                 var unitCode = Unit.Code;
 
                 _strata = Datastore.GetStrataByUnitCode(unitCode).ToDictionary(x => x.Stratum_CN.Value);
@@ -89,7 +89,7 @@ namespace FScruiser.Services
                 }
 
                 _counts = Datastore.GetCountTreeByUnitCode(unitCode).ToDictionary(x => x.CountTree_CN);
-                TallyPopulations = Datastore.GetTallyPopulationsByUnitCode(unitCode);                
+                TallyPopulations = Datastore.GetTallyPopulationsByUnitCode(unitCode);
 
                 foreach (var tally in TallyPopulations)
                 {
@@ -107,17 +107,13 @@ namespace FScruiser.Services
                     tree.Stratum = _strata[tree.Stratum_CN.Value];
                     tree.SampleGroup = _sampleGroups.Where(x => tree.SampleGroup_CN.HasValue && x.Key == tree.SampleGroup_CN.Value)
                         .Select(x => x.Value).SingleOrDefault();
-                    tree.TreeDefaultValue = _treeDefaultValues.Where(x => tree.TreeDefaultValue_CN.HasValue &&  x.Key == tree.TreeDefaultValue_CN.Value)
+                    tree.TreeDefaultValue = _treeDefaultValues.Where(x => tree.TreeDefaultValue_CN.HasValue && x.Key == tree.TreeDefaultValue_CN.Value)
                         .Select(x => x.Value).SingleOrDefault();
                 }
 
                 _tallyFeed = Datastore.GetTallyEntriesByUnitCode(unitCode).ToObservableCollection();
 
                 _dataLoaded = true;
-            }
-            finally
-            {
-                _dataLoading = false;
             }
         }
 
@@ -187,16 +183,15 @@ namespace FScruiser.Services
             var stCode = tallyEntry.StratumCode;
             var sgCode = tallyEntry.SGCode;
 
-
-            var count = Counts.Where(x => x.UnitCode == unitCode 
-                            && x.StratumCode == stCode 
+            var count = Counts.Where(x => x.UnitCode == unitCode
+                            && x.StratumCode == stCode
                             && x.SampleGroupCode == sgCode).Single();
 
             var treeCount = count.TreeCount;
-            var sumKPI    = count.SumKPI;
+            var sumKPI = count.SumKPI;
 
             count.TreeCount = treeCount + tallyEntry.TreeCount;
-            count.SumKPI    = sumKPI + tallyEntry.KPI;
+            count.SumKPI = sumKPI + tallyEntry.KPI;
 
             var tree = tallyEntry.Tree;
 
@@ -208,7 +203,6 @@ namespace FScruiser.Services
             Datastore.UpdateCount(count);
 
             //TODO compleate implemtentation
-
         }
 
         public void AddTree(Tree tree)
