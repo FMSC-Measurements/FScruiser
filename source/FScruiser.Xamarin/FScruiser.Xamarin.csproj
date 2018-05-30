@@ -76,7 +76,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FMSC.Sampling\src\FMSC.Sampling\FMSC.Sampling.csproj" />
     <ProjectReference Include="..\FScruiser.Core\FScruiser.Core.csproj" />
   </ItemGroup>
 
