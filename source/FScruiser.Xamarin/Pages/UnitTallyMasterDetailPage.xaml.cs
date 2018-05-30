@@ -23,13 +23,21 @@ namespace FScruiser.XF.Pages
 
             MenuItemsListView.ItemSelected += ListView_ItemSelected;
 
-            var serviceService = App.ServiceService;
             var viewModel = new MasterViewModel(Navigation);
             MasterPage.BindingContext = viewModel;
 
             MessagingCenter.Subscribe<object>(this, Messages.CRUISE_FILE_SELECTED, (o) =>
             {
                 IsPresented = false;
+
+                var navigation = Detail.Navigation;
+                navigation.PopToRootAsync();
+            });
+
+            MessagingCenter.Subscribe<object>(this, Messages.CUTTING_UNIT_SELECTED, (o) =>
+            {
+                IsPresented = true;
+
             });
         }
 
@@ -51,6 +59,8 @@ namespace FScruiser.XF.Pages
 
         private async System.Threading.Tasks.Task ShowPageFromNavigationListItemAsync(NavigationListItem item)
         {
+            if(item.CanShow == false) { return; }
+
             var navigation = Detail.Navigation;
             if (item.ResetsNavigation)
             {
@@ -58,7 +68,7 @@ namespace FScruiser.XF.Pages
             }
             else
             {
-                var page = item.MakePage();
+                var page = item.MakePage() ;
                 page.Title = item.Title;
 
                 page.SetValue(NavigationPage.HasBackButtonProperty, false);
@@ -76,6 +86,12 @@ namespace FScruiser.XF.Pages
 
         public ICommand SelectFileCommand => _selectFileCommand ?? (_selectFileCommand = new Command(SelectFileAsync));
 
+        public bool CanShowCuttingUnits => ServiceService.CruiseDataService != null;
+
+        public bool CanShowTallies => ServiceService.CuttingUnitDataService != null;
+
+        public bool CanShowTrees => ServiceService.CuttingUnitDataService != null;
+
         public IEnumerable<NavigationListItem> NavigationListItems { get; set; }
 
         public string CurrentFilePath
@@ -83,11 +99,9 @@ namespace FScruiser.XF.Pages
             get
             {
                 var cruiseDataService = ServiceService?.CruiseDataService;
-                if(cruiseDataService != null)
+                if (cruiseDataService != null)
                 {
-                    var path = cruiseDataService.Path ?? "Open File";
-
-                    return (path.Length > 20) ? "..." + path.Substring(path.Length - 20) : path;
+                    return System.IO.Path.GetFileName(cruiseDataService.Path);
                 }
                 else
                 {
@@ -98,17 +112,39 @@ namespace FScruiser.XF.Pages
 
         public MasterViewModel(INavigation navigation) : base(navigation)
         {
-
-
             NavigationListItems = new NavigationListItem[]
             {
-                    new NavigationListItem {Title = "Cutting Units", MakePage = () => new CuttingUnitListPage(), MakeViewModel = () => new ViewModels.CuttingUnitListViewModel(), ResetsNavigation = true },
-                    new NavigationListItem {Title = "Tally", MakePage = () => new UnitTreeTallyPage(), MakeViewModel = () => new UnitTreeTallyViewModel()},
-                    new NavigationListItem {Title="Trees", MakePage = ()=> new TreeListPage(), MakeViewModel = ()=> new TreeListViewModel()}
+                    new NavigationListItem {Title = "Cutting Units"
+                    , MakePage = () => new CuttingUnitListPage()
+                    , MakeViewModel = () => new ViewModels.CuttingUnitListViewModel()
+                    , ResetsNavigation = true
+                    , CanShowAction = () => CanShowCuttingUnits},
+
+                    new NavigationListItem {Title = "Tally"
+                    , MakePage = () => new UnitTreeTallyPage()
+                    , MakeViewModel = () => new UnitTreeTallyViewModel()
+                    , CanShowAction = () => CanShowTallies },
+
+                    new NavigationListItem {Title="Trees"
+                    , MakePage = ()=> new TreeListPage()
+                    , MakeViewModel = ()=> new TreeListViewModel()
+                    , CanShowAction = () => CanShowTrees },
+
+                    new NavigationListItem {Title="Cruisers"
+                    , MakePage = ()=> new ManageCruisersPage()
+                    , CanShowAction = () => true}
             };
 
-            MessagingCenter.Subscribe<object>(this, Messages.CRUISE_FILE_SELECTED, (o) =>{
+            MessagingCenter.Subscribe<object>(this, Messages.CRUISE_FILE_SELECTED, (o) =>
+            {
                 RaisePropertyChanged(nameof(this.CurrentFilePath));
+                RaisePropertyChanged(nameof(NavigationListItems));
+            });
+
+            MessagingCenter.Subscribe<object>(this, Messages.CUTTING_UNIT_SELECTED, (o) =>
+            {
+                RaisePropertyChanged(nameof(NavigationListItems));
+
             });
         }
 
@@ -160,5 +196,15 @@ namespace FScruiser.XF.Pages
         public bool ResetsNavigation { get; set; } = false;
 
         public bool IsEnabled { get; set; }
+
+        public Func<bool> CanShowAction { get; set; }
+
+        public bool CanShow
+        {
+            get
+            {
+                return CanShowAction?.Invoke() ?? true;
+            }
+        }
     }
 }

@@ -1,26 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <MasterDetailPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FScruiser.XF.Pages.UnitTallyMasterDetailPage"
-             xmlns:pages="clr-namespace:FScruiser.XF.Pages"
-             xmlns:local="clr-namespace:FScruiser;assembly=FScruiser.Core">
+                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                  x:Class="FScruiser.XF.Pages.UnitTallyMasterDetailPage"
+                  xmlns:pages="clr-namespace:FScruiser.XF.Pages"
+                  xmlns:local="clr-namespace:FScruiser;assembly=FScruiser.Core"
+                  IsPresented="True">
     <MasterDetailPage.Master>
-        <ContentPage x:Name="MasterPage" Title="Master" Icon="ic_menu_white_18dp.png" 
+        <ContentPage x:Name="MasterPage" Title="Master" Icon="ic_menu_white_18dp.png"
                      BackgroundColor="{StaticResource fs_brown}">
             <StackLayout>
                 <Frame BackgroundColor="White" Padding="2" Margin="10" CornerRadius="0">
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding SelectFileCommand}" Tapped="_selectFile_Tapped" />
                     </Frame.GestureRecognizers>
-                    <StackLayout Orientation="Horizontal" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" 
-                                 Padding="5"
-                                 BackgroundColor="{StaticResource fs_brown}" >
-                        <BoxView Color="Orange"/>
-                        <Label Text="{Binding CurrentFilePath}" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+                    <StackLayout Orientation="Horizontal" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"
+                                 Padding="3"
+                                 BackgroundColor="{StaticResource fs_brown}">
+                        <ContentView  BackgroundColor="Orange" HeightRequest="40">
+                            <Image Source="ic_folder_open_black_36dp.png" />
+                        </ContentView>
+                        <Label Text="{Binding CurrentFilePath}" TextColor="White" VerticalOptions="Fill" HorizontalOptions="Fill" VerticalTextAlignment="Center" />
                     </StackLayout>
-                    
                 </Frame>
-                
+
                 <ListView x:Name="MenuItemsListView"
                           SeparatorVisibility="None"
                           HasUnevenRows="true"
@@ -28,11 +30,12 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <ViewCell>
-                                <StackLayout Padding="15,10" HorizontalOptions="FillAndExpand" IsEnabled="{Binding IsEnabled}">
-                                    <Label VerticalOptions="FillAndExpand" 
-                                        VerticalTextAlignment="Center" 
-                                        Text="{Binding Title}" 
-                                        FontSize="24"/>
+                                <StackLayout Padding="15,10" HorizontalOptions="FillAndExpand" IsEnabled="{Binding CanShow}">
+                                    <Label  VerticalOptions="FillAndExpand"
+                                            VerticalTextAlignment="Center"
+                                            Text="{Binding Title}"
+                                            FontSize="24"
+                                            TextColor="White"/>
                                 </StackLayout>
                             </ViewCell>
                         </DataTemplate>
@@ -44,7 +47,7 @@
     <MasterDetailPage.Detail>
         <NavigationPage BarBackgroundColor="{StaticResource primary_500}" BarTextColor="{StaticResource white_90}">
             <x:Arguments>
-                <pages:CuttingUnitListPage/>
+                <pages:CuttingUnitListPage NavigationPage.HasBackButton="False" />
             </x:Arguments>
         </NavigationPage>
     </MasterDetailPage.Detail>
