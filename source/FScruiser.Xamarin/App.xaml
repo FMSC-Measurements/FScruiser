@@ -13,6 +13,10 @@
             <Color x:Key="black_70">#B2000000</Color>
             <Color x:Key="black_30">#4C000000</Color>
             <Color x:Key="black_12">#1E000000</Color>
+
+            <Style x:Key="button_base" TargetType="Button">
+                <Setter Property="CornerRadius"     Value="10" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

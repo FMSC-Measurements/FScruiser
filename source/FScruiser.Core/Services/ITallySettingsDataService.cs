@@ -12,6 +12,10 @@ namespace FScruiser.Services
         bool EnableCruiserPopup { get; set; }
 
         bool EnableAskEnterTreeData { get; set; }
-        ICollection<string> Cruisers { get; set; }
+        IEnumerable<string> Cruisers { get; }
+
+        void AddCruiser(string cruiser);
+
+        void RemoveCruiser(string cruiser);
     }
 }

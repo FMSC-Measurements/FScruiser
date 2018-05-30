@@ -75,9 +75,8 @@
         <StackLayout Orientation="Horizontal" VerticalOptions="End">
             <StackLayout.Resources>
                 <ResourceDictionary>
-                    <Style TargetType="Button">
+                    <Style TargetType="Button" BasedOn="{StaticResource button_base}">
                         <Setter Property="BackgroundColor"  Value="{StaticResource primary_500}"/>
-                        <Setter Property="CornerRadius"     Value="10"/>
                         <Setter Property="HeightRequest" Value="60"/>
                     </Style>
                 </ResourceDictionary>
