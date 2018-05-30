@@ -201,6 +201,7 @@ namespace FScruiser.Services
                 _trees.Add(tree.Tree_CN.Value, tree);
             }
             Datastore.UpdateCount(count);
+            _tallyFeed.Add(tallyEntry);
 
             //TODO compleate implemtentation
         }

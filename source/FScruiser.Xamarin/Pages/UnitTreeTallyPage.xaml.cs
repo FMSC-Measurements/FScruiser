@@ -1,5 +1,6 @@
 ﻿using FScruiser.Models;
 using FScruiser.XF.ViewModels;
+using System;
 using System.Collections.Specialized;
 using System.Linq;
 using Xamarin.Forms;
@@ -22,16 +23,24 @@ namespace FScruiser.XF.Pages
                 if (BindingContext is UnitTreeTallyViewModel vm)
                 {
                     await vm.InitAsync();
-                    ViewModel.TallyFeed.CollectionChanged += TallyFeed_CollectionChanged;
+                    vm.TallyEntryAdded += TallyFeed_CollectionChanged;
+                }
+            };
+
+            Disappearing += (x, ea) =>
+            {
+                if (BindingContext is UnitTreeTallyViewModel vm)
+                {
+                    vm.TallyEntryAdded -= TallyFeed_CollectionChanged;
                 }
             };
         }
 
-        private void TallyFeed_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void TallyFeed_CollectionChanged(object sender, EventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Add)
+            var lastItem = _tallyFeedListView.ItemsSource.OfType<object>().LastOrDefault();
+            if (lastItem != null)
             {
-                var lastItem = _tallyFeedListView.ItemsSource.OfType<object>().Last();
                 _tallyFeedListView.ScrollTo(lastItem, ScrollToPosition.End, false);
             }
         }

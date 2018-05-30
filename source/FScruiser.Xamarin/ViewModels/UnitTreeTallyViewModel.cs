@@ -20,9 +20,11 @@ namespace FScruiser.XF.ViewModels
         private string _selectedStratumCode = STRATUM_FILTER_ALL;
         private ICommand _stratumSelectedCommand;
         private ICommand _tallyCommand;
-        private ObservableCollection<TallyEntry> _tallyFeed;
+        private IEnumerable<TallyEntry> _tallyFeed;
 
-        public ObservableCollection<TallyEntry> TallyFeed
+        public event EventHandler TallyEntryAdded;
+
+        public IEnumerable<TallyEntry> TallyFeed
         {
             get { return _tallyFeed; }
             set { SetValue(ref _tallyFeed, value); }
@@ -91,6 +93,11 @@ namespace FScruiser.XF.ViewModels
             //});
         }
 
+        protected void RaiseTallyEntryAdded()
+        {
+            TallyEntryAdded?.Invoke(this, null);
+        }
+
         public override async Task InitAsync()
         {
             var dataService = DataService;
@@ -103,7 +110,7 @@ namespace FScruiser.XF.ViewModels
                     .ToDictionary(x => x.Key, x => (IEnumerable<TallyPopulation>)x.ToArray());
                 Tallies = tallyLookup;
 
-                TallyFeed = new ObservableCollection<TallyEntry>(dataService.TallyFeed);
+                TallyFeed = dataService.TallyFeed;
             }
         }
 
@@ -117,7 +124,7 @@ namespace FScruiser.XF.ViewModels
             var entry = await TreeBasedTallyLogic.TallyAsync(obj, dataService, dialogService);//TODO async
 
             dataService.AddTallyEntry(entry);
-            TallyFeed.Add(entry);
+            RaiseTallyEntryAdded();
 
             await HandleTally(entry, dataService, soundService, dialogService, tallySettings);
 
