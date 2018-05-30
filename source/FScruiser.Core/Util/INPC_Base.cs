@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace FScruiser.Util
 {
-    public class INPC_Base
+    public class INPC_Base : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
