@@ -1,6 +1,0 @@
-[submodule "source/FMSCFMSC.Sampling"]
-	path = source/FMSC.Sampling
-	url = https://github.com/FMSC-Measurements/FMSC.Sampling.git
-[submodule "CruiseDAL"]
-	path = CruiseDAL
-	url = https://github.com/FMSC-Measurements/CruiseDAL.git
