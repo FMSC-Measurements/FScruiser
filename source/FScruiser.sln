@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FScruiser.Droid", "FScruise
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FScruiser.Core", "FScruiser.Core\FScruiser.Core.csproj", "{5A2E5B93-C35F-451E-AD72-E7A045FDF1BE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FMSC.Sampling", "FMSC.Sampling\src\FMSC.Sampling\FMSC.Sampling.csproj", "{A575E2C7-54E7-4BEC-B541-6C69C55664B7}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FScruiser.Core.Test", "FScruiser.Core.Test\FScruiser.Core.Test.csproj", "{46E91C39-3CCA-4301-BA3D-B46D198750D8}"
 EndProject
 Global
