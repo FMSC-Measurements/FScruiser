@@ -1,10 +1,7 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
 using FScruiser.XF.ViewModels;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using Xamarin.Forms;
@@ -12,13 +9,17 @@ using Xamarin.Forms.Xaml;
 
 namespace FScruiser.XF.Pages
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class TreeEditPage2 : ContentPage
-	{
-		public TreeEditPage2 ()
-		{
-			InitializeComponent ();
-		}
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class TreeEditPage2 : ContentPage
+    {
+        private Color _altRowColor;
+
+        public TreeEditPage2()
+        {
+            InitializeComponent();
+
+            _altRowColor = (Color)App.Current.Resources["black_12"];
+        }
 
         protected override void OnAppearing()
         {
@@ -30,10 +31,8 @@ namespace FScruiser.XF.Pages
             }
         }
 
-        
-
         protected override void OnDisappearing()
-        {           
+        {
             if (BindingContext is TreeEditViewModel viewModel)
             {
                 viewModel.SaveTree();
@@ -56,6 +55,8 @@ namespace FScruiser.XF.Pages
         {
             return Task.Run(() =>
             {
+                
+
                 var containerView = new Grid();
                 containerView.ColumnDefinitions.Add(new ColumnDefinition() { Width = 50 });
                 containerView.ColumnDefinitions.Add(new ColumnDefinition() { Width = 100 });
@@ -64,14 +65,17 @@ namespace FScruiser.XF.Pages
                 foreach (var field in treeFields)
                 {
                     containerView.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+                    if (index % 2 == 0) //alternate row color
+                    {
+                        containerView.Children.Add(new BoxView { Color = _altRowColor }, 0, 2, index, index + 1);
+                    }
+
                     var header = new Label() { Text = field.Heading };
                     containerView.Children.Add(header, 0, index);
 
                     var editView = MakeEditView(field);
-                    if (index % 2 == 0)
-                    {
-                        editView.BackgroundColor = Color.LightGray;
-                        }
+
                     containerView.Children.Add(editView, 1, index);
                     index++;
                 }
@@ -107,7 +111,7 @@ namespace FScruiser.XF.Pages
                 case nameof(Tree.Aspect):
                 case nameof(Tree.CrownRatio):
                 case nameof(Tree.DBH):
-                case nameof(Tree.DBHDoubleBarkThickness):                
+                case nameof(Tree.DBHDoubleBarkThickness):
                 //case nameof(Tree.Diameter):
                 case nameof(Tree.DiameterAtDefect):
                 case nameof(Tree.DRC):
@@ -164,7 +168,7 @@ namespace FScruiser.XF.Pages
             return view;
         }
 
-        Picker MakeCountMeasurePicker()
+        private Picker MakeCountMeasurePicker()
         {
             var picker = new Picker();
             picker.Items.Add(string.Empty);
@@ -175,7 +179,7 @@ namespace FScruiser.XF.Pages
             return picker;
         }
 
-        Picker MakeSampleGroupPicker()
+        private Picker MakeSampleGroupPicker()
         {
             var view = new Picker();
             view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.SampleGroups));
@@ -185,7 +189,7 @@ namespace FScruiser.XF.Pages
             return view;
         }
 
-        Picker MakeSpeciesPicker()
+        private Picker MakeSpeciesPicker()
         {
             var view = new Picker();
             view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.TreeDefaults));
