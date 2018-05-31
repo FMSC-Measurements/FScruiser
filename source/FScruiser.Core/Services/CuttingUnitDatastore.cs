@@ -109,6 +109,14 @@ namespace FScruiser.Services
                 .Query(sgCode).ToArray();
         }
 
+        public IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string sgCode)
+        {
+            return Database.From<SampleGroupTreeDefaultValueDO>()
+                .Join("SampleGroup", "USING (SampleGroup_CN)")
+                .Where("SampleGroup.Code = @p1")
+                .Query(sgCode).ToArray();
+        }
+
         public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode)
         {
             return Database.From<TreeFieldSetupDO>()

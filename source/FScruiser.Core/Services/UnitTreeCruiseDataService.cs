@@ -18,7 +18,6 @@ namespace FScruiser.Services
 
         private Dictionary<long, SampleGroup> _sampleGroups;
         private Dictionary<long, Stratum> _strata;
-        private Dictionary<long, TallyPopulation> _tallyPopulations;
         private Dictionary<long, Tree> _trees;
         private Dictionary<long, TreeDefaultValueDO> _treeDefaultValues;
         private Dictionary<string, IEnumerable<TreeDefaultValueDO>> _treeDefaultSampleGroupLookup = new Dictionary<string, IEnumerable<TreeDefaultValueDO>>();
@@ -84,7 +83,11 @@ namespace FScruiser.Services
                     sg.Stratum = _strata.Where(x => x.Key == sg.Stratum_CN.Value).Single().Value;
                     sg.Sampler = SampleSelectorFactory.MakeSampleSelecter(sg);
 
-                    var treeDefaults = Datastore.GetTreeDefaultsBySampleGroup(sg.Code);
+                    var sgCode = sg.Code;
+                    var treeDefaultMaps = Datastore.GetSampleGroupTreeDefaultMaps(sgCode);
+
+                    var treeDefaults = treeDefaultMaps.Select(x => _treeDefaultValues[x.TreeDefaultValue_CN.Value]).ToArray();
+
                     _treeDefaultSampleGroupLookup.Add(sg.Code, treeDefaults);
                 }
 
@@ -99,12 +102,12 @@ namespace FScruiser.Services
 
                 _treeFields = Datastore.GetTreeFieldsByUnitCode(unitCode).ToArray();
 
-                _trees = Datastore.GetTreesByUnitCode(unitCode).ToDictionary(x => x.Tree_CN.Value);
+                _trees = Datastore.GetTreesByUnitCode(unitCode).ToDictionary(x => x.Tree_CN);
 
                 foreach (var tree in Trees)
                 {
                     tree.CuttingUnit = Unit;
-                    tree.Stratum = _strata[tree.Stratum_CN.Value];
+                    tree.Stratum = _strata[tree.Stratum_CN];
                     tree.SampleGroup = _sampleGroups.Where(x => tree.SampleGroup_CN.HasValue && x.Key == tree.SampleGroup_CN.Value)
                         .Select(x => x.Value).SingleOrDefault();
                     tree.TreeDefaultValue = _treeDefaultValues.Where(x => tree.TreeDefaultValue_CN.HasValue && x.Key == tree.TreeDefaultValue_CN.Value)
@@ -161,11 +164,27 @@ namespace FScruiser.Services
             return Trees.Max(x => (int)x.TreeNumber) + 1;
         }
 
+        public Tree CreateTree(string stratumCode)
+        {
+            var treeNumber = GetNextTreeNumber();
+            var stratum = Strata.Where(x => x.Code == stratumCode).Single();
+
+            var newTree = new Tree()
+            {
+                CuttingUnit_CN = Unit.CuttingUnit_CN.Value,
+                TreeNumber = treeNumber,
+                Stratum = stratum
+            };
+
+            return newTree;
+        }
+
         //just a helper method, does this belong here?
         public Tree CreateTree(TallyPopulation population)
         {
             var count = population.Count;
             var treeNumber = GetNextTreeNumber();
+
             return new Tree()
             {
                 TreeNumber = treeNumber,
@@ -198,7 +217,7 @@ namespace FScruiser.Services
             if (tree != null)
             {
                 Datastore.InsertTree(tree);
-                _trees.Add(tree.Tree_CN.Value, tree);
+                _trees.Add(tree.Tree_CN, tree);
             }
             Datastore.UpdateCount(count);
             _tallyFeed.Add(tallyEntry);
@@ -210,7 +229,7 @@ namespace FScruiser.Services
         {
             Datastore.InsertTree(tree);
 
-            _trees.Add(tree.Tree_CN.Value, tree);
+            _trees.Add(tree.Tree_CN, tree);
         }
 
         public void UpdateTree(Tree tree)

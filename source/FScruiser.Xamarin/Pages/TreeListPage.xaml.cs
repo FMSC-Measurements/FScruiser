@@ -1,5 +1,4 @@
 ﻿using FScruiser.Models;
-using FScruiser.Services;
 using FScruiser.XF.ViewModels;
 using System;
 using System.Linq;
@@ -9,7 +8,6 @@ namespace FScruiser.XF.Pages
 {
     public partial class TreeListPage : ContentPage
     {
-
         public TreeListPage()
         {
             InitializeComponent();
@@ -19,7 +17,9 @@ namespace FScruiser.XF.Pages
 
             _treeListView.ItemSelected += _treeListView_ItemSelected;
 
-            BindingContext = new TreeListViewModel();
+            var viewModel = new TreeListViewModel();
+            viewModel.TreeAdded += ViewModel_TreeAdded;
+            BindingContext = viewModel;
 
             Appearing += async (sender, ea) =>
             {
@@ -30,9 +30,14 @@ namespace FScruiser.XF.Pages
             };
         }
 
+        private void ViewModel_TreeAdded(object sender, EventArgs e)
+        {
+            ScrollLast();
+        }
+
         private void _treeListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
-            if (BindingContext is TreeListViewModel vm 
+            if (BindingContext is TreeListViewModel vm
                 && e.SelectedItem is Tree tree && tree != null)
             {
                 vm.ShowEditTree(tree);
@@ -48,17 +53,22 @@ namespace FScruiser.XF.Pages
             var lastItem = itemSource.Cast<object>().LastOrDefault();
             if (lastItem == null) { return; }
 
-            _treeListView.ScrollTo(lastItem, ScrollToPosition.End, true);
+            _treeListView.ScrollTo(lastItem, ScrollToPosition.End, false);
         }
 
         private void _goToStartButton_Clicked(object sender, EventArgs e)
+        {
+            ScrollLast();
+        }
+
+        private void ScrollLast()
         {
             var itemSource = _treeListView.ItemsSource;
             if (itemSource == null) { return; }
             var firstItem = itemSource.Cast<object>().FirstOrDefault();
             if (firstItem == null) { return; }
 
-            _treeListView.ScrollTo(firstItem, ScrollToPosition.Start, true);
+            _treeListView.ScrollTo(firstItem, ScrollToPosition.Start, false);
         }
     }
 }

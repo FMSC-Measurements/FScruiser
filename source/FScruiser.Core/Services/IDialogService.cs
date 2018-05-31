@@ -10,6 +10,8 @@ namespace FScruiser.Services
 
         Task AskCruiserAsync(Tree tree);
 
+        Task<string> AskValue(string prompt, params string[] values);
+
         Task<int?> AskKPIAsync(int max, int min = 1);
 
         Task<bool> AskYesNoAsync(string message, String caption, bool defaultNo = false);

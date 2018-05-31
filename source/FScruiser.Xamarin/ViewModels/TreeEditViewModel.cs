@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
@@ -15,7 +14,7 @@ namespace FScruiser.XF.ViewModels
         private IEnumerable<TreeFieldSetupDO> _treeFields;
 
         private IEnumerable<SampleGroup> _sampleGroups;
-        Dictionary<string, IEnumerable<TreeDefaultValueDO>> _sampleGroupTreeDefaultLookup;
+        private Dictionary<string, IEnumerable<TreeDefaultValueDO>> _sampleGroupTreeDefaultLookup;
         private IEnumerable<Stratum> _strata;
 
         protected ICuttingUnitDataService Dataservice => ServiceService.CuttingUnitDataService;
@@ -63,11 +62,12 @@ namespace FScruiser.XF.ViewModels
 
         public IEnumerable<TreeDefaultValueDO> TreeDefaults => (_sampleGroupTreeDefaultLookup
             .Where(x => x.Key == Tree?.SampleGroup?.Code)
-            .Select(x => x.Value).Single() ?? Enumerable.Empty<TreeDefaultValueDO>()).ToList();
+            .Select(x => x.Value).SingleOrDefault() ?? Enumerable.Empty<TreeDefaultValueDO>()).ToList();
 
         public IEnumerable<string> SpeciesOptions { get; protected set; }
 
         #region Stratum
+
         public StratumDO Stratum
         {
             get { return Tree?.Stratum; }
@@ -78,7 +78,6 @@ namespace FScruiser.XF.ViewModels
                     Tree.Stratum = value;
                     OnStratumChanged(value);
                 }
-
             }
         }
 
@@ -108,11 +107,11 @@ namespace FScruiser.XF.ViewModels
                 //}
                 //else
                 //{
-                    var tree = Tree;
+                var tree = Tree;
 
-                    //log stratum changed
-                    Dataservice.LogMessage($"Tree Stratum Changed (Cu:{tree.CuttingUnit.Code} St:{tree.Stratum.Code} -> {newStratum.Code} Sg:{tree.SampleGroup.Code ?? "?"} Tdv_CN:{tree.TreeDefaultValue.TreeDefaultValue_CN?.ToString() ?? "?"} T#: {tree.TreeNumber} P#:{tree.Plot?.PlotNumber.ToString() ?? "?"}", "I");
-                    return true;
+                //log stratum changed
+                Dataservice.LogMessage($"Tree Stratum Changed (Cu:{tree.CuttingUnit.Code} St:{tree.Stratum.Code} -> {newStratum.Code} Sg:{tree.SampleGroup.Code ?? "?"} Tdv_CN:{tree.TreeDefaultValue.TreeDefaultValue_CN?.ToString() ?? "?"} T#: {tree.TreeNumber} P#:{tree.Plot?.PlotNumber.ToString() ?? "?"}", "I");
+                return true;
                 //}
             }
             else
@@ -120,10 +119,12 @@ namespace FScruiser.XF.ViewModels
                 return true;
             }
         }
-        #endregion
+
+        #endregion Stratum
 
         #region SampleGroup
-        public SampleGroupDO SampleGroup
+
+        public SampleGroup SampleGroup
         {
             get { return Tree?.SampleGroup; }
             set
@@ -170,16 +171,16 @@ namespace FScruiser.XF.ViewModels
                 //}
                 //else
                 //{
-                    var tree = Tree;
+                var tree = Tree;
 
-                    Dataservice.LogMessage(String.Format("Tree Sample Group Changed (Cu:{0} St:{1} Sg:{2} -> {3} Tdv_CN:{4} T#: {5}",
-                        tree.CuttingUnit.Code,
-                        tree.Stratum.Code,
-                        tree?.SampleGroup?.Code ?? "?",
-                        newSG.Code,
-                        tree?.TreeDefaultValue_CN?.ToString() ?? "?",
-                        tree.TreeNumber), "high");
-                    return true;
+                Dataservice.LogMessage(String.Format("Tree Sample Group Changed (Cu:{0} St:{1} Sg:{2} -> {3} Tdv_CN:{4} T#: {5}",
+                    tree.CuttingUnit.Code,
+                    tree.Stratum.Code,
+                    tree?.SampleGroup?.Code ?? "?",
+                    newSG.Code,
+                    tree?.TreeDefaultValue_CN?.ToString() ?? "?",
+                    tree.TreeNumber), "high");
+                return true;
                 //}
             }
             else
@@ -187,7 +188,8 @@ namespace FScruiser.XF.ViewModels
                 return true;
             }
         }
-        #endregion
+
+        #endregion SampleGroup
 
         public TreeDefaultValueDO TreeDefaultValue
         {

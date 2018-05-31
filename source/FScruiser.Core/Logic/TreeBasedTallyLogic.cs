@@ -22,7 +22,7 @@ namespace FScruiser.Logic
 
                 var newTree = dataService.CreateTree(count); //create measure tree
                 newTree.CountOrMeasure = "M";
-                newTree.TreeCount = sg.SamplingFrequency;     //increment tree count on tally
+                newTree.TreeCount = (int)sg.SamplingFrequency;     //increment tree count on tally
                 action.SetTree(newTree);
             }
             else if (count.Method == CruiseMethods.S3P)

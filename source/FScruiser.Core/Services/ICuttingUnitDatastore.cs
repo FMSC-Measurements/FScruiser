@@ -1,16 +1,12 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
     public interface ICuttingUnitDatastore
     {
-
         IEnumerable<Stratum> GetStrataByUnitCode(string unitCode);
 
         IEnumerable<SampleGroup> GetSampleGroupsByUnitCode(string unitCode);
@@ -23,6 +19,8 @@ namespace FScruiser.Services
 
         IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sgCode);
 
+        IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string sgCode);
+
         IEnumerable<Tree> GetTreesByUnitCode(string unitCode);
 
         IEnumerable<CountTree> GetCountTreeByUnitCode(string unitCode);
@@ -30,7 +28,8 @@ namespace FScruiser.Services
         IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
 
         #region Tree
-        //int GetHighestTreeNumberInUnit(string unit);        
+
+        //int GetHighestTreeNumberInUnit(string unit);
 
         void InsertTree(Tree tree);
 
@@ -41,7 +40,8 @@ namespace FScruiser.Services
         Task UpdateTreeAsync(Tree tree);
 
         void DeleteTree(Tree tree);
-        #endregion
+
+        #endregion Tree
 
         TreeEstimateDO GetTreeEstimate(long treeEstimateCN);
 
@@ -50,7 +50,5 @@ namespace FScruiser.Services
         void UpdateCount(CountTree count);
 
         void LogMessage(string message, string level);
-
-
     }
 }

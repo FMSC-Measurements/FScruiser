@@ -9,6 +9,8 @@ namespace FScruiser.Services
     {
         #region
 
+        Tree CreateTree(string stratumCode);
+
         Tree CreateTree(TallyPopulation tallyPopulation);
 
         TreeEstimateDO LogTreeEstimate(CountTreeDO count, int kpi);
@@ -52,8 +54,11 @@ namespace FScruiser.Services
         void InsertTree(Tree tree);
 
         TallyPopulation GetCount(long countCN);
+
         Tree GetTree(long treeCN);
+
         TreeEstimateDO GetTreeEstimate(long treeEstimateCN);
+
         void UpdateCount(CountTree count);
 
         #endregion

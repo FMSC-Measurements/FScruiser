@@ -30,6 +30,11 @@ namespace FScruiser.XF.Services
             tree.Initials = result;
         }
 
+        public Task<string> AskValue(string prompt, params string[] values)
+        {
+            return App.Current.MainPage.DisplayActionSheet(prompt, "Cancel", null, values);
+        }
+
         public Task<int?> AskKPIAsync(int max, int min = 1)
         {
             var newTcs = new TaskCompletionSource<int?>();

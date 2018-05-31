@@ -1,6 +1,5 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Services;
-using System;
 
 namespace FScruiser.Models
 {
@@ -18,7 +17,7 @@ namespace FScruiser.Models
             set
             {
                 _tree = value;
-                Data.TreeCN = value.Tree_CN ?? -1;
+                Data.TreeCN = value?.Tree_CN ?? 0;
             }
         }
 
@@ -43,6 +42,7 @@ namespace FScruiser.Models
         }
 
         #region readonly props
+
         public bool HasTree => Tree != null;
 
         public long? TreeNumber => Tree?.TreeNumber;
@@ -52,7 +52,8 @@ namespace FScruiser.Models
         public string TallyDescription => Count.TallyDescription;
 
         public string StratumCode => Count.StratumCode;
-        #endregion
+
+        #endregion readonly props
 
         public void Inflate(ICuttingUnitDataService dataService)
         {

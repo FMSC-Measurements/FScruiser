@@ -82,7 +82,7 @@
                 </ResourceDictionary>
             </StackLayout.Resources>
             <Button x:Name="_goToEndButton" Image="ic_chevron_double_down_white_24dp.png"/>
-            <Button x:Name="_addTreeButton" Image="ic_plus_white_24dp.png" FontSize="30" BackgroundColor="Orange" VerticalOptions="Fill" HorizontalOptions="FillAndExpand"/>
+            <Button x:Name="_addTreeButton" Image="ic_plus_white_24dp.png" Command="{Binding AddTreeCommand}" FontSize="30" BackgroundColor="Orange" VerticalOptions="Fill" HorizontalOptions="FillAndExpand"/>
             <Button x:Name="_goToStartButton" Image="ic_chevron_double_up_white_24dp.png" HorizontalOptions="End"/>
         </StackLayout>
     </StackLayout>
