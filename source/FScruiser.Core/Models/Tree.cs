@@ -157,7 +157,31 @@ namespace FScruiser.Models
 
         public CuttingUnitDO CuttingUnit { get; set; }
 
-        public TreeDefaultValueDO TreeDefaultValue { get; set; }
+
+        TreeDefaultValueDO _treeDefaultValue;
+        public TreeDefaultValueDO TreeDefaultValue
+        {
+            get { return _treeDefaultValue; }
+            set
+            {
+                _treeDefaultValue = value;
+
+                if(value != null)
+                {
+                    SetTreeDefaultValue(value);
+                }
+            }
+        }
+
+        private void SetTreeDefaultValue(TreeDefaultValueDO value)
+        {
+            if(value == null) { throw new ArgumentNullException(); }
+
+            if(TreeDefaultValue_CN != value.TreeDefaultValue_CN)
+            {
+                TreeDefaultValue_CN = value.TreeDefaultValue_CN;
+            }
+        }
 
         private StratumDO _stratum;
 
@@ -215,10 +239,10 @@ namespace FScruiser.Models
         public void SetSampleGroup(SampleGroupDO value)
         {
             if (value == null) { throw new ArgumentNullException(); }
-            if (value.SampleGroup_CN.HasValue == false) { throw new ArgumentException(); }
+            //if (value.SampleGroup_CN.HasValue == false) { throw new ArgumentException(); }
 
-            if (SampleGroup_CN != value.SampleGroup_CN.Value)
-            { SampleGroup_CN = value.SampleGroup_CN.Value; }
+            if (SampleGroup_CN != value.SampleGroup_CN)
+            { SampleGroup_CN = value.SampleGroup_CN; }
         }
 
         public PlotDO Plot { get; set; }
