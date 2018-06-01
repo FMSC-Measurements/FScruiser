@@ -118,6 +118,7 @@ namespace FScruiser.Logic
             {
                 tree = dataService.CreateTree(pop);
                 tree.STM = "Y";
+                tree.CountOrMeasure = "M";
                 tallyEntry.IsSTM = true;
                 tallyEntry.SetTree(tree);
             }
