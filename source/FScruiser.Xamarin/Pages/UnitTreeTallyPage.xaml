@@ -14,7 +14,8 @@
             <ListView x:Name="_tallyFeedListView" 
                       HasUnevenRows="False"
                       ItemsSource="{Binding TallyFeed}" 
-                      ItemSelected="TallyFeedListView_ItemSelected">
+                      ItemSelected="TallyFeedListView_ItemSelected"
+                      CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
