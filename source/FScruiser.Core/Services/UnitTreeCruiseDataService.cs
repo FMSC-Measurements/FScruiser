@@ -122,13 +122,6 @@ namespace FScruiser.Services
 
         #region inflate tallyFeed item methods
 
-        public void InflateTallyFeedItem(TallyFeedItem tfi)
-        {
-            tfi.Count = GetCount(tfi.Data.CountCN);
-            tfi.Tree = GetTree(tfi.Data.TreeCN);
-            tfi.TreeEstimate = GetTreeEstimate(tfi.Data.TreeEstimateCN);
-        }
-
         public TallyPopulation GetCount(long countCN)
         {
             return TallyPopulations.Where(x => x.CountTree_CN == countCN).SingleOrDefault();
