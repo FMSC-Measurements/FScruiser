@@ -64,6 +64,7 @@ namespace FScruiser.XF.ViewModels
                 var newTree = dataService.CreateTree(stratumCode);
                 dataService.AddTree(newTree);
                 _trees.Add(newTree);
+                OnTreeAdded(null);
             }
         }
 

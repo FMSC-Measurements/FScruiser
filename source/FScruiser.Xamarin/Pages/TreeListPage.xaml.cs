@@ -48,6 +48,11 @@ namespace FScruiser.XF.Pages
 
         private void _goToEndButton_Clicked(object sender, EventArgs e)
         {
+            ScrollLast();
+        }
+
+        private void ScrollLast()
+        {
             var itemSource = _treeListView.ItemsSource;
             if (itemSource == null) { return; }
             var lastItem = itemSource.Cast<object>().LastOrDefault();
@@ -58,10 +63,10 @@ namespace FScruiser.XF.Pages
 
         private void _goToStartButton_Clicked(object sender, EventArgs e)
         {
-            ScrollLast();
+            ScrollFirst();
         }
 
-        private void ScrollLast()
+        private void ScrollFirst()
         {
             var itemSource = _treeListView.ItemsSource;
             if (itemSource == null) { return; }

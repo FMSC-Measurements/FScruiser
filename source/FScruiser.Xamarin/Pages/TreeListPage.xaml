@@ -12,7 +12,8 @@
                   ItemsSource="{Binding Trees}"
                   HasUnevenRows="True"
                   SeparatorColor="{StaticResource black_12}"
-                  SeparatorVisibility="Default">
+                  SeparatorVisibility="Default"
+                  CachingStrategy="RecycleElement">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
