@@ -11,30 +11,18 @@ namespace FScruiser.Droid.Services
     {
         public void SignalInsuranceTree()
         {
-#if !DEBUG 
-            throw new NotImplementedException(); 
-#endif
         }
 
         public void SignalInvalidAction()
         {
-#if !DEBUG
-            throw new NotImplementedException(); 
-#endif
         }
 
         public void SignalMeasureTree()
         {
-#if !DEBUG
-            throw new NotImplementedException(); 
-#endif
         }
 
         public void SignalTally(bool force)
         {
-#if !DEBUG
-            throw new NotImplementedException(); 
-#endif
         }
     }
 }
