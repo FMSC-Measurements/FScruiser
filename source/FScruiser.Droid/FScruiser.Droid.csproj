@@ -76,7 +76,6 @@
   <ItemGroup>
     <AndroidResource Include="Resources\values\styles.xml" />
     <None Include="Properties\AndroidManifest.xml" />
-    
     <AndroidResource Include="Resources\drawable\*.png" />
     <AndroidResource Include="Resources\drawable-hdpi\*.png" />
     <AndroidResource Include="Resources\drawable-mdpi\*.png" />
@@ -488,6 +487,15 @@
       <Project>{34fee276-8fcc-46c2-93ef-45e8f03ff269}</Project>
       <Name>FScruiser.Xamarin</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\sounds\insurance.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\sounds\measure.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\sounds\tally.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

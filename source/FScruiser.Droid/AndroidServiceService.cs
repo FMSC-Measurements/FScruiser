@@ -1,4 +1,5 @@
-﻿using FScruiser.Droid.Services;
+﻿using Android.Content;
+using FScruiser.Droid.Services;
 using FScruiser.Services;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,10 @@ namespace FScruiser.Droid
 {
     public class AndroidServiceService : ServiceService
     {
-        public AndroidServiceService()
+        public AndroidServiceService(Context context)
         {
             CruiseFileService = new CruiseFileService();
-            SoundService      = new AndroidSoundService();
+            SoundService      = new AndroidSoundService(context);
         }
     }
 }
