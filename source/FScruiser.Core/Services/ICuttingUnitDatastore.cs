@@ -19,7 +19,7 @@ namespace FScruiser.Services
 
         IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sgCode);
 
-        IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string sgCode);
+        IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string stratumCode, string sgCode);
 
         IEnumerable<Tree> GetTreesByUnitCode(string unitCode);
 

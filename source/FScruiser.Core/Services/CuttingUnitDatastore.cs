@@ -49,6 +49,7 @@ namespace FScruiser.Services
         public IEnumerable<SampleGroup> GetSampleGroupsByUnitCode(string unitCode)
         {
             return Database.From<SampleGroup>()
+                .Join("Stratum", "USING (Stratum_CN)")
                 .Join("CuttingUnitStratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
                 .Where("CuttingUnit.Code = @p1").Query(unitCode).ToArray();
@@ -109,12 +110,13 @@ namespace FScruiser.Services
                 .Query(sgCode).ToArray();
         }
 
-        public IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string sgCode)
+        public IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string stratumCode, string sgCode)
         {
             return Database.From<SampleGroupTreeDefaultValueDO>()
                 .Join("SampleGroup", "USING (SampleGroup_CN)")
-                .Where("SampleGroup.Code = @p1")
-                .Query(sgCode).ToArray();
+                .Join("Stratum", "USING (Stratum_CN)")
+                .Where("Stratum.Code = @p1 AND SampleGroup.Code = @p2")
+                .Query(stratumCode, sgCode).ToArray();
         }
 
         public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode)

@@ -84,7 +84,7 @@ namespace FScruiser.Services
                     sg.Sampler = SampleSelectorFactory.MakeSampleSelecter(sg);
 
                     var sgCode = sg.Code;
-                    var treeDefaultMaps = Datastore.GetSampleGroupTreeDefaultMaps(sgCode);
+                    var treeDefaultMaps = Datastore.GetSampleGroupTreeDefaultMaps(sg.StratumCode, sgCode);
 
                     var treeDefaults = treeDefaultMaps.Select(x => _treeDefaultValues[x.TreeDefaultValue_CN.Value]).ToArray();
 

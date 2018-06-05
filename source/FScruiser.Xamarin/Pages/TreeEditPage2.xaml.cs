@@ -163,7 +163,7 @@ namespace FScruiser.XF.Pages
             var view = new Picker();
             view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.Strata));
             view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.Stratum));
-            view.ItemDisplayBinding = new Binding(nameof(SampleGroup.Code));
+            view.ItemDisplayBinding = new Binding(nameof(Stratum.Code));
 
             return view;
         }

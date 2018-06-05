@@ -58,11 +58,11 @@ namespace FScruiser.XF.ViewModels
         public IEnumerable<Stratum> Strata => _strata;
 
         public IEnumerable<SampleGroup> SampleGroups => _sampleGroups
-            .Where(x => Tree == null || x.Stratum_CN == Tree.Stratum_CN).ToList();
+            .Where(x => Tree == null || x.Stratum_CN == Tree.Stratum_CN).Prepend(new SampleGroup { Code = "" }).ToList();
 
         public IEnumerable<TreeDefaultValueDO> TreeDefaults => (_sampleGroupTreeDefaultLookup
             .Where(x => x.Key == Tree?.SampleGroup?.Code)
-            .Select(x => x.Value).SingleOrDefault() ?? Enumerable.Empty<TreeDefaultValueDO>()).ToList();
+            .Select(x => x.Value).SingleOrDefault() ?? Enumerable.Empty<TreeDefaultValueDO>()).Prepend(new TreeDefaultValueDO { Species = "" }).ToList();
 
         public IEnumerable<string> SpeciesOptions { get; protected set; }
 
@@ -216,7 +216,7 @@ namespace FScruiser.XF.ViewModels
 
         public override Task InitAsync()
         {
-            _strata = Dataservice.Strata;
+            _strata = Dataservice.Strata.ToList();
             _sampleGroups = Dataservice.SampleGroups;
             _sampleGroupTreeDefaultLookup = Dataservice.TreeDefaultSampleGroupLookup;
 
