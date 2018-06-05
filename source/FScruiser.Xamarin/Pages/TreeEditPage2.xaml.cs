@@ -1,7 +1,9 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
 using FScruiser.XF.ViewModels;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Xamarin.Forms;
@@ -13,6 +15,7 @@ namespace FScruiser.XF.Pages
     public partial class TreeEditPage2 : ContentPage
     {
         private Color _altRowColor;
+        private Grid _grid;
 
         public TreeEditPage2()
         {
@@ -57,29 +60,29 @@ namespace FScruiser.XF.Pages
             {
                 
 
-                var containerView = new Grid();
-                containerView.ColumnDefinitions.Add(new ColumnDefinition() { Width = 50 });
-                containerView.ColumnDefinitions.Add(new ColumnDefinition() { Width = 100 });
+                _grid = new Grid();
+                _grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 50 });
+                _grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 100 });
                 //containerView.SetBinding(BindingContextProperty, nameof(TreeEditViewModel.Tree));
                 var index = 0;
                 foreach (var field in treeFields)
                 {
-                    containerView.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+                    _grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
 
                     if (index % 2 == 0) //alternate row color
                     {
-                        containerView.Children.Add(new BoxView { Color = _altRowColor }, 0, 2, index, index + 1);
+                        _grid.Children.Add(new BoxView { Color = _altRowColor }, 0, 2, index, index + 1);
                     }
 
                     var header = new Label() { Text = field.Heading };
-                    containerView.Children.Add(header, 0, index);
+                    _grid.Children.Add(header, 0, index);
 
                     var editView = MakeEditView(field);
 
-                    containerView.Children.Add(editView, 1, index);
+                    _grid.Children.Add(editView, 1, index);
                     index++;
                 }
-                return (View)containerView;
+                return (View)_grid;
             });
         }
 
@@ -137,6 +140,8 @@ namespace FScruiser.XF.Pages
                     {
                         editView = new Entry();
                         ((InputView)editView).Keyboard = Keyboard.Numeric;
+                        ((Entry)editView).Completed += _entry_Completed;
+                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
                         editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
                         break;
                     }
@@ -144,18 +149,33 @@ namespace FScruiser.XF.Pages
                     {
                         editView = new Entry();
                         ((InputView)editView).Keyboard = Keyboard.Default;
+                        ((Entry)editView).Completed += _entry_Completed;
+                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
                         editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
                         break;
                     }
                 default:
                     {
                         editView = new Entry();
+                        ((Entry)editView).Completed += _entry_Completed;
+                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
                         editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
                         break;
                     }
             }
 
+            
             return editView;
+        }
+
+        private void _entry_Completed(object sender, EventArgs e)
+        {
+            if(sender != null && sender is View view)
+            {
+                var indexOfChild = _grid.Children.IndexOf(view);
+                var nextChild = _grid.Children.Skip(indexOfChild+1).SkipWhile(x => x is Label || x is BoxView).FirstOrDefault();
+                nextChild?.Focus();
+            }
         }
 
         private View MakeStratumPicker()
