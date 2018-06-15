@@ -18,6 +18,6 @@ namespace FScruiser.Services
 
         Task ShowMessageAsync(string message, string caption = null);
 
-        Task ShowEditTreeAsync(Tree tree, ICuttingUnitDataService dataService);
+        Task ShowEditTreeAsync(Tree tree);
     }
 }

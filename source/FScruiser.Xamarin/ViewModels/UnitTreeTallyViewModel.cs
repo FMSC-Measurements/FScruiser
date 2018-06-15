@@ -21,6 +21,7 @@ namespace FScruiser.XF.ViewModels
         private ICommand _stratumSelectedCommand;
         private ICommand _tallyCommand;
         private IEnumerable<TallyEntry> _tallyFeed;
+        private ICommand _editTreeCommand;
 
         public event EventHandler TallyEntryAdded;
 
@@ -83,6 +84,20 @@ namespace FScruiser.XF.ViewModels
         public ICommand StratumSelectedCommand => _stratumSelectedCommand
             ?? (_stratumSelectedCommand = new Command<string>(x => SetStratumFilter(x)));
 
+        public ICommand EditTreeCommand => _editTreeCommand
+            ?? (_editTreeCommand = new Command<TallyEntry>(EditTree));
+
+        public void EditTree(TallyEntry entry)
+        {
+            var dialogService = ServiceService.DialogService;
+            var task = dialogService.ShowEditTreeAsync(entry.Tree);
+        }
+
+        public void Untally(TallyEntry entry)
+        {
+
+        }
+
         public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataService;
 
         public UnitTreeTallyViewModel()
@@ -98,7 +113,7 @@ namespace FScruiser.XF.ViewModels
             TallyEntryAdded?.Invoke(this, null);
         }
 
-        public override async Task InitAsync()
+        public async Task InitAsync()
         {
             var dataService = DataService;
             if (DataService != null)
@@ -164,36 +179,36 @@ namespace FScruiser.XF.ViewModels
                     await dialogService.ShowMessageAsync("Tree #" + tree.TreeNumber.ToString(), sampleType);
                 }
 
-                if (tree.CountOrMeasure == "M" && await AskEnterMeasureTreeDataAsync(tallySettings, dialogService))
-                {
-                    var task = dialogService.ShowEditTreeAsync(tree, dataService);//allow method to contiue from show edit tree we will allow tally history action to be added in the background
-                }
+                //if (tree.CountOrMeasure == "M" && await AskEnterMeasureTreeDataAsync(tallySettings, dialogService))
+                //{
+                //    var task = dialogService.ShowEditTreeAsync(tree, dataService);//allow method to contiue from show edit tree we will allow tally history action to be added in the background
+                //}
             }
         }
 
-        protected static async Task<bool> AskEnterMeasureTreeDataAsync(ITallySettingsDataService appSettings, IDialogService dialogService)
-        {
-            if (!appSettings.EnableAskEnterTreeData) { return false; }
+        //protected static async Task<bool> AskEnterMeasureTreeDataAsync(ITallySettingsDataService appSettings, IDialogService dialogService)
+        //{
+        //    if (!appSettings.EnableAskEnterTreeData) { return false; }
 
-            return await dialogService.AskYesNoAsync("Would you like to enter tree data now?", "Sample", false);
-        }
+        //    return await dialogService.AskYesNoAsync("Would you like to enter tree data now?", "Sample", false);
+        //}
 
         public void SetStratumFilter(string code)
         {
             SelectedStratumCode = code ?? STRATUM_FILTER_ALL;
         }
 
-        public void ShowTree(Tree tree)
-        {
-            if (tree != null)
-            {
-                ShowEditTree(tree);
-            }
-        }
+        //public void ShowTree(Tree tree)
+        //{
+        //    if (tree != null)
+        //    {
+        //        ShowEditTree(tree);
+        //    }
+        //}
 
-        private void ShowEditTree(Tree tree)
-        {
-            ServiceService.DialogService.ShowEditTreeAsync(tree, DataService);
-        }
+        //private void ShowEditTree(Tree tree)
+        //{
+        //    ServiceService.DialogService.ShowEditTreeAsync(tree, DataService);
+        //}
     }
 }

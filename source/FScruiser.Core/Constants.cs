@@ -1,10 +1,5 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FScruiser
 {
@@ -25,6 +20,37 @@ namespace FScruiser
                 Field = nameof(Tree.TotalHeight), Heading = "THT", FieldOrder = 6, ColumnType = "Text" },
             new TreeFieldSetupDO() {
                 Field = nameof(Tree.SeenDefectPrimary), Heading = "Def", FieldOrder = 7, ColumnType = "Text" }
+        };
+
+        public static readonly string[] HEIGHT_FIELDS = new string[]
+        {
+            nameof(Tree.TotalHeight),
+            nameof(Tree.HeightToFirstLiveLimb),
+            nameof(Tree.MerchHeightPrimary),
+            nameof(Tree.MerchHeightSecondary),
+            nameof(Tree.UpperStemHeight)
+        };
+
+        public static readonly string[] DIAMATER_FIELDS = new string[]
+        {
+            nameof(Tree.DBH),
+            nameof(Tree.DBHDoubleBarkThickness),
+            nameof(Tree.UpperStemDiameter)
+        };
+
+        public static readonly string[] LESS_IMPORTANT_TREE_FIELDS = new string[]
+        {
+            nameof(Tree.TreeNumber),
+            nameof(Tree.Stratum),
+            nameof(Tree.SampleGroup),
+            nameof(Tree.CountOrMeasure),
+            nameof(Tree.TreeCount),
+            nameof(Tree.KPI),
+            nameof(Tree.STM),
+            nameof(Tree.Initials),
+            nameof(Tree.LiveDead),
+            nameof(Tree.Grade),
+            nameof(Tree.HiddenPrimary)
         };
 
         public static readonly LogFieldSetupDO[] DEFAULT_LOG_FIELDS = new LogFieldSetupDO[]{

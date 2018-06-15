@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace FScruiser.XF.ViewModels
 {
-    public class TreeEditViewModel : ViewModelBase
+    public class TreeEditViewModel : ViewModelBase, IDisposable
     {
+        private bool _suspendSave;
         private Tree _tree;
         private IEnumerable<TreeFieldSetupDO> _treeFields;
 
@@ -83,9 +84,17 @@ namespace FScruiser.XF.ViewModels
 
         private void OnStratumChanged(StratumDO value)
         {
-            Tree.Species = null;
-            Tree.SampleGroup = null;
-            SetTreeTDV(Tree, null);
+            try
+            {
+                _suspendSave = true;
+                Tree.Species = null;
+                Tree.SampleGroup = null;
+                SetTreeTDV(Tree, null);
+            }
+            finally
+            {
+                _suspendSave = false;
+            }
 
             RaisePropertyChanged(nameof(SampleGroups));
             RaisePropertyChanged(nameof(TreeDefaults));
@@ -203,29 +212,45 @@ namespace FScruiser.XF.ViewModels
         public Tree Tree
         {
             get { return _tree; }
-            set
+            protected set
             {
+                if (_tree != null) { _tree.PropertyChanged -= _tree_PropertyChanged; }
                 SetValue(ref _tree, value);
+                RaisePropertyChanged(nameof(Stratum));
+                RaisePropertyChanged(nameof(SampleGroup));
+                RaisePropertyChanged(nameof(TreeDefaultValue));
+                if (_tree != null) { _tree.PropertyChanged += _tree_PropertyChanged; }
             }
         }
 
-        public TreeEditViewModel(Tree tree)
+        private void _tree_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Tree = tree;
+
         }
 
-        public override Task InitAsync()
+        public TreeEditViewModel() : base()
         {
+
             _strata = Dataservice.Strata.ToList();
             _sampleGroups = Dataservice.SampleGroups;
             _sampleGroupTreeDefaultLookup = Dataservice.TreeDefaultSampleGroupLookup;
+        }
 
-            TreeFields = Dataservice.TreeFields;
+        public Task InitAsync(int treeNumber)
+        {
+            Tree = Dataservice.GetTree(treeNumber);
+
+            if (TreeFields == null)
+            {
+                TreeFields = Dataservice.TreeFields;
+            }
             return Task.CompletedTask;
         }
 
         public void SaveTree()
         {
+            //if (!_suspendSave) { return; }
+
             var tree = Tree;
             if (tree != null)
             {
@@ -256,5 +281,31 @@ namespace FScruiser.XF.ViewModels
                 //this.HiddenPrimary = 0;
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+        
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Tree = null;
+                }
+                disposedValue = true;
+            }
+            else
+            {
+                throw new ObjectDisposedException(nameof(TreeEditViewModel));
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }

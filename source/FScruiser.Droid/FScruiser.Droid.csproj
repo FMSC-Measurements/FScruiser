@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Activities\MainActivity.cs" />
     <Compile Include="AndroidServiceService.cs" />
+    <Compile Include="CustomRenderers\CustomListViewRenderer.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AndroidSoundService.cs" />

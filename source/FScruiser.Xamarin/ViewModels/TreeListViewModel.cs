@@ -42,13 +42,13 @@ namespace FScruiser.XF.ViewModels
         {
         }
 
-        public async override Task InitAsync()
+        public async Task InitAsync()
         {
             var dataService = DataService;
             if (dataService != null)
             {
                 await dataService.RefreshDataAsync();
-                Trees = DataService.Trees.ToObservableCollection();
+                Trees = DataService.GetTrees().ToObservableCollection();
             }
         }
 
@@ -77,7 +77,7 @@ namespace FScruiser.XF.ViewModels
         {
             var dialogSerive = ServiceService.DialogService;
 
-            dialogSerive.ShowEditTreeAsync(obj, DataService);
+            dialogSerive.ShowEditTreeAsync(obj);
         }
 
         private void DeleteTree(Tree tree)

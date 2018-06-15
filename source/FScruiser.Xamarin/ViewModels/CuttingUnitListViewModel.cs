@@ -43,7 +43,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public override Task InitAsync()
+        public Task InitAsync()
         {
             LoadData();
             return Task.CompletedTask;

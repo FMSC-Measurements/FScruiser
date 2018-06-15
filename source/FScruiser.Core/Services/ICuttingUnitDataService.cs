@@ -29,13 +29,13 @@ namespace FScruiser.Services
 
         IEnumerable<TreeFieldSetupDO> TreeFields { get; }
 
-        IEnumerable<Tree> Trees { get; }
-
         IEnumerable<TallyEntry> TallyFeed { get; }
 
         IEnumerable<CountTree> Counts { get; }
 
         Dictionary<string, IEnumerable<TreeDefaultValueDO>> TreeDefaultSampleGroupLookup { get; }
+
+        IEnumerable<TreeFieldSetupDO> GetSimplifiedTreeFieldsByStratumCode(string stratumCode);
 
         #region update methods
 
@@ -55,7 +55,11 @@ namespace FScruiser.Services
 
         TallyPopulation GetCount(long countCN);
 
-        Tree GetTree(long treeCN);
+        //Tree GetTree(long treeCN);
+
+        Tree GetTree(int treeNumber);
+
+        IEnumerable<Tree> GetTrees();
 
         TreeEstimateDO GetTreeEstimate(long treeEstimateCN);
 

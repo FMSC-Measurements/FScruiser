@@ -131,12 +131,34 @@ namespace FScruiser.Services
                 .Query(unitCode).ToArray();
         }
 
+        public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratumCode(string stratumCode)
+        {
+            return Database.From<TreeFieldSetupDO>()
+                .Join("Stratum", "USING (Stratum_CN)")
+                .Where("Stratum.Code == @p1")
+                .OrderBy("FieldOrder")
+                .Query(stratumCode);
+        }
+
         public IEnumerable<Tree> GetTreesByUnitCode(string unitCode)
         {
             return Database.From<Tree>()
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
                 .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
                 .Query(unitCode).ToArray();
+        }
+
+        public Tree GetTree(string unitCode, int treeNumber)
+        {
+            return Database.From<Tree>()
+                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+                .Where("CuttingUnit.Code = @p1 AND TreeNumber = @p2")
+                .Query(unitCode, treeNumber).FirstOrDefault();
+        }
+
+        public int GetNextTreeNumber(string unitCode)
+        {
+            return Database.ExecuteScalar<int>("SELECT max(TreeNumber) + 1 FROM Tree JOIN CuttingUnit USING (CuttingUnit_CN) WHERE CuttingUnit.Code = @p1 AND Plot_CN IS NULL;", unitCode);
         }
 
         public void UpdateCount(CountTree count)

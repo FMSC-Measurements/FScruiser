@@ -148,7 +148,7 @@ namespace FScruiser.XF.Pages
             });
         }
 
-        public override Task InitAsync()
+        public Task InitAsync()
         {
             return null;
         }

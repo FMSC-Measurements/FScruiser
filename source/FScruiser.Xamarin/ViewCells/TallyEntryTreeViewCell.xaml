@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FScruiser.XF.ViewCells.TallyEntryTreeViewCell">
+    <ViewCell.View>
+        <StackLayout>
+            <StackLayout Orientation="Horizontal" BackgroundColor="#30C1BC">
+                <StackLayout.Triggers>
+                    <DataTrigger TargetType="StackLayout" Binding="{Binding Tree.TallyFeedStatus}" Value="Error">
+                        <Setter Property="BackgroundColor" Value="Red" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="StackLayout" Binding="{Binding Tree.TallyFeedStatus}" Value="HasData">
+                        <Setter Property="BackgroundColor" Value="Green" />
+                    </DataTrigger>
+                </StackLayout.Triggers>
+                <StackLayout.Resources>
+                    <ResourceDictionary>
+                        <Style TargetType="Label">
+                            <Setter Property="TextColor" Value="Black" />
+                        </Style>
+                    </ResourceDictionary>
+                </StackLayout.Resources>
+                <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20" VerticalTextAlignment="Center" />
+                <Label Text="{Binding TallyDescription, StringFormat='| {0}'}" FontSize="30" VerticalTextAlignment="Center" />
+                <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" TextColor="Blue" FontSize="30" VerticalTextAlignment="Center" />
+                <Label x:Name="CruiserInitialsLabel" Text="{Binding Tree.Initials}" TextColor="Black"
+                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                                           HorizontalOptions="EndAndExpand" />
+            </StackLayout>
+
+            <!--<StackLayout x:Name="_treeEditPanel" IsVisible="False">
+                <Label Text="Hello Expanded"  />
+            </StackLayout>-->
+            <Grid x:Name="_treeEditPanel" BackgroundColor="White" IsVisible="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <ScrollView x:Name="_treeEditScrollView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+                    <Grid x:Name="_treeEditControlGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                    </Grid>
+                </ScrollView>
+
+                <Button Grid.Row="1" Grid.Column="1" x:Name="_editButton" Text="Edit"/>
+                <Button Grid.Row="1" Grid.Column="2" x:Name="_untallyButton" Text="Untally"/>
+            </Grid>
+        </StackLayout>
+    </ViewCell.View>
+</ViewCell>

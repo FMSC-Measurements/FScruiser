@@ -1,5 +1,5 @@
 ﻿using CruiseDAL.DataObjects;
-using FScruiser.Models;
+using FScruiser.XF.Util;
 using FScruiser.XF.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,6 @@ namespace FScruiser.XF.Pages
     public partial class TreeEditPage2 : ContentPage
     {
         private Color _altRowColor;
-        private Grid _grid;
 
         public TreeEditPage2()
         {
@@ -43,180 +42,60 @@ namespace FScruiser.XF.Pages
             base.OnDisappearing();
         }
 
-        protected async void UpdateTreeFields(TreeEditViewModel viewModel)
+        protected void UpdateTreeFields(TreeEditViewModel viewModel)
         {
             if (viewModel != null)
             {
-                var view = await MakeTreeFields(viewModel.TreeFields);
+                var view = MakeTreeFields(viewModel.TreeFields);
                 _editViewsHost.Content = view;
 
                 //this.Content = new ScrollView { Content = view };
             }
         }
 
-        private Task<View> MakeTreeFields(IEnumerable<TreeFieldSetupDO> treeFields)
+        private View MakeTreeFields(IEnumerable<TreeFieldSetupDO> treeFields)
         {
-            return Task.Run(() =>
-            {
-                
+            if(treeFields == null) { throw new ArgumentNullException(nameof(treeFields)); }
 
-                _grid = new Grid();
-                _grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 50 });
-                _grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 100 });
-                //containerView.SetBinding(BindingContextProperty, nameof(TreeEditViewModel.Tree));
-                var index = 0;
-                foreach (var field in treeFields)
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 50 });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 100 });
+            //containerView.SetBinding(BindingContextProperty, nameof(TreeEditViewModel.Tree));
+            var index = 0;
+            foreach (var field in treeFields)
+            {
+                grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+                if (index % 2 == 0) //alternate row color
                 {
-                    _grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-
-                    if (index % 2 == 0) //alternate row color
-                    {
-                        _grid.Children.Add(new BoxView { Color = _altRowColor }, 0, 2, index, index + 1);
-                    }
-
-                    var header = new Label() { Text = field.Heading };
-                    _grid.Children.Add(header, 0, index);
-
-                    var editView = MakeEditView(field);
-
-                    _grid.Children.Add(editView, 1, index);
-                    index++;
+                    grid.Children.Add(new BoxView { Color = _altRowColor }, 0, 2, index, index + 1);
                 }
-                return (View)_grid;
-            });
-        }
 
-        protected View MakeEditView(TreeFieldSetupDO field)
-        {
-            View editView = null;
-            switch (field.Field)
-            {
-                case nameof(Tree.Stratum):
-                    {
-                        editView = MakeStratumPicker();
-                        break;
-                    }
-                case nameof(Tree.SampleGroup):
-                    {
-                        editView = MakeSampleGroupPicker();
-                        break;
-                    }
-                case nameof(Tree.Species):
-                    {
-                        editView = MakeSpeciesPicker();
-                        break;
-                    }
-                case nameof(Tree.CountOrMeasure):
-                    {
-                        editView = MakeCountMeasurePicker();
-                        break;
-                    }
-                case nameof(Tree.Aspect):
-                case nameof(Tree.CrownRatio):
-                case nameof(Tree.DBH):
-                case nameof(Tree.DBHDoubleBarkThickness):
-                //case nameof(Tree.Diameter):
-                case nameof(Tree.DiameterAtDefect):
-                case nameof(Tree.DRC):
-                case nameof(Tree.FormClass):
-                //case nameof(Tree.Height):
-                case nameof(Tree.HeightToFirstLiveLimb):
-                case nameof(Tree.KPI)://int
-                case nameof(Tree.MerchHeightPrimary):
-                case nameof(Tree.MerchHeightSecondary):
-                case nameof(Tree.PoleLength):
-                case nameof(Tree.RecoverablePrimary):
-                case nameof(Tree.SeenDefectPrimary):
-                case nameof(Tree.SeenDefectSecondary):
-                case nameof(Tree.Slope):
-                case nameof(Tree.TopDIBPrimary):
-                case nameof(Tree.TopDIBSecondary):
-                case nameof(Tree.TotalHeight):
-                case nameof(Tree.TreeCount):
-                case nameof(Tree.TreeNumber):
-                case nameof(Tree.UpperStemDiameter):
-                case nameof(Tree.UpperStemHeight):
-                case nameof(Tree.VoidPercent):
-                    {
-                        editView = new Entry();
-                        ((InputView)editView).Keyboard = Keyboard.Numeric;
-                        ((Entry)editView).Completed += _entry_Completed;
-                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
-                        editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
-                        break;
-                    }
-                case nameof(Tree.DefectCode):
-                    {
-                        editView = new Entry();
-                        ((InputView)editView).Keyboard = Keyboard.Default;
-                        ((Entry)editView).Completed += _entry_Completed;
-                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
-                        editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
-                        break;
-                    }
-                default:
-                    {
-                        editView = new Entry();
-                        ((Entry)editView).Completed += _entry_Completed;
-                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
-                        editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
-                        break;
-                    }
+                var header = new Label() { Text = field.Heading };
+                grid.Children.Add(header, 0, index);
+
+                var editView = TreeEditControlFactory.MakeEditView(field);
+                if (editView is Entry entry)
+                {
+                    entry.Completed += _entry_Completed;
+                }
+
+                grid.Children.Add(editView, 1, index);
+                index++;
             }
-
-            
-            return editView;
+            return grid;
         }
 
-        private void _entry_Completed(object sender, EventArgs e)
+        private static void _entry_Completed(object sender, EventArgs e)
         {
-            if(sender != null && sender is View view)
+            if (sender != null && sender is View view)
             {
-                var indexOfChild = _grid.Children.IndexOf(view);
-                var nextChild = _grid.Children.Skip(indexOfChild+1).SkipWhile(x => x is Label || x is BoxView).FirstOrDefault();
+                var layout = (Grid)view.Parent;
+
+                var indexOfChild = layout.Children.IndexOf(view);
+                var nextChild = layout.Children.Skip(indexOfChild + 1).Where(x => x is Entry || x is Picker).FirstOrDefault();
                 nextChild?.Focus();
             }
-        }
-
-        private View MakeStratumPicker()
-        {
-            var view = new Picker();
-            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.Strata));
-            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.Stratum));
-            view.ItemDisplayBinding = new Binding(nameof(Stratum.Code));
-
-            return view;
-        }
-
-        private Picker MakeCountMeasurePicker()
-        {
-            var picker = new Picker();
-            picker.Items.Add(string.Empty);
-            picker.Items.Add("C");
-            picker.Items.Add("M");
-            picker.SetBinding(Picker.SelectedItemProperty, $"Tree.{nameof(Tree.CountOrMeasure)}");
-
-            return picker;
-        }
-
-        private Picker MakeSampleGroupPicker()
-        {
-            var view = new Picker();
-            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.SampleGroups));
-            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.SampleGroup));
-            view.ItemDisplayBinding = new Binding(nameof(SampleGroup.Code));
-
-            return view;
-        }
-
-        private Picker MakeSpeciesPicker()
-        {
-            var view = new Picker();
-            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.TreeDefaults));
-            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.TreeDefaultValue));
-            view.ItemDisplayBinding = new Binding(nameof(TreeDefaultValueDO.Species));
-
-            return view;
         }
     }
 }

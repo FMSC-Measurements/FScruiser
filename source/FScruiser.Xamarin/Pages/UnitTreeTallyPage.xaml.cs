@@ -1,7 +1,6 @@
 ﻿using FScruiser.Models;
 using FScruiser.XF.ViewModels;
 using System;
-using System.Collections.Specialized;
 using System.Linq;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -73,11 +72,42 @@ namespace FScruiser.XF.Pages
             if (selectedItem != null)
             {
                 var viewModel = ViewModel;
-                viewModel.ShowTree(selectedItem.Tree);
+                //viewModel.ShowTree(selectedItem.Tree);
             }
 
             var view = (ListView)sender;
-            view.SelectedItem = null;//disable selection so that selection acts as a click
+            //view.SelectedItem = null;//disable selection so that selection acts as a click
+        }
+
+        public void _tallyEntryViewCell_editClicked(object sender, TallyEntry tallyEntry)
+        {
+            if (tallyEntry != null)
+            {
+                var viewModel = ViewModel;
+                viewModel.EditTree(tallyEntry);
+            }
+        }
+
+        public void _tallyEntryViewCell_untally5Clicked(object sender, TallyEntry tallyEntry)
+        {
+            if (tallyEntry != null)
+            {
+                var viewModel = ViewModel;
+                viewModel.Untally(tallyEntry);
+            }
+        }
+    }
+
+    public class TreeDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate TreeItemTemplate { get; set; }
+        public DataTemplate BasicTemplate { get; set; }
+
+        protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+        {
+            var tallyEntry = (TallyEntry)item;
+
+            return (tallyEntry.Tree != null) ? TreeItemTemplate : BasicTemplate;
         }
     }
 }

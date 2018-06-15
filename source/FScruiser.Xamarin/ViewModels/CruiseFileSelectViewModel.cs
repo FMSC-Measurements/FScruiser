@@ -48,7 +48,7 @@ namespace FScruiser.XF.ViewModels
             MessagingCenter.Send<object>(this, Messages.CRUISE_FILE_SELECTED);
         }
 
-        public override Task InitAsync()
+        public Task InitAsync()
         {
             return Task.Run(() =>
             {

@@ -21,7 +21,7 @@ namespace FScruiser.XF.ViewModels
             ServiceService = serviceService;
         }
 
-        public abstract Task InitAsync();
+        //public abstract Task InitAsync();
 
         protected virtual void RaisePropertyChanged(string propName)
         {

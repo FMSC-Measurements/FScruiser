@@ -15,13 +15,19 @@ namespace FScruiser.Services
 
         IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode);
 
+        IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratumCode(string stratum);
+
         IEnumerable<TreeDefaultValueDO> GetTreeDefaultsByUnitCode(string unitCode);
 
         IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sgCode);
 
         IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string stratumCode, string sgCode);
 
+        Tree GetTree(string unitCode, int treeNumber);
+
         IEnumerable<Tree> GetTreesByUnitCode(string unitCode);
+
+        int GetNextTreeNumber(string unitCode);
 
         IEnumerable<CountTree> GetCountTreeByUnitCode(string unitCode);
 
@@ -50,5 +56,7 @@ namespace FScruiser.Services
         void UpdateCount(CountTree count);
 
         void LogMessage(string message, string level);
+
+        
     }
 }

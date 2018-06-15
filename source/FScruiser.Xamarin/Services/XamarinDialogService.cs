@@ -23,6 +23,8 @@ namespace FScruiser.XF.Services
             var tallySettings = App.ServiceService.TallySettingsDataService;
             var cruisers = tallySettings.Cruisers.ToArray();
 
+            if(cruisers.Count() == 0) { return; }
+
             var result = await App.Current.MainPage.DisplayActionSheet("Select Cruiser", "Cancel", null, cruisers);
 
             if (result == "Cancel") { return; }
@@ -80,14 +82,14 @@ namespace FScruiser.XF.Services
             return App.Current.MainPage.DisplayAlert(caption, message, "Yes", "No");
         }
 
-        public Task ShowEditTreeAsync(Tree tree, ICuttingUnitDataService dataService)
+        public Task ShowEditTreeAsync(Tree tree)
         {
             var navigation = App.Current.MainPage.Navigation;
 
             var view = new TreeEditPage2();
-            var viewModel = new TreeEditViewModel(tree);
+            var viewModel = new TreeEditViewModel();
             view.BindingContext = viewModel;
-            viewModel.InitAsync();
+            viewModel.InitAsync(tree.TreeNumber);
 
             return App.Current.MainPage.Navigation.PushModalAsync(view);
         }

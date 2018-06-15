@@ -18,7 +18,6 @@ namespace FScruiser.Services
 
         private Dictionary<long, SampleGroup> _sampleGroups;
         private Dictionary<long, Stratum> _strata;
-        private Dictionary<long, Tree> _trees;
         private Dictionary<long, TreeDefaultValueDO> _treeDefaultValues;
         private Dictionary<string, IEnumerable<TreeDefaultValueDO>> _treeDefaultSampleGroupLookup = new Dictionary<string, IEnumerable<TreeDefaultValueDO>>();
         private Dictionary<int, CountTree> _counts;
@@ -33,7 +32,6 @@ namespace FScruiser.Services
         public Dictionary<string, IEnumerable<TreeDefaultValueDO>> TreeDefaultSampleGroupLookup => _treeDefaultSampleGroupLookup;
         public IEnumerable<SampleGroup> SampleGroups => _sampleGroups?.Values;
 
-        public IEnumerable<Tree> Trees => _trees?.Values;
         public IEnumerable<CountTree> Counts => _counts?.Values;
 
         public IEnumerable<TreeFieldSetupDO> TreeFields => _treeFields;
@@ -102,22 +100,20 @@ namespace FScruiser.Services
 
                 _treeFields = Datastore.GetTreeFieldsByUnitCode(unitCode).ToArray();
 
-                _trees = Datastore.GetTreesByUnitCode(unitCode).ToDictionary(x => x.Tree_CN);
-
-                foreach (var tree in Trees)
-                {
-                    tree.CuttingUnit = Unit;
-                    tree.Stratum = _strata[tree.Stratum_CN];
-                    tree.SampleGroup = _sampleGroups.Where(x => tree.SampleGroup_CN.HasValue && x.Key == tree.SampleGroup_CN.Value)
-                        .Select(x => x.Value).SingleOrDefault();
-                    tree.TreeDefaultValue = _treeDefaultValues.Where(x => tree.TreeDefaultValue_CN.HasValue && x.Key == tree.TreeDefaultValue_CN.Value)
-                        .Select(x => x.Value).SingleOrDefault();
-                }
-
                 _tallyFeed = Datastore.GetTallyEntriesByUnitCode(unitCode).ToObservableCollection();
 
                 _dataLoaded = true;
             }
+        }
+
+        private void HydrateTree(Tree tree)
+        {
+            tree.CuttingUnit = Unit;
+            tree.Stratum = _strata[tree.Stratum_CN];
+            tree.SampleGroup = _sampleGroups.Where(x => tree.SampleGroup_CN.HasValue && x.Key == tree.SampleGroup_CN.Value)
+                .Select(x => x.Value).SingleOrDefault();
+            tree.TreeDefaultValue = _treeDefaultValues.Where(x => tree.TreeDefaultValue_CN.HasValue && x.Key == tree.TreeDefaultValue_CN.Value)
+                .Select(x => x.Value).SingleOrDefault();
         }
 
         #region inflate tallyFeed item methods
@@ -127,9 +123,24 @@ namespace FScruiser.Services
             return TallyPopulations.Where(x => x.CountTree_CN == countCN).SingleOrDefault();
         }
 
-        public Tree GetTree(long treeCN)
+        public Tree GetTree(int treeNumber)
         {
-            return Trees.Where(x => x.Tree_CN == treeCN).SingleOrDefault();
+            var tree = Datastore.GetTree(Unit.Code, treeNumber);
+            HydrateTree(tree);
+            return tree;
+        }
+
+        public IEnumerable<Tree> GetTrees()
+        {
+            var trees = Datastore.GetTreesByUnitCode(Unit.Code).ToList();
+
+            foreach(var tree in trees)
+            {
+                HydrateTree(tree);
+            }
+
+            return trees;
+
         }
 
         public TreeEstimateDO GetTreeEstimate(long treeEstimateCN)
@@ -153,8 +164,7 @@ namespace FScruiser.Services
 
         public int GetNextTreeNumber()
         {
-            if (Trees.IsNullOrEmpty()) { return 1; }
-            return Trees.Max(x => (int)x.TreeNumber) + 1;
+            return Datastore.GetNextTreeNumber(Unit.Code);
         }
 
         public Tree CreateTree(string stratumCode)
@@ -210,7 +220,6 @@ namespace FScruiser.Services
             if (tree != null)
             {
                 Datastore.InsertTree(tree);
-                _trees.Add(tree.Tree_CN, tree);
             }
             Datastore.UpdateCount(count);
             _tallyFeed.Add(tallyEntry);
@@ -221,8 +230,6 @@ namespace FScruiser.Services
         public void AddTree(Tree tree)
         {
             Datastore.InsertTree(tree);
-
-            _trees.Add(tree.Tree_CN, tree);
         }
 
         public void UpdateTree(Tree tree)
@@ -280,6 +287,44 @@ namespace FScruiser.Services
             }
 
             return fields;
+        }
+
+        public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratumCode(string stratumCode)
+        {
+            var fields = Datastore.GetTreeFieldsByStratumCode(stratumCode).ToList();
+
+            if (fields.Count == 0)
+            {
+                fields.AddRange(Constants.DEFAULT_TREE_FIELDS);
+            }
+
+            //if unit has multiple tree strata
+            //but stratum column is missing
+            if (Strata.Count() > 1
+                && !fields.Any(x => x.Field == "Stratum"))
+            {
+                //find the location of the tree number field
+                int indexOfTreeNum = fields.FindIndex(x => x.Field == CruiseDAL.Schema.TREE.TREENUMBER);
+                //if user doesn't have a tree number field, fall back to the last field index
+                if (indexOfTreeNum == -1) { indexOfTreeNum = fields.Count - 1; }//last item index
+                                                                                //add the stratum field to the filed list
+                TreeFieldSetupDO tfs = new TreeFieldSetupDO() { Field = "Stratum", Heading = "St", Format = "[Code]" };
+                fields.Insert(indexOfTreeNum + 1, tfs);
+            }
+
+            var stratum = Strata.Where(x => x.Code == stratumCode).Single();
+            if (stratum.Is3P)
+            {
+                fields.Add(new TreeFieldSetupDO() { Field = "STM", Heading = "STM" });
+            }
+
+            return fields;
+        }
+
+        public IEnumerable<TreeFieldSetupDO> GetSimplifiedTreeFieldsByStratumCode(string stratumCode)
+        {
+            var fields = Datastore.GetTreeFieldsByStratumCode(stratumCode);
+            return fields.Where(x => Constants.LESS_IMPORTANT_TREE_FIELDS.Contains(x.Field) == false).ToArray();
         }
     }
 }
