@@ -1,5 +1,6 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,56 +8,69 @@ namespace FScruiser.Services
 {
     public interface ICuttingUnitDatastore
     {
+        #region stratra
+
         IEnumerable<Stratum> GetStrataByUnitCode(string unitCode);
 
-        IEnumerable<SampleGroup> GetSampleGroupsByUnitCode(string unitCode);
+        IEnumerable<StratumProxy> GetStrataProxiesByUnitCode(string unitCode);
+
+        #endregion stratra
+
+        #region sampleGroups
+
+        SampleGroup GetSampleGroup(string stratumCode, string sgCode);
+
+        //IEnumerable<SampleGroupProxy> GetSampleGroupProxiesByUnit(string unitCode);
+
+        IEnumerable<SampleGroupProxy> GetSampleGroupProxies(string stratumCode);
+
+        SampleGroupProxy GetSampleGroupProxy(string stratumCode, string sampleGroupCode);
+
+        #endregion sampleGroups
+
+        IEnumerable<TreeDefaultProxy> GetTreeDefaultProxies(string stratumCode, string sampleGroupCode);
 
         IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode);
+
+        #region treeFields
 
         IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode);
 
         IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratumCode(string stratum);
 
-        IEnumerable<TreeDefaultValueDO> GetTreeDefaultsByUnitCode(string unitCode);
+        #endregion treeFields
 
-        IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sgCode);
+        #region tree
 
-        IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string stratumCode, string sgCode);
+        string CreateTree(string unitCode, string stratumCode, string sampleGroupCode = null, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false);
 
-        Tree GetTree(string unitCode, int treeNumber);
+        Tree GetTree(string tree_GUID);
+
+        TreeStub GetTreeStub(string tree_GUID);
 
         IEnumerable<Tree> GetTreesByUnitCode(string unitCode);
 
-        int GetNextTreeNumber(string unitCode);
-
-        IEnumerable<CountTree> GetCountTreeByUnitCode(string unitCode);
-
-        IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
-
-        #region Tree
-
-        //int GetHighestTreeNumberInUnit(string unit);
-
-        void InsertTree(Tree tree);
-
-        Task InsertTreeAsync(Tree tree);
+        IEnumerable<TreeStub> GetTreeStubsByUnitCode(string unitCode);
 
         void UpdateTree(Tree tree);
+
+        void UpdateTreeInitials(string tree_guid, string value);
 
         Task UpdateTreeAsync(Tree tree);
 
         void DeleteTree(Tree tree);
 
-        #endregion Tree
+        void DeleteTree(string tree_guid);
 
-        TreeEstimateDO GetTreeEstimate(long treeEstimateCN);
+        #endregion tree
 
-        void InsertTreeEstimate(TreeEstimateDO treeEstimate);
+        IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
 
-        void UpdateCount(CountTree count);
+        void InsertTallyEntry(TallyEntry entry);
+
+        void DeleteTally(TallyEntry tallyEntry);
 
         void LogMessage(string message, string level);
-
         
     }
 }

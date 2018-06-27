@@ -11,6 +11,12 @@ namespace FScruiser.XF.Services
     public class XamarinDialogService : IDialogService
     {
         private TaskCompletionSource<int?> _askKpiTcs;
+        private ServiceService _serviceService;
+
+        public XamarinDialogService(ServiceService serviceService)
+        {
+            _serviceService = serviceService;
+        }
 
         public Task<bool> AskCancelAsync(string message, string caption, bool defaultCancel)
         {
@@ -18,7 +24,7 @@ namespace FScruiser.XF.Services
             return Task.FromResult(false);
         }
 
-        public async Task AskCruiserAsync(Tree tree)
+        public async Task AskCruiserAsync(TallyEntry tallyEntry)
         {
             var tallySettings = App.ServiceService.TallySettingsDataService;
             var cruisers = tallySettings.Cruisers.ToArray();
@@ -29,7 +35,8 @@ namespace FScruiser.XF.Services
 
             if (result == "Cancel") { return; }
 
-            tree.Initials = result;
+            tallyEntry.Initials = result;
+            _serviceService.CuttingUnitDataService.UpdateTreeInitials(tallyEntry.Tree_GUID, result);
         }
 
         public Task<string> AskValue(string prompt, params string[] values)
@@ -82,14 +89,14 @@ namespace FScruiser.XF.Services
             return App.Current.MainPage.DisplayAlert(caption, message, "Yes", "No");
         }
 
-        public Task ShowEditTreeAsync(Tree tree)
+        public Task ShowEditTreeAsync(string tree_guid)
         {
             var navigation = App.Current.MainPage.Navigation;
 
             var view = new TreeEditPage2();
             var viewModel = new TreeEditViewModel();
             view.BindingContext = viewModel;
-            viewModel.InitAsync(tree.TreeNumber);
+            viewModel.Init(tree_guid);
 
             return App.Current.MainPage.Navigation.PushModalAsync(view);
         }

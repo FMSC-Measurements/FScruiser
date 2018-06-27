@@ -10,6 +10,8 @@ namespace FScruiser.XF.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class UnitTreeTallyPage : ContentPage
     {
+        private bool _treeCellIsSelected;
+
         protected UnitTreeTallyViewModel ViewModel => (UnitTreeTallyViewModel)BindingContext;
 
         public UnitTreeTallyPage()
@@ -24,6 +26,11 @@ namespace FScruiser.XF.Pages
                     await vm.InitAsync();
                     vm.TallyEntryAdded += TallyFeed_CollectionChanged;
                 }
+
+                MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED, _tallyEntryViewCell_editClicked);
+                MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, _tallyEntryViewCell_UntallyClicked);
+                MessagingCenter.Subscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED, _tallyEntryViewCell_IsSelectedChanged);
+
             };
 
             Disappearing += (x, ea) =>
@@ -32,11 +39,19 @@ namespace FScruiser.XF.Pages
                 {
                     vm.TallyEntryAdded -= TallyFeed_CollectionChanged;
                 }
+
+                MessagingCenter.Unsubscribe<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED);
+                MessagingCenter.Unsubscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED);
+                MessagingCenter.Unsubscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED);
             };
+
+            
         }
 
         private void TallyFeed_CollectionChanged(object sender, EventArgs e)
         {
+            if (_treeCellIsSelected) { return; } //dont scroll down it tree entry is in edit mode
+
             var lastItem = _tallyFeedListView.ItemsSource.OfType<object>().LastOrDefault();
             if (lastItem != null)
             {
@@ -79,21 +94,26 @@ namespace FScruiser.XF.Pages
             //view.SelectedItem = null;//disable selection so that selection acts as a click
         }
 
-        public void _tallyEntryViewCell_editClicked(object sender, TallyEntry tallyEntry)
+        void _tallyEntryViewCell_IsSelectedChanged(object sender, bool isSelected)
+        {
+            _treeCellIsSelected = isSelected;
+        }
+
+
+        void _tallyEntryViewCell_UntallyClicked(object sender, TallyEntry tallyEntry)
+        {
+            if(tallyEntry != null)
+            {
+                ViewModel.Untally(tallyEntry);
+            }
+        }
+
+        void _tallyEntryViewCell_editClicked(object sender, TallyEntry tallyEntry)
         {
             if (tallyEntry != null)
             {
                 var viewModel = ViewModel;
                 viewModel.EditTree(tallyEntry);
-            }
-        }
-
-        public void _tallyEntryViewCell_untally5Clicked(object sender, TallyEntry tallyEntry)
-        {
-            if (tallyEntry != null)
-            {
-                var viewModel = ViewModel;
-                viewModel.Untally(tallyEntry);
             }
         }
     }
@@ -107,7 +127,7 @@ namespace FScruiser.XF.Pages
         {
             var tallyEntry = (TallyEntry)item;
 
-            return (tallyEntry.Tree != null) ? TreeItemTemplate : BasicTemplate;
+            return (tallyEntry.HasTree) ? TreeItemTemplate : BasicTemplate;
         }
     }
 }

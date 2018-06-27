@@ -2,44 +2,41 @@
 using FMSC.Sampling;
 using FScruiser.Models;
 using FScruiser.Services;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace FScruiser.Logic
 {
     public class TreeBasedTallyLogic
     {
-        public static async Task<TallyEntry> TallyAsync(TallyPopulation count,
+        public static async Task<TallyEntry> TallyAsync(TallyPopulation pop,
             ICuttingUnitDataService dataService,
             IDialogService dialogService)
         {
             TallyEntry action = null;
-            var sg = count.SampleGroup;
+
+            var sampler = dataService.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
 
             //if doing a manual tally create a tree and jump out
-            if (sg.SampleSelectorType == CruiseDAL.Schema.CruiseMethods.CLICKER_SAMPLER_TYPE)
+            if (sampler is ClickerSelecter clickerSelecter)
             {
-                action = new TallyEntry(count);
-
-                var newTree = dataService.CreateTree(count); //create measure tree
-                newTree.CountOrMeasure = "M";
-                newTree.TreeCount = (int)sg.SamplingFrequency;     //increment tree count on tally
-                action.SetTree(newTree);
+                action = dataService.CreateTallyWithTree(pop, "M", clickerSelecter.Frequency);
             }
-            else if (count.Method == CruiseMethods.S3P)
+            else if (pop.Method == CruiseMethods.S3P)
             {
-                action = await TallyS3P(count, dataService, dialogService);
+                action = await TallyS3P(pop, dataService, dialogService);
             }
-            else if (count.Is3P)//threeP sampling
+            else if (pop.Is3P)//threeP sampling
             {
-                int? kpi = await dialogService.AskKPIAsync((int)sg.MaxKPI, (int)sg.MinKPI);
+                int? kpi = await dialogService.AskKPIAsync(pop.MaxKPI, pop.MinKPI);
                 if (kpi != null)
                 {
-                    action = TallyThreeP(count, kpi.Value, dataService);
+                    action = TallyThreeP(pop, kpi.Value, dataService);
                 }
             }
             else//non 3P sampling (STR)
             {
-                action = TallyStandard(count, dataService);
+                action = TallyStandard(pop, dataService);
             }
 
             return action;
@@ -49,45 +46,35 @@ namespace FScruiser.Logic
             ICuttingUnitDataService dataService,
             IDialogService dialogService)
         {
-            var sg = pop.SampleGroup;
-            var sampler = sg.Sampler;
+            var samplers = dataService.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode);
+            var firstSamplet = samplers.ElementAt(0);
 
-            var tallyEntry = new TallyEntry(pop)
-            {
-                TreeCount = 1
-            };
+            boolItem item = (boolItem)firstSamplet.NextItem();
 
-            boolItem item = (boolItem)sampler.NextItem();
-
-            Tree tree = null;
             //If we receive nothing from the sampler, we don't have a sample
             if (item != null)//&& (item.IsSelected || item.IsInsuranceItem))
             {
-                var secondarySampler = sg.SecondarySampler;
+                var secondarySampler = samplers.ElementAt(1);
 
-                int? kpi = await dialogService.AskKPIAsync((int)sg.MaxKPI, (int)sg.MinKPI);
+                int? kpi = await dialogService.AskKPIAsync(pop.MaxKPI, pop.MinKPI);
                 if (kpi != null)
                 {
                     if (kpi == -1)  //user entered sure to measure
                     {
-                        tree = dataService.CreateTree(pop);
-                        tree.STM = "Y";
-                        tallyEntry.IsSTM = true;
-                        tallyEntry.SetTree(tree);
+                        return dataService.CreateTallyWithTree(pop, "M", stm: true);
                     }
                     else
                     {
-                        tallyEntry.KPI = kpi.Value;
-
-                        ThreePItem item3p = (ThreePItem)((ThreePSelecter)sampler).NextItem();
+                        ThreePItem item3p = (ThreePItem)((ThreePSelecter)secondarySampler).NextItem();
                         if (item3p != null && kpi.Value > item3p.KPI)
                         {
-                            bool isInsuranceTree = sampler.IsSelectingITrees && sampler.InsuranceCounter.Next();
+                            bool isInsuranceTree = secondarySampler.IsSelectingITrees && secondarySampler.InsuranceCounter.Next();
 
-                            tree = dataService.CreateTree(pop);
-                            tree.KPI = kpi.Value;
-                            tree.CountOrMeasure = (isInsuranceTree) ? "I" : "M";
-                            tallyEntry.SetTree(tree);
+                            return dataService.CreateTallyWithTree(pop, (isInsuranceTree) ? "I" : "M", kpi: kpi.Value);
+                        }
+                        else
+                        {
+                            return dataService.CreateTally(pop, kpi: kpi.Value);
                         }
                     }
                 }
@@ -96,8 +83,10 @@ namespace FScruiser.Logic
                     return null;
                 }
             }
-
-            return tallyEntry;
+            else
+            {
+                return dataService.CreateTally(pop);
+            }
         }
 
         //DataService (CreateNewTreeEntry)
@@ -106,39 +95,26 @@ namespace FScruiser.Logic
             int kpi,
             ICuttingUnitDataService dataService)
         {
-            var sampler = pop.SampleGroup.Sampler;
+            var sampler = dataService.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
 
-            var tallyEntry = new TallyEntry(pop)
-            {
-                TreeCount = 1
-            };
-
-            Tree tree = null;
             if (kpi == -1)  //user entered sure to measure
             {
-                tree = dataService.CreateTree(pop);
-                tree.STM = "Y";
-                tree.CountOrMeasure = "M";
-                tallyEntry.IsSTM = true;
-                tallyEntry.SetTree(tree);
+                return dataService.CreateTallyWithTree(pop, "M", stm: true);
             }
             else
             {
-                tallyEntry.KPI = kpi;
-
                 ThreePItem item = (ThreePItem)((ThreePSelecter)sampler).NextItem();
                 if (item != null && kpi > item.KPI)
                 {
                     bool isInsuranceTree = sampler.IsSelectingITrees && sampler.InsuranceCounter.Next();
 
-                    tree = dataService.CreateTree(pop);
-                    tree.KPI = kpi;
-                    tree.CountOrMeasure = (isInsuranceTree) ? "I" : "M";
-                    tallyEntry.SetTree(tree);
+                    return dataService.CreateTallyWithTree(pop, (isInsuranceTree) ? "I" : "M", kpi: kpi);
+                }
+                else
+                {
+                    return dataService.CreateTally(pop, kpi: kpi);
                 }
             }
-
-            return tallyEntry;
         }
 
         //DataService (CreateNewTreeEntry)
@@ -146,26 +122,18 @@ namespace FScruiser.Logic
         public static TallyEntry TallyStandard(TallyPopulation pop,
             ICuttingUnitDataService dataService)
         {
-            var sg = pop.SampleGroup;
-            var sampler = sg.Sampler;
-
+            var sampler = dataService.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
             boolItem item = (boolItem)sampler.NextItem();
 
-            var tallyEntry = new TallyEntry(pop)
-            {
-                TreeCount = 1
-            };
-
-            Tree tree = null;
             //If we receive nothing from the sampler, we don't have a sample
             if (item != null)//&& (item.IsSelected || item.IsInsuranceItem))
             {
-                tree = dataService.CreateTree(pop);
-                tree.CountOrMeasure = (item.IsInsuranceItem) ? "I" : "M";
-                tallyEntry.SetTree(tree);
+                return dataService.CreateTallyWithTree(pop, (item.IsInsuranceItem) ? "I" : "M");
             }
-
-            return tallyEntry;
+            else
+            {
+                return dataService.CreateTally(pop);
+            }
         }
     }
 }

@@ -17,11 +17,9 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_100PCT()
         {
-            var st = new StratumDO() { Method = "100PCT" };
-
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = "100PCT",
                 SampleSelectorState = "something",
                 SampleSelectorType = "something"
             };
@@ -35,15 +33,13 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_STR_freq_1_and_sampleSelector_is_null()
         {
-            var st = new StratumDO() { Method = "STR" };
-
             //test: if sampling freq is > 0
             //AND SampleSelectorType is not defined
             //THEN Sampler is not null
             //AND is of type Blocked
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = "STR",
                 SamplingFrequency = 1,
                 SampleSelectorState = "something"
             };
@@ -59,15 +55,13 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_STR_freq_1_and_type_is_systematic()
         {
-            var st = new StratumDO() { Method = "STR" };
-
             //test: if sampling freq is > 0
             //AND SampleSelectorType is Systematic
             //THEN Sampler is not null
             //AND is of type Systematic
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = "STR",
                 SamplingFrequency = 1,
                 SampleSelectorType = "SystematicSelecter",
                 SampleSelectorState = "something"
@@ -86,13 +80,11 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_STR_freq_0()
         {
-            var st = new StratumDO() { Method = "STR" };
-
             //test: if sampling freq is 0
             //then Sampler is null
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = "STR",
                 SamplingFrequency = 0,
                 SampleSelectorState = "something"
             };
@@ -107,13 +99,11 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_STR_Clicker()
         {
-            var st = new StratumDO() { Method = "STR" };
-
             //test: if sampling freq is 0
             //then Sampler is null
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = "STR",
                 SamplingFrequency = 20,
                 SampleSelectorType = CruiseDAL.Schema.CruiseMethods.CLICKER_SAMPLER_TYPE,
                 SampleSelectorState = "something"
@@ -131,13 +121,11 @@ namespace FScruiser.Core.Test.Logic
         [InlineData("PCM")]
         public void MakeSampleSelecter_multiStagePlot_freq_0(string method)
         {
-            var st = new StratumDO() { Method = method };
-
             //test: if sampling freq is 0
             //then Sampler is null
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = method,
                 SamplingFrequency = 0
             };
 
@@ -151,15 +139,13 @@ namespace FScruiser.Core.Test.Logic
         [InlineData("PCM")]
         public void MakeSampleSelecter_multiStagePlot(string method)
         {
-            var st = new StratumDO() { Method = method };
-
             //test: if sampling freq is > 0
             //AND SampleSelectorType is not defined
             //THEN Sampler is not null
             //AND is of type Systematic
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = method,
                 SamplingFrequency = 1,
                 InsuranceFrequency = 1
             };
@@ -177,14 +163,9 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void DeserializeSamplerStatet_3P()
         {
-            var st = new StratumDO()
-            {
-                Method = "3P"
-            };
-
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = "3P",
                 SampleSelectorState = null,
                 KZ = 100
             };
@@ -199,14 +180,9 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_F3P()
         {
-            var st = new StratumDO()
-            {
-                Method = "F3P"
-            };
-
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = "F3P",
                 SampleSelectorState = null,
                 KZ = 100
             };
@@ -220,14 +196,9 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_P3P()
         {
-            var st = new StratumDO()
-            {
-                Method = "P3P"
-            };
-
             var sg = new SampleGroup()
             {
-                Stratum = st,
+                Method = "P3P",
                 SampleSelectorState = null,
                 KZ = 100
             };

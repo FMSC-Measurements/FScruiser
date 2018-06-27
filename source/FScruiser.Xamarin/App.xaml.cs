@@ -25,7 +25,7 @@ namespace FScruiser.XF
         public App(ServiceService serviceService) : this()
         {
             
-            serviceService.DialogService = new XamarinDialogService();
+            serviceService.DialogService = new XamarinDialogService(serviceService);
             serviceService.TallySettingsDataService = new TallySettingsDataService();
 
             ServiceService = serviceService;

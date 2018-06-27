@@ -8,8 +8,10 @@ using System.Xml.Serialization;
 
 namespace FScruiser.Logic
 {
-    public class ClickerSelecter : SampleSelecter
+    public class ClickerSelecter : SampleSelecter, IFrequencyBasedSelecter
     {
+        public int Frequency { get; set; }
+
         public override SampleItem NextItem()
         {
             return new boolItem() { IsSelected = true };
@@ -31,7 +33,7 @@ namespace FScruiser.Logic
     {
         public static SampleSelecter MakeSampleSelecter(SampleGroup sampleGroup)
         {
-            var method = sampleGroup.Stratum.Method;
+            var method = sampleGroup.Method;
 
             if (method == "100"
                 || method == "FIX"
@@ -61,7 +63,7 @@ namespace FScruiser.Logic
                         }
                         else if (String.Equals(sampleGroup.SampleSelectorType, CruiseMethods.CLICKER_SAMPLER_TYPE))
                         {
-                            return new ClickerSelecter();
+                            return new ClickerSelecter { Frequency = (int)sampleGroup.SamplingFrequency };
                         }
                         else
                         {
@@ -102,7 +104,7 @@ namespace FScruiser.Logic
         //        if (selector != null)
         //        { return selector; }
         //    }
-        private static SampleSelecter MakeThreePSampleSelector(SampleGroup sampleGroup)
+        public static SampleSelecter MakeThreePSampleSelector(SampleGroup sampleGroup)
         {
             SampleSelecter selecter = null;
             int iFrequency = (int)sampleGroup.InsuranceFrequency;
@@ -112,7 +114,7 @@ namespace FScruiser.Logic
             return selecter;
         }
 
-        private static SampleSelecter MakeSystematicSampleSelector(SampleGroup sampleGroup)
+        public static SampleSelecter MakeSystematicSampleSelector(SampleGroup sampleGroup)
         {
             SampleSelecter selecter = null;
             int iFrequency = (int)sampleGroup.InsuranceFrequency;
@@ -125,7 +127,7 @@ namespace FScruiser.Logic
             return selecter;
         }
 
-        private static SampleSelecter MakeBlockSampleSelector(SampleGroup sampleGroup)
+        public static SampleSelecter MakeBlockSampleSelector(SampleGroup sampleGroup)
         {
             SampleSelecter selecter = null;
             int iFrequency = (int)sampleGroup.InsuranceFrequency;

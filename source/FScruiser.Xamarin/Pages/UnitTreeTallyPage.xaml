@@ -15,15 +15,16 @@
     </ContentPage.Resources>
     <ContentPage.Content>
         <StackLayout>
-            <views:CustomListView x:Name="_tallyFeedListView" 
+            <ListView x:Name="_tallyFeedListView" 
                       HasUnevenRows="True"
                       ItemsSource="{Binding TallyFeed}" 
-                      ItemSelected="TallyFeedListView_ItemSelected">
+                      ItemSelected="TallyFeedListView_ItemSelected"
+                      CachingStrategy="RetainElement">
                 <ListView.ItemTemplate>
                     <local:TreeDataTemplateSelector>
                         <local:TreeDataTemplateSelector.TreeItemTemplate>
                             <DataTemplate>
-                                <cells:TallyEntryTreeViewCell EditClicked="_tallyEntryViewCell_editClicked"/>
+                                <cells:TallyEntryTreeViewCell EditClicked="_tallyEntryViewCell_editClicked" UntallyClicked="_tallyEntryViewCell_UntallyClicked" IsSelectedChanged="_tallyEntryViewCell_IsSelectedChanged"/>
                                 <!--<ViewCell>
                                     <StackLayout Orientation="Horizontal" BackgroundColor="#30C1BC">
                                         <StackLayout.Triggers>
@@ -106,7 +107,7 @@
                         </ViewCell>
                     </DataTemplate>-->
                 </ListView.ItemTemplate>
-            </views:CustomListView>
+            </ListView>
 
 
             <flow:FlowListView  x:Name="TallyListView" 
@@ -124,7 +125,7 @@
                                          VerticalOptions="Fill" Padding="3">
                                 <Label Text="{Binding TallyDescription}" 
                                        HorizontalTextAlignment="Center" />
-                                <Label Text="{Binding Count.TreeCount}" 
+                                <Label Text="{Binding TreeCount}" 
                                        HorizontalTextAlignment="Center" 
                                        BackgroundColor="White" 
                                        TextColor="Black" />

@@ -9,9 +9,9 @@ namespace FScruiser
             new TreeFieldSetupDO(){
                 Field = nameof(Tree.TreeNumber), Heading = "Tree", FieldOrder = 1, ColumnType = "Text" },
             new TreeFieldSetupDO() {
-                Field = nameof(Tree.Stratum), Heading = "St", Format = "[Code]" , FieldOrder = 2, ColumnType = "Text"  },
+                Field = "Stratum", Heading = "St", Format = "[Code]" , FieldOrder = 2, ColumnType = "Text"  },
             new TreeFieldSetupDO() {
-                Field = nameof(Tree.SampleGroup), Heading = "SG", Format = "[Code]" , FieldOrder = 3, ColumnType = "Text" },
+                Field = "SampleGroup", Heading = "SG", Format = "[Code]" , FieldOrder = 3, ColumnType = "Text" },
             new TreeFieldSetupDO() {
                 Field = nameof(Tree.Species), Heading = "Sp", FieldOrder = 4, ColumnType = "Combo" },
             new TreeFieldSetupDO() {
@@ -41,8 +41,8 @@ namespace FScruiser
         public static readonly string[] LESS_IMPORTANT_TREE_FIELDS = new string[]
         {
             nameof(Tree.TreeNumber),
-            nameof(Tree.Stratum),
-            nameof(Tree.SampleGroup),
+            "Stratum",
+            "SampleGroup",
             nameof(Tree.CountOrMeasure),
             nameof(Tree.TreeCount),
             nameof(Tree.KPI),

@@ -38,7 +38,7 @@ namespace FScruiser.XF.Pages
         private void _treeListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             if (BindingContext is TreeListViewModel vm
-                && e.SelectedItem is Tree tree && tree != null)
+                && e.SelectedItem is TreeStub tree && tree != null)
             {
                 vm.ShowEditTree(tree);
             }

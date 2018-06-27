@@ -1,36 +1,22 @@
-﻿using CruiseDAL.DataObjects;
-using FMSC.ORM.EntityModel;
-using FMSC.ORM.EntityModel.Attributes;
+﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Util;
 using System;
-using System.Linq;
 
 namespace FScruiser.Models
 {
     [EntitySource("Tree")]
-    public class Tree : DataObject_Base
+    public class Tree : INPC_Base
     {
         #region table fields
 
-        [PrimaryKeyField(Name = "Tree_CN")]
-        public long Tree_CN { get; set; }
-
         [Field(Name = "Tree_GUID")]
-        public Guid Tree_GUID { get; set; } = Guid.NewGuid();
+        public string Tree_GUID { get; set; }
 
-        [Field(Name = "TreeDefaultValue_CN")]
-        public long? TreeDefaultValue_CN { get; set; }
+        [Field(Alias = "stratumCode", SQLExpression = "Stratum.Code")]
+        public string StratumCode { get; set; }
 
-        [Field(Name = "Stratum_CN")]
-        public long Stratum_CN { get; set; }
-
-        [Field(Name = "SampleGroup_CN")]
-        public long? SampleGroup_CN { get; set; }
-
-        [Field(Name = "CuttingUnit_CN")]
-        public long CuttingUnit_CN { get; set; }
-
-        [Field(Name = "Plot_CN")]
-        public int? Plot_CN { get; set; }
+        [Field(Alias = "sampleGroupCode", SQLExpression = "SampleGroup.Code")]
+        public string SampleGroupCode { get; set; }
 
         [Field(Name = "TreeNumber")]
         public int TreeNumber { get; set; }
@@ -153,102 +139,6 @@ namespace FScruiser.Models
 
         #endregion table fields
 
-        #region relationship props
-
-        public CuttingUnitDO CuttingUnit { get; set; }
-
-
-        TreeDefaultValueDO _treeDefaultValue;
-        public TreeDefaultValueDO TreeDefaultValue
-        {
-            get { return _treeDefaultValue; }
-            set
-            {
-                _treeDefaultValue = value;
-
-                if(value != null)
-                {
-                    SetTreeDefaultValue(value);
-                }
-            }
-        }
-
-        private void SetTreeDefaultValue(TreeDefaultValueDO value)
-        {
-            if(value == null) { throw new ArgumentNullException(); }
-
-            if(TreeDefaultValue_CN != value.TreeDefaultValue_CN)
-            {
-                TreeDefaultValue_CN = value.TreeDefaultValue_CN;
-            }
-        }
-
-        private StratumDO _stratum;
-
-        public StratumDO Stratum
-        {
-            get { return _stratum; }
-            set
-            {
-                _stratum = value;
-
-                if (value != null)
-                {
-                    SetStratum(value);
-                }
-            }
-        }
-
-        public void SetStratum(StratumDO value)
-        {
-            if (value == null) { throw new ArgumentNullException(); }
-            if (value.Stratum_CN.HasValue == false) { throw new ArgumentException(); }
-
-            if (Stratum_CN != value.Stratum_CN.Value)
-            { Stratum_CN = value.Stratum_CN.Value; }
-        }
-
-        private SampleGroup _sampleGroup;
-
-        public SampleGroup SampleGroup
-        {
-            get { return _sampleGroup; }
-            set
-            {
-                _sampleGroup = value;
-                if (value != null)
-                {
-                    SetSampleGroup(value);
-                }
-            }
-        }
-
-        public void SetSampleGroupStratum(SampleGroupDO value)
-        {
-            if (value == null) { throw new ArgumentNullException(); }
-            if (value.SampleGroup_CN.HasValue == false) { throw new ArgumentException(); }
-            if (value.Stratum_CN.HasValue == false) { throw new ArgumentException(); }
-
-            if (SampleGroup_CN != value.SampleGroup_CN.Value)
-            { SampleGroup_CN = value.SampleGroup_CN.Value; }
-
-            if (Stratum_CN != value.Stratum_CN.Value)
-            { Stratum_CN = value.Stratum_CN.Value; }
-        }
-
-        public void SetSampleGroup(SampleGroupDO value)
-        {
-            if (value == null) { throw new ArgumentNullException(); }
-            //if (value.SampleGroup_CN.HasValue == false) { throw new ArgumentException(); }
-
-            if (SampleGroup_CN != value.SampleGroup_CN)
-            { SampleGroup_CN = value.SampleGroup_CN; }
-        }
-
-        public PlotDO Plot { get; set; }
-
-        #endregion relationship props
-
         private bool _hasFieldData;
 
         private static readonly string DEFAULT_STM = "N";
@@ -258,77 +148,39 @@ namespace FScruiser.Models
         private static readonly string DEFAULT_CLEAR_FACE = "";
         private static readonly string DEFAULT_DEFECT_CODE = "";
 
-        [IgnoreField]
-        protected bool HasError { get; set; }
+        //[IgnoreField]
+        //protected bool HasError { get; set; }
 
-        [IgnoreField]
-        public bool HasFieldData
-        {
-            get { return _hasFieldData; }
-            set
-            {
-                _hasFieldData = value;
-                NotifyPropertyChanged(nameof(HasFieldData));
-                NotifyPropertyChanged(nameof(TallyFeedStatus));
-            }
-        }
+        //[IgnoreField]
+        //public bool HasFieldData
+        //{
+        //    get { return _hasFieldData; }
+        //    set
+        //    {
+        //        _hasFieldData = value;
+        //        NotifyPropertyChanged(nameof(HasFieldData));
+        //        NotifyPropertyChanged(nameof(TallyFeedStatus));
+        //    }
+        //}
 
-        protected override void NotifyPropertyChanged(string name)
-        {
-            base.NotifyPropertyChanged(name);
-
-            if (PropertyChangedEventsDisabled) { return; }//HACK/DEBT the base class implementation requires us to check that PropertyChangedEventsDisabled
-
-            //forward property changed events
-            switch (name)
-            {
-                case nameof(TotalHeight):
-                case nameof(MerchHeightPrimary):
-                case nameof(UpperStemHeight):
-                    {
-                        NotifyPropertyChanged(nameof(Height));
-                        break;
-                    }
-                case nameof(DBH):
-                case nameof(DRC):
-                case nameof(DBHDoubleBarkThickness):
-                    {
-                        NotifyPropertyChanged(nameof(Diameter));
-                        break;
-                    }
-            }
-
-            if (name != nameof(HasFieldData) && name != nameof(TallyFeedStatus))
-            { HasFieldData = true; }
-        }
-
-        [IgnoreField]
-        public string TallyFeedStatus
-        {
-            get
-            {
-                if (HasErrors())
-                {
-                    return "Error";
-                }
-                else if (HasFieldData == false)
-                {
-                    return "NoData";
-                }
-                else
-                {
-                    return "HasData";
-                }
-            }
-        }
-
-        public double Height => new double[] { TotalHeight, MerchHeightPrimary, UpperStemHeight }.Max();
-
-        public double Diameter => new double[] { DBH, DRC, DBHDoubleBarkThickness }.Max();
-
-        protected bool HasErrors()
-        {
-            return false;
-        }
+        //[IgnoreField]
+        //public string TallyFeedStatus
+        //{
+        //    get
+        //    {
+        //        if (HasErrors())
+        //        {
+        //            return "Error";
+        //        }
+        //        else if (HasFieldData == false)
+        //        {
+        //            return "NoData";
+        //        }
+        //        else
+        //        {
+        //            return "HasData";
+        //        }
+        //    }
+        //}
     }
 }

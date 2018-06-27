@@ -3,7 +3,6 @@ using FScruiser.XF.ViewModels;
 using FScruiser.XF.Views;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -13,7 +12,6 @@ namespace FScruiser.XF.ViewCells
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class TallyEntryTreeViewCell : ViewCell
     {
-
         public ICommand EditCommand
         {
             get { return _editButton.Command; }
@@ -25,7 +23,7 @@ namespace FScruiser.XF.ViewCells
             get { return _editButton.CommandParameter; }
             set { _editButton.CommandParameter = value; }
         }
-           
+
         public ICommand UntallyCommand
         {
             get { return _untallyButton.Command; }
@@ -41,6 +39,8 @@ namespace FScruiser.XF.ViewCells
         public event EventHandler<TallyEntry> EditClicked;
 
         public event EventHandler<TallyEntry> UntallyClicked;
+
+        public event EventHandler<bool> IsSelectedChanged;
 
         private bool _isSelected;
         private TreeEditViewModel _treeViewModel;
@@ -69,43 +69,55 @@ namespace FScruiser.XF.ViewCells
             get { return _treeViewModel; }
             set
             {
-                if (_treeViewModel != null) { _treeViewModel.Dispose(); }
+                if (_treeViewModel != null)
+                {
+                    _treeViewModel.TreeFieldsChanged -= _treeViewModel_TreeFieldsChanged;
+                    _treeViewModel.Dispose();
+                }
                 _treeViewModel = value;
+                if (value != null)
+                {
+                    _treeViewModel.TreeFieldsChanged += _treeViewModel_TreeFieldsChanged;
+                }
             }
+        }
+
+        private void _treeViewModel_TreeFieldsChanged(object sender, System.Collections.Generic.IEnumerable<CruiseDAL.DataObjects.TreeFieldSetupDO> e)
+        {
+            var view = MakeEditControlContainer(TreeViewModel.TreeFields);
+
+            view.BindingContextChanged += View_BindingContextChanged;
+            _treeEditScrollView.Content = view;
+            view.BindingContext = TreeViewModel;
+        }
+
+        private void View_BindingContextChanged(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.Write("binding context changed");
         }
 
         private void _untallyButton_Clicked(object sender, EventArgs e)
         {
-            UntallyClicked?.Invoke(this, BindingContext as TallyEntry);
+            MessagingCenter.Send<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, BindingContext as TallyEntry);
         }
 
         private void _editButton_Clicked(object sender, EventArgs e)
         {
-            EditClicked?.Invoke(this, BindingContext as TallyEntry);
+            MessagingCenter.Send<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED, BindingContext as TallyEntry);
         }
 
         private void RaiseIsSelectedChanged()
         {
             var isSelected = IsSelected;
+            MessagingCenter.Send<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED, isSelected);
 
             if (isSelected)
             {
                 var tallyItem = BindingContext as TallyEntry;
-                var tree = tallyItem?.Tree;
-
-                if (tallyItem?.TreeNumber != null)
+                if (tallyItem?.HasTree ?? false)
                 {
-                    var treeFields = App.ServiceService.CuttingUnitDataService.GetSimplifiedTreeFieldsByStratumCode(tree.Stratum.Code);
-                    var treeEditViewModel = TreeViewModel = new TreeEditViewModel()
-                    {
-                        TreeFields = treeFields
-                    };
-
-                    var view = MakeEditControlContainer(treeFields);
-
-                    _treeEditScrollView.Content = view;
-                    view.BindingContext = treeEditViewModel;
-                    var task = RefreshTreeAsync();
+                    var treeEditViewModel = TreeViewModel = new TreeEditViewModel(true);
+                    RefreshTree();
                 }
             }
             else
@@ -162,12 +174,12 @@ namespace FScruiser.XF.ViewCells
             }
         }
 
-        private async Task RefreshTreeAsync()
+        private void RefreshTree()
         {
             var tallyItem = BindingContext as TallyEntry;
-            if (tallyItem?.TreeNumber != null)
+            if (tallyItem?.HasTree ?? false)
             {
-                await TreeViewModel?.InitAsync(tallyItem.TreeNumber.Value);
+                TreeViewModel?.Init(tallyItem.Tree_GUID);
             }
         }
 
@@ -189,12 +201,19 @@ namespace FScruiser.XF.ViewCells
             IsSelected = true;
         }
 
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
+        //protected override void OnAppearing()
+        //{
+        //    base.OnAppearing();
 
-            IsSelected = false;
-        }
+        //    RefreshTree();
+        //}
+
+        //protected override void OnDisappearing()
+        //{
+        //    base.OnDisappearing();
+
+        //    IsSelected = false;
+        //}
 
         protected override void OnPropertyChanging(string propertyName = null)
         {
@@ -224,21 +243,26 @@ namespace FScruiser.XF.ViewCells
         protected virtual void UnwireListView(ListView listView)
         {
             listView.ItemSelected -= ListView_ItemSelected;
+
+            //if (listView is CustomListView customListView)
+            //{
+            //    customListView.Scroll -= CustomListView_Scroll;
+            //}
         }
 
         protected virtual void WireListView(ListView listView)
         {
             listView.ItemSelected += ListView_ItemSelected;
-            if (listView is CustomListView customListView)
-            {
-                customListView.Scroll += CustomListView_Scroll;
-            }
+            //if (listView is CustomListView customListView)
+            //{
+            //    customListView.Scroll += CustomListView_Scroll;
+            //}
         }
 
-        private void CustomListView_Scroll(object sender, System.EventArgs e)
-        {
-            //IsSelected = false;
-        }
+        //private void CustomListView_Scroll(object sender, System.EventArgs e)
+        //{
+        //    //IsSelected = false;
+        //}
 
         private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
@@ -251,11 +275,6 @@ namespace FScruiser.XF.ViewCells
             }
         }
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-
-            var task = RefreshTreeAsync();
-        }
+        
     }
 }

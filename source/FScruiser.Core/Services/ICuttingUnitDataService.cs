@@ -1,5 +1,7 @@
 ﻿using CruiseDAL.DataObjects;
+using FMSC.Sampling;
 using FScruiser.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,66 +9,58 @@ namespace FScruiser.Services
 {
     public interface ICuttingUnitDataService
     {
-        #region
-
-        Tree CreateTree(string stratumCode);
-
-        Tree CreateTree(TallyPopulation tallyPopulation);
-
-        TreeEstimateDO LogTreeEstimate(CountTreeDO count, int kpi);
-
-        Task RefreshDataAsync(bool force = false);
-
-        #endregion
-
         CuttingUnit Unit { get; }
 
-        IEnumerable<Stratum> Strata { get; }
+        IEnumerable<StratumProxy> GetStratumProxies();
 
-        IEnumerable<SampleGroup> SampleGroups { get; }
+        IEnumerable<TallyEntry> GetTallyEntries();
 
-        IEnumerable<TallyPopulation> TallyPopulations { get; }
+        IEnumerable<TallyPopulation> GetTallyPopulations();
 
-        IEnumerable<TreeFieldSetupDO> TreeFields { get; }
-
-        IEnumerable<TallyEntry> TallyFeed { get; }
-
-        IEnumerable<CountTree> Counts { get; }
-
-        Dictionary<string, IEnumerable<TreeDefaultValueDO>> TreeDefaultSampleGroupLookup { get; }
+        IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratumCode(string stratumCode);
 
         IEnumerable<TreeFieldSetupDO> GetSimplifiedTreeFieldsByStratumCode(string stratumCode);
 
-        #region update methods
+        IEnumerable<SampleGroupProxy> GetSampleGroupProxies(string stratumCode);
+
+        IEnumerable<TreeDefaultProxy> GetTreeDefaultProxies(string stratumCode, string sampleGroupCode);
+
+        IEnumerable<SampleSelecter> GetSamplersBySampleGroupCode(string stratumCode, string sgCode);
+
+        #region tree
+
+        Tree GetTree(string tree_guid);
+
+        TreeStub GetTreeStub(string tree_guid);
+
+        IEnumerable<Tree> GetTrees();
+
+        IEnumerable<TreeStub> GetTreeStubs();
 
         void UpdateTree(Tree tree);
 
         Task UpdateTreeAsync(Tree tree);
 
-        #endregion
+        string CreateTree(string stratumCode);
 
-        void AddTallyEntry(TallyEntry tallyEntry);
+        string CreateTree(TallyPopulation tallyPopulation);
 
-        void AddTree(Tree tree);
+        void UpdateTreeInitials(string tree_GUID, string result);
 
-        #region insert methods
+        #endregion tree
 
-        void InsertTree(Tree tree);
+        #region tally
 
-        TallyPopulation GetCount(long countCN);
+        TallyEntry CreateTally(TallyPopulation population, int treeCount = 1, int kpi = 0, bool stm = false);
 
-        //Tree GetTree(long treeCN);
+        TallyEntry CreateTallyWithTree(TallyPopulation population, string countOrMeasure, int treeCount = 1, int kpi = 0, bool stm = false);
 
-        Tree GetTree(int treeNumber);
+        void DeleteTally(TallyEntry tallyEntry);
 
-        IEnumerable<Tree> GetTrees();
-
-        TreeEstimateDO GetTreeEstimate(long treeEstimateCN);
-
-        void UpdateCount(CountTree count);
-
-        #endregion
+        #endregion tally
 
         void LogMessage(string message, string level);
+
+        //TreeEstimateDO LogTreeEstimate(CountTreeDO count, int kpi);
     }
 }

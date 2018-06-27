@@ -1,6 +1,7 @@
 ﻿using CruiseDAL.DataObjects;
 using CruiseDAL.Schema;
 using FluentAssertions;
+using FMSC.Sampling;
 using FScruiser.Logic;
 using FScruiser.Models;
 using FScruiser.Services;
@@ -16,224 +17,224 @@ namespace FScruiser.Core.Test.Logic
 {
     public class TreeBasedTallyLogic_test
     {
-        [Theory]
-        //WHEN frequency 1 in 1 (guarintee sample)
-        //AND no insurance trees
-        //THEN expect measure tree
-        [InlineData(1, 0, "M")]
+        //[Theory]
+        ////WHEN frequency 1 in 1 (guarintee sample)
+        ////AND no insurance trees
+        ////THEN expect measure tree
+        //[InlineData("M")]
 
-        //WHEN frequency is 1 in 2 
-        //AND insurance frequency is 1 in 1
-        [InlineData(2, 1, "I")]//if freq is 1 sampler wont do insurance //TODO it would be nice to have a better way to guarntee a insurance sample
+        ////WHEN frequency is 1 in 2 
+        ////AND insurance frequency is 1 in 1
+        //[InlineData("I")]//if freq is 1 sampler wont do insurance //TODO it would be nice to have a better way to guarntee a insurance sample
 
-        //[InlineData(0,0, "C", false, false)]//frequency of 0 is not allowed and breaks the OnTally
-        public void TallyStandard(int frequency, int insuranceFreq, string resultCountMeasure)
-        {
+        //[InlineData("C")]
+        //public void TallyStandard(string resultCountMeasure)
+        //{
+        //    var samplerMock = new Mock<SampleSelecter>();
 
-            using (var ds = CreateDatastore(CruiseDAL.Schema.CruiseMethods.STR, frequency, insuranceFreq))
-            {
-                var unitDs = new CuttingUnitDatastore(ds);
+        //    if (resultCountMeasure == "M")
+        //    {
+        //        samplerMock.Setup(x => x.NextItem()).Returns(new boolItem(0, false, true));
+        //    }
+        //    else if (resultCountMeasure == "I")
+        //    {
+        //        samplerMock.Setup(x => x.NextItem()).Returns(new boolItem(0, true, true));
+        //    }
+        //    else
+        //    {
+        //        samplerMock.Setup(x => x.NextItem()).Returns((boolItem)null);
+        //    }
 
-                var unit = ds.From<CuttingUnit>().Query().First();
+        //    var sampleResult = new TallyEntry();
+        //    var nonSampleResult = new TallyEntry();
 
-                var dataService = new CuttingUnitDataService(unitDs, unit);
-                dataService.RefreshData();
+        //    var dataServiceMock = new Mock<ICuttingUnitDataService>();
+        //    dataServiceMock.Setup(x => x.CreateTally(It.IsAny<TallyPopulation>(), It.Is<int>(i => i == 1), It.Is<int>(i => i == 0), It.Is<bool>(b => b == false)))
+        //        .Returns(nonSampleResult);
+        //    dataServiceMock.Setup(x => x.CreateTallyWithTree(It.IsAny<TallyPopulation>(), It.IsAny<string>(), It.Is<int>(i => i == 1), It.Is<int>(i => i == 0), It.Is<bool>(b => b == false)))
+        //        .Returns(sampleResult);
 
-                var count = dataService.TallyPopulations.FirstOrDefault();
+        //    string stratumCode;
+        //    string sgCode;
+        //    string liveDead;
+        //    string species;
+        //    var tallyPopulation = new TallyPopulation()
+        //    {
+        //        StratumCode = stratumCode = "st1",
+        //        SampleGroupCode = sgCode = "sg1",
+        //        LiveDead = liveDead = "L",
+        //        Species = species = "sp1",
+        //        Sampler = samplerMock.Object
+        //    };
 
-                //var tallyFeed = new List<TallyFeedItem>();
+        //    var tallyEntry = TreeBasedTallyLogic.TallyStandard(tallyPopulation, dataServiceMock.Object);
 
-                //var appSettingsMock = new Mock<ITallySettingsDataService>();
-                //appSettingsMock.Setup(x => x.EnableCruiserPopup).Returns(enableCruiserPopup);
-                //appSettingsMock.Setup(x => x.EnableAskEnterTreeData).Returns(enterMeasureTreeData);
+        //    if (resultCountMeasure == "C")
+        //    {
+        //        dataServiceMock.Verify(x => x.CreateTally(It.IsAny<TallyPopulation>(), It.Is<int>(i => i == 1), It.Is<int>(i => i == 0), It.Is<bool>(b => b == false)));
+        //    }
+        //    else
+        //    {
+        //        dataServiceMock.Verify(x => x.CreateTallyWithTree(It.IsAny<TallyPopulation>(), It.IsAny<string>(), It.Is<int>(i => i == 1), It.Is<int>(i => i == 0), It.Is<bool>(b => b == false)));
+        //    }
+        //}
 
-                //var dialogServiceMock = new Mock<IDialogService>();
-                //dialogServiceMock.Setup(x => x.AskYesNoAsync(It.Is<string>(s => s == "Would you like to enter tree data now?"), It.IsAny<string>(), It.IsAny<bool>()))
-                //    .Returns(Task.FromResult(enterMeasureTreeData));
-                //dialogServiceMock.Setup(x => x.ShowEditTreeAsync(It.IsAny<Tree>(), It.IsAny<ICuttingUnitDataService>()));
+        //[Theory(Skip = "not implemented")]
+        //[InlineData(2, 0, "M")]
+        //public void TallyThreeP(int kpi, int insuranceFreq, string resultCountMeasure)
+        //{
+        //    //var unit = new CuttingUnit();
 
-                //var soundServiceMock = new Mock<ISoundService>();
+        //    //var sampleGroup = new SampleGroup
+        //    //{
+        //    //    Sampler = new FMSC.Sampling.ThreePSelecter(1, 1, 0)
+        //    //};
 
-                var tallyEntry = TreeBasedTallyLogic.TallyStandard(count, dataService);
-                tallyEntry.UnitCode.Should().Be(unit.Code);
-                tallyEntry.StratumCode.Should().Be(count.StratumCode);
-                tallyEntry.SGCode.Should().Be(count.SampleGroupCode);
-                tallyEntry.Species.Should().Be(count.Species);
-                tallyEntry.TreeCount.Should().Be(1);
+        //    //var count = new CountTree()
+        //    //{
+        //    //    CuttingUnit_CN = 1
+        //    //};
 
-                var tree = tallyEntry.Tree;
-                if (resultCountMeasure == "M" || resultCountMeasure == "I")
-                {
-                    
-                    tree.Should().NotBeNull();
-                    tree.CountOrMeasure.Should().Be(resultCountMeasure);
-                    tallyEntry.TreeNumber.Should().NotBeNull();
-                    tallyEntry.TreeNumber.Should().Be((int)tree.TreeNumber);
-                }
-                else
-                {
-                    tree.Should().BeNull();
-                    tallyEntry.TreeNumber.Should().BeNull();
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(2, 0, "M")]
-        public void TallyThreeP(int kpi, int insuranceFreq, string resultCountMeasure)
-        {
-            var unit = new CuttingUnit();
-
-            var sampleGroup = new SampleGroup
-            {
-                Sampler = new FMSC.Sampling.ThreePSelecter(1, 1, 0)
-            };
-
-            var count = new CountTree()
-            {
-                CuttingUnit_CN = 1
-            };
-
-            var pop = new TallyPopulation
-            {
-                Method = "3P",
-                SampleGroup = sampleGroup,
-                Count = count
-            };
-
-
-            var dataServiceMock = new Mock<ICuttingUnitDataService>();
-            dataServiceMock.Setup(x => x.CreateTree(It.IsAny<TallyPopulation>())).Returns(() => new Tree());
-
-            ICuttingUnitDataService dataService = dataServiceMock.Object;
-
-            var tallyEntry = TreeBasedTallyLogic.TallyThreeP(pop, kpi, dataService);
-            var tree = tallyEntry.Tree;
-            tree.KPI.Should().Be(kpi);
-            tree.CountOrMeasure.Should().Be(resultCountMeasure);
-        }
-
-        [Fact]
-        public void TallyThreeP_STM()
-        {
-            int kpi = -1;
-
-            var unit = new CuttingUnit();
-            var sampleGroup = new SampleGroup
-            {
-                Sampler = new FMSC.Sampling.ThreePSelecter(0, 0, 0)
-            };
-            var count = new CountTree()
-            {
-                CuttingUnit_CN = 1
-            };
-            var pop = new TallyPopulation
-            {
-                Method = "3P",
-                SampleGroup = sampleGroup,
-                Count = count
-            };
+        //    //var pop = new TallyPopulation
+        //    //{
+        //    //    Method = "3P",
+        //    //    SampleGroup = sampleGroup,
+        //    //    Count = count
+        //    //};
 
 
-            var dataServiceMock = new Mock<ICuttingUnitDataService>();
-            dataServiceMock.Setup(x => x.CreateTree(It.IsAny<TallyPopulation>())).Returns(() => new Tree());
+        //    //var dataServiceMock = new Mock<ICuttingUnitDataService>();
+        //    //dataServiceMock.Setup(x => x.CreateTree(It.IsAny<TallyPopulation>())).Returns(() => new Tree());
 
-            ICuttingUnitDataService dataService = dataServiceMock.Object;
+        //    //ICuttingUnitDataService dataService = dataServiceMock.Object;
 
-            var tallyEntry = TreeBasedTallyLogic.TallyThreeP(pop, kpi, dataService);
-            var tree = tallyEntry.Tree;
-            tree.STM.Should().Be("Y");
-            tree.KPI.Should().Be(0);
-            tree.CountOrMeasure.Should().Be("M");
-        }
+        //    //var tallyEntry = TreeBasedTallyLogic.TallyThreeP(pop, kpi, dataService);
+        //    //var tree = tallyEntry.Tree;
+        //    //tree.KPI.Should().Be(kpi);
+        //    //tree.CountOrMeasure.Should().Be(resultCountMeasure);
+        //}
+
+        //[Fact(Skip = "redo")]
+        //public void TallyThreeP_STM()
+        //{
+        //    //int kpi = -1;
+
+        //    //var unit = new CuttingUnit();
+        //    //var sampleGroup = new SampleGroup
+        //    //{
+        //    //    Sampler = new FMSC.Sampling.ThreePSelecter(0, 0, 0)
+        //    //};
+        //    //var count = new CountTree()
+        //    //{
+        //    //    CuttingUnit_CN = 1
+        //    //};
+        //    //var pop = new TallyPopulation
+        //    //{
+        //    //    Method = "3P",
+        //    //    SampleGroup = sampleGroup,
+        //    //    Count = count
+        //    //};
 
 
-        private CruiseDAL.DAL CreateDatastore(string cruiseMethod, int freqORkz, int insuranceFreq)
-        {
-            var ds = new CruiseDAL.DAL();
-            try
-            {
-                var sale = new SaleDO()
-                {
-                    DAL = ds,
-                    SaleNumber = "12345",
-                    Region = "1",
-                    Forest = "1",
-                    District = "1",
-                    Purpose = "something",
-                    LogGradingEnabled = true
-                };
-                sale.Save();
+        //    //var dataServiceMock = new Mock<ICuttingUnitDataService>();
+        //    //dataServiceMock.Setup(x => x.CreateTree(It.IsAny<TallyPopulation>())).Returns(() => new Tree());
 
-                var stratum = new StratumDO()
-                {
-                    DAL = ds,
-                    Code = "01",
-                    Method = cruiseMethod
-                };
-                stratum.Save();
+        //    //ICuttingUnitDataService dataService = dataServiceMock.Object;
 
-                var cuttingUnit = new CuttingUnitDO()
-                {
-                    DAL = ds,
-                    Code = "01"
-                };
-                cuttingUnit.Save();
+        //    //var tallyEntry = TreeBasedTallyLogic.TallyThreeP(pop, kpi, dataService);
+        //    //var tree = tallyEntry.Tree;
+        //    //tree.STM.Should().Be("Y");
+        //    //tree.KPI.Should().Be(0);
+        //    //tree.CountOrMeasure.Should().Be("M");
+        //}
 
-                var cust = new CuttingUnitStratumDO()
-                {
-                    DAL = ds,
-                    CuttingUnit = cuttingUnit,
-                    Stratum = stratum
-                };
-                cust.Save();
 
-                var sampleGroup = new SampleGroupDO()
-                {
-                    DAL = ds,
-                    Stratum = stratum,
-                    Code = "01",
-                    PrimaryProduct = "01",
-                    UOM = "something",
-                    CutLeave = "something",
-                    InsuranceFrequency = insuranceFreq
-                };
+    //    private CruiseDAL.DAL CreateDatastore(string cruiseMethod, int freqORkz, int insuranceFreq)
+    //    {
+    //        var ds = new CruiseDAL.DAL();
+    //        try
+    //        {
+    //            var sale = new SaleDO()
+    //            {
+    //                DAL = ds,
+    //                SaleNumber = "12345",
+    //                Region = "1",
+    //                Forest = "1",
+    //                District = "1",
+    //                Purpose = "something",
+    //                LogGradingEnabled = true
+    //            };
+    //            sale.Save();
 
-                if (CruiseMethods.THREE_P_METHODS.Contains(cruiseMethod))
-                {
-                    sampleGroup.KZ = freqORkz;
-                }
-                else
-                {
-                    sampleGroup.SamplingFrequency = freqORkz;
-                }
+    //            var stratum = new StratumDO()
+    //            {
+    //                DAL = ds,
+    //                Code = "01",
+    //                Method = cruiseMethod
+    //            };
+    //            stratum.Save();
 
-                sampleGroup.Save();
+    //            var cuttingUnit = new CuttingUnitDO()
+    //            {
+    //                DAL = ds,
+    //                Code = "01"
+    //            };
+    //            cuttingUnit.Save();
 
-                var tally = new TallyDO()
-                {
-                    DAL = ds,
-                    Hotkey = "A",
-                    Description = "something"
-                };
-                tally.Save();
+    //            var cust = new CuttingUnitStratumDO()
+    //            {
+    //                DAL = ds,
+    //                CuttingUnit = cuttingUnit,
+    //                Stratum = stratum
+    //            };
+    //            cust.Save();
 
-                var count = new CountTreeDO()
-                {
-                    DAL = ds,
-                    CuttingUnit = cuttingUnit,
-                    SampleGroup = sampleGroup,
-                    Tally = tally
-                };
-                count.Save();
+    //            var sampleGroup = new SampleGroupDO()
+    //            {
+    //                DAL = ds,
+    //                Stratum = stratum,
+    //                Code = "01",
+    //                PrimaryProduct = "01",
+    //                UOM = "something",
+    //                CutLeave = "something",
+    //                InsuranceFrequency = insuranceFreq
+    //            };
 
-                return ds;
-            }
-            catch
-            {
-                ds.Dispose();
-                throw;
-            }
-        }
+    //            if (CruiseMethods.THREE_P_METHODS.Contains(cruiseMethod))
+    //            {
+    //                sampleGroup.KZ = freqORkz;
+    //            }
+    //            else
+    //            {
+    //                sampleGroup.SamplingFrequency = freqORkz;
+    //            }
+
+    //            sampleGroup.Save();
+
+    //            var tally = new TallyDO()
+    //            {
+    //                DAL = ds,
+    //                Hotkey = "A",
+    //                Description = "something"
+    //            };
+    //            tally.Save();
+
+    //            var count = new CountTreeDO()
+    //            {
+    //                DAL = ds,
+    //                CuttingUnit = cuttingUnit,
+    //                SampleGroup = sampleGroup,
+    //                Tally = tally
+    //            };
+    //            count.Save();
+
+    //            return ds;
+    //        }
+    //        catch
+    //        {
+    //            ds.Dispose();
+    //            throw;
+    //        }
+    //    }
     }
 }

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FScruiser.Core.Util
+namespace FScruiser.Util
 {
     public static class IEnumerableExtentions
     {
@@ -20,9 +17,9 @@ namespace FScruiser.Core.Util
             return e == null || e.Count() == 0;
         }
 
-        public static int MaxOrDefault<T>(this IEnumerable<T> @this, Func<T,int> selector, int dVal = default(int))
+        public static int MaxOrDefault<T>(this IEnumerable<T> @this, Func<T, int> selector, int dVal = default(int))
         {
-            if(@this.IsNullOrEmpty())
+            if (@this.IsNullOrEmpty())
             { return dVal; }
             else
             { return @this.Max(selector); }

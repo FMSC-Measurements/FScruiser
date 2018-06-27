@@ -1,5 +1,6 @@
 ﻿using CruiseDAL.Schema;
 using FMSC.ORM.EntityModel.Attributes;
+using FMSC.Sampling;
 using FScruiser.Util;
 using System.Linq;
 
@@ -31,14 +32,36 @@ namespace FScruiser.Models
         [Field(Alias = "SampleGroupCode", SQLExpression = "SampleGroup.Code", PersistanceFlags = PersistanceFlags.Never)]
         public string SampleGroupCode { get; set; }
 
+        [Field(Alias = "sgSampleSelectorType", SQLExpression = "SampleGroup.SampleSelectorType", PersistanceFlags = PersistanceFlags.Never)]
+        public string SampleSelectorType { get; set; }
+
+        [Field(Alias = "sgMinKPI", SQLExpression = "SampleGroup.MinKPI", PersistanceFlags = PersistanceFlags.Never)]
+        public int MinKPI { get; set; }
+
+        [Field(Alias = "sgMaxKPI", SQLExpression = "SampleGroup.MaxKPI", PersistanceFlags = PersistanceFlags.Never)]
+        public int MaxKPI { get; set; }
+
         [Field("SampleGroup_CN")]
         public int SampleGroup_CN { get; set; }
 
         [Field(Alias = "tdvSpecies", SQLExpression = "TreeDefaultValue.Species", PersistanceFlags = PersistanceFlags.Never)]
         public string Species { get; set; }
 
-        public SampleGroup SampleGroup { get; set; }
+        [Field(Alias = "tdvLiveDead", SQLExpression = "TreeDefaultValue.LiveDead", PersistanceFlags = PersistanceFlags.Never)]
+        public string LiveDead { get; set; }
 
-        public CountTree Count { get; set; }
+        [Field("TreeCount")]
+        public int TreeCount
+        {
+            get { return _treeCount; }
+            set { SetValue(ref _treeCount, value); }
+        }
+
+        [Field("SumKPI")]
+        public int SumKPI
+        {
+            get { return _sumKPI; }
+            set { SetValue(ref _sumKPI, value); }
+        }
     }
 }

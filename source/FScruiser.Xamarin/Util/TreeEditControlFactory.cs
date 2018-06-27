@@ -17,12 +17,14 @@ namespace FScruiser.XF.Util
             View editView = null;
             switch (field.Field)
             {
-                case nameof(Tree.Stratum):
+                case "StratumCode":
+                case "Stratum":
                     {
                         editView = MakeStratumPicker();
                         break;
                     }
-                case nameof(Tree.SampleGroup):
+                case "SampleGroupCode":
+                case "SampleGroup":
                     {
                         editView = MakeSampleGroupPicker();
                         break;
@@ -99,9 +101,9 @@ namespace FScruiser.XF.Util
         public static View MakeStratumPicker()
         {
             var view = new Picker();
-            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.Strata));
-            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.Stratum));
-            view.ItemDisplayBinding = new Binding(nameof(Stratum.Code));
+            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.StrataCodes));
+            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.StratumCode));
+            //view.ItemDisplayBinding = new Binding(nameof(Stratum.Code));
 
             return view;
         }
@@ -120,9 +122,9 @@ namespace FScruiser.XF.Util
         public static Picker MakeSampleGroupPicker()
         {
             var view = new Picker();
-            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.SampleGroups));
-            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.SampleGroup));
-            view.ItemDisplayBinding = new Binding(nameof(SampleGroup.Code));
+            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.SampleGroupCodes));
+            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.SampleGroupCode));
+            //view.ItemDisplayBinding = new Binding(nameof(SampleGroup.Code));
 
             return view;
         }
@@ -131,8 +133,8 @@ namespace FScruiser.XF.Util
         {
             var view = new Picker();
             view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.TreeDefaults));
-            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.TreeDefaultValue));
-            view.ItemDisplayBinding = new Binding(nameof(TreeDefaultValueDO.Species));
+            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.TreeDefault));
+            //view.ItemDisplayBinding = new Binding(nameof(TreeDefaultValueDO.Species));
 
             return view;
         }

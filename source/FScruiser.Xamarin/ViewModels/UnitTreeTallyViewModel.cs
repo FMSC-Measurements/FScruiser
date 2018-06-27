@@ -1,10 +1,9 @@
 ﻿using FScruiser.Logic;
 using FScruiser.Models;
 using FScruiser.Services;
-using FScruiser.XF.Pages;
+using FScruiser.Util;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -20,12 +19,12 @@ namespace FScruiser.XF.ViewModels
         private string _selectedStratumCode = STRATUM_FILTER_ALL;
         private ICommand _stratumSelectedCommand;
         private ICommand _tallyCommand;
-        private IEnumerable<TallyEntry> _tallyFeed;
+        private IList<TallyEntry> _tallyFeed;
         private ICommand _editTreeCommand;
 
         public event EventHandler TallyEntryAdded;
 
-        public IEnumerable<TallyEntry> TallyFeed
+        public IList<TallyEntry> TallyFeed
         {
             get { return _tallyFeed; }
             set { SetValue(ref _tallyFeed, value); }
@@ -90,12 +89,8 @@ namespace FScruiser.XF.ViewModels
         public void EditTree(TallyEntry entry)
         {
             var dialogService = ServiceService.DialogService;
-            var task = dialogService.ShowEditTreeAsync(entry.Tree);
-        }
 
-        public void Untally(TallyEntry entry)
-        {
-
+            var task = dialogService.ShowEditTreeAsync(entry.Tree_GUID);
         }
 
         public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataService;
@@ -118,35 +113,34 @@ namespace FScruiser.XF.ViewModels
             var dataService = DataService;
             if (DataService != null)
             {
-                await dataService.RefreshDataAsync();
+                //await dataService.RefreshDataAsync();
 
-                var tallyLookup = dataService.TallyPopulations
+                var tallyLookup = dataService.GetTallyPopulations()
                     .GroupBy(x => x.StratumCode)
                     .ToDictionary(x => x.Key, x => (IEnumerable<TallyPopulation>)x.ToArray());
                 Tallies = tallyLookup;
 
-                TallyFeed = dataService.TallyFeed;
+                TallyFeed = dataService.GetTallyEntries().Reverse().ToObservableCollection();
             }
         }
 
-        private async Task TallyAsync(TallyPopulation obj)
+        private async Task TallyAsync(TallyPopulation pop)
         {
             ITallySettingsDataService tallySettings = ServiceService.TallySettingsDataService;
             IDialogService dialogService = ServiceService.DialogService;
             ISoundService soundService = ServiceService.SoundService;
             ICuttingUnitDataService dataService = DataService;
 
-            var entry = await TreeBasedTallyLogic.TallyAsync(obj, dataService, dialogService);//TODO async
+            var entry = await TreeBasedTallyLogic.TallyAsync(pop, dataService, dialogService);//TODO async
 
-            dataService.AddTallyEntry(entry);
+            TallyFeed.Add(entry);
             RaiseTallyEntryAdded();
 
-            await HandleTally(entry, dataService, soundService, dialogService, tallySettings);
-
-            //TallyFeed.Add(new TallyFeedItem() { Count = obj, Time = DateTime.Now, Tree = tree });
+            await HandleTally(pop, entry, dataService, soundService, dialogService, tallySettings);
         }
 
-        public static async Task HandleTally(TallyEntry entry,
+        public static async Task HandleTally(TallyPopulation population,
+            TallyEntry entry,
             ICuttingUnitDataService dataService,
             ISoundService soundService,
             IDialogService dialogService,
@@ -154,29 +148,30 @@ namespace FScruiser.XF.ViewModels
         {
             if (entry == null) { throw new ArgumentNullException(nameof(entry)); }
 
+            population.TreeCount = population.TreeCount + entry.TreeCount;
+            population.SumKPI = population.SumKPI + entry.KPI;
+
             soundService.SignalTally();
-            var tree = entry.Tree;
-            if (tree != null)
+            if (entry.HasTree)
             {
-                if (tree.CountOrMeasure == "M")
+                if (entry.CountOrMeasure == "M")
                 {
                     soundService.SignalMeasureTree();
                 }
-                else if (tree.CountOrMeasure == "I")
+                else if (entry.CountOrMeasure == "I")
                 {
                     soundService.SignalInsuranceTree();
                 }
 
                 if (tallySettings.EnableCruiserPopup)
                 {
-                    await dialogService.AskCruiserAsync(tree);
-                    await dataService.UpdateTreeAsync(tree);
+                    await dialogService.AskCruiserAsync(entry);
                 }
                 else
                 {
-                    var sampleType = (tree.CountOrMeasure == "M") ? "Measure Tree" :
-                                (tree.CountOrMeasure == "I") ? "Insurance Tree" : String.Empty;
-                    await dialogService.ShowMessageAsync("Tree #" + tree.TreeNumber.ToString(), sampleType);
+                    var sampleType = (entry.CountOrMeasure == "M") ? "Measure Tree" :
+                                (entry.CountOrMeasure == "I") ? "Insurance Tree" : String.Empty;
+                    await dialogService.ShowMessageAsync("Tree #" + entry.TreeNumber.ToString(), sampleType);
                 }
 
                 //if (tree.CountOrMeasure == "M" && await AskEnterMeasureTreeDataAsync(tallySettings, dialogService))
@@ -184,6 +179,12 @@ namespace FScruiser.XF.ViewModels
                 //    var task = dialogService.ShowEditTreeAsync(tree, dataService);//allow method to contiue from show edit tree we will allow tally history action to be added in the background
                 //}
             }
+        }
+
+        public void Untally(TallyEntry tallyEntry)
+        {
+            DataService.DeleteTally(tallyEntry);
+            TallyFeed.Remove(tallyEntry);
         }
 
         //protected static async Task<bool> AskEnterMeasureTreeDataAsync(ITallySettingsDataService appSettings, IDialogService dialogService)

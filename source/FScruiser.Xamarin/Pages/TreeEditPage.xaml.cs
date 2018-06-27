@@ -28,7 +28,7 @@ namespace FScruiser.XF.Pages
             _fieldNameMapControl = new Dictionary<string, VisualElement>();
 
             _fieldNameMapControl.Add(nameof(Tree.TreeNumber), _treeNumberField);
-            _fieldNameMapControl.Add(nameof(Tree.SampleGroup), _sampleGroupField);
+            _fieldNameMapControl.Add("SampleGroup", _sampleGroupField);
             _fieldNameMapControl.Add(nameof(Tree.Species), _speciesField);
 
             _fieldNameMapControl.Add(nameof(Tree.Aspect), _aspectField);
