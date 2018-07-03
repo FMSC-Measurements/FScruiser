@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("TallyEntry")]
+    [EntitySource("TallyLedger")]
     public class TallyEntry
     {
         private long? _treeNumber;
@@ -19,13 +19,13 @@ namespace FScruiser.Models
             UnitCode = unitCode;
 
             StratumCode = population.StratumCode;
-            SGCode = population.SampleGroupCode;
+            SampleGroupCode = population.SampleGroupCode;
             Species = population.Species;
             LiveDead = population.LiveDead;
         }
 
-        [Field(nameof(TallyEntryID))]
-        public string TallyEntryID { get; set; }
+        [Field(nameof(TallyLedgerID))]
+        public string TallyLedgerID { get; set; }
 
         [Field(nameof(UnitCode))]
         public string UnitCode { get; set; }
@@ -34,29 +34,27 @@ namespace FScruiser.Models
 
         [Field(nameof(StratumCode))]
         public string StratumCode { get; set; }
-        [Field(nameof(SGCode))]
-        public string SGCode { get; set; }
+        [Field(nameof(SampleGroupCode))]
+        public string SampleGroupCode { get; set; }
         [Field(nameof(Species))]
         public string Species { get; set; }
         [Field(nameof(LiveDead))]
         public string LiveDead { get; set; }
 
-        [Field(nameof(IsSTM))]
-        public bool IsSTM { get; set; }
+        
         [Field(nameof(TreeCount))]
         public int TreeCount { get; set; }
         [Field(nameof(KPI))]
         public int KPI { get; set; }
-        [Field(nameof(CountOrMeasure))]
-        public string CountOrMeasure { get; set; }
+        
 
         [Field(nameof(Tree_GUID))]
         public string Tree_GUID { get; set; }
 
         [Field(nameof(TimeStamp))]
         public DateTime TimeStamp { get; set; }
-        [Field(nameof(Signature))]
-        public string Signature { get; set; }
+        //[Field(nameof(Signature))]
+        //public string Signature { get; set; }
 
 
 
@@ -64,11 +62,18 @@ namespace FScruiser.Models
         [Field(Alias ="TreeNumber", SQLExpression = "Tree.TreeNumber", PersistanceFlags = PersistanceFlags.Never)]
         public long? TreeNumber { get; set; }
 
-        public bool HasTree => !string.IsNullOrWhiteSpace(Tree_GUID) && Tree_GUID != Guid.Empty.ToString();
+        [Field(Alias = "CountOrMeasure", SQLExpression = "Tree.CountOrMeasure", PersistanceFlags = PersistanceFlags.Never)]
+        public string CountOrMeasure { get; set; }
 
+        [Field(Alias ="IsSTM", SQLExpression = "Tree.STM = 'Y'", PersistanceFlags = PersistanceFlags.Never)]
+        public bool IsSTM { get; set; }
+
+        [Field(Alias = "Initials", SQLExpression = "Tree.Initials", PersistanceFlags = PersistanceFlags.Never)]
         public string Initials { get; set; }
 
-        public string TallyDescription => SGCode + (string.IsNullOrWhiteSpace(Species) ? "" : $"-{Species}") ;
+        public bool HasTree => !string.IsNullOrWhiteSpace(Tree_GUID) && Tree_GUID != Guid.Empty.ToString();
+
+        public string TallyDescription => SampleGroupCode + (string.IsNullOrWhiteSpace(Species) ? "" : $"-{Species}") ;
         #endregion
     }
 }
