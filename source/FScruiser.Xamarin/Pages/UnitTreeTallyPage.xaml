@@ -19,12 +19,13 @@
                       HasUnevenRows="True"
                       ItemsSource="{Binding TallyFeed}" 
                       ItemSelected="TallyFeedListView_ItemSelected"
-                      CachingStrategy="RetainElement">
+                      CachingStrategy="RetainElement"
+                      SeparatorColor="Silver">
                 <ListView.ItemTemplate>
                     <local:TreeDataTemplateSelector>
                         <local:TreeDataTemplateSelector.TreeItemTemplate>
                             <DataTemplate>
-                                <cells:TallyEntryTreeViewCell EditClicked="_tallyEntryViewCell_editClicked" UntallyClicked="_tallyEntryViewCell_UntallyClicked" IsSelectedChanged="_tallyEntryViewCell_IsSelectedChanged"/>
+                                <cells:TallyEntryTreeViewCell/>
                                 <!--<ViewCell>
                                     <StackLayout Orientation="Horizontal" BackgroundColor="#30C1BC">
                                         <StackLayout.Triggers>
@@ -54,7 +55,8 @@
                         </local:TreeDataTemplateSelector.TreeItemTemplate>
                         <local:TreeDataTemplateSelector.BasicTemplate>
                             <DataTemplate>
-                                <ViewCell>
+                                <cells:TallyEntryViewCell/>
+                                <!--<ViewCell>
                                     <StackLayout Orientation="Horizontal">
                                         <StackLayout.Resources>
                                             <ResourceDictionary>
@@ -66,7 +68,7 @@
                                         <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20" VerticalTextAlignment="Center"/>
                                         <Label Text="{Binding TallyDescription, StringFormat='| {0}'}" FontSize="30" VerticalTextAlignment="Center"/>
                                     </StackLayout>
-                                </ViewCell>
+                                </ViewCell>-->
                             </DataTemplate>
                         </local:TreeDataTemplateSelector.BasicTemplate>
                     </local:TreeDataTemplateSelector>

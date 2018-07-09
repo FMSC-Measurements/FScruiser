@@ -1,6 +1,5 @@
 ﻿using FScruiser.Models;
 using FScruiser.XF.ViewModels;
-using FScruiser.XF.Views;
 using System;
 using System.Linq;
 using System.Windows.Input;
@@ -10,7 +9,7 @@ using Xamarin.Forms.Xaml;
 namespace FScruiser.XF.ViewCells
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class TallyEntryTreeViewCell : ViewCell
+    public partial class TallyEntryTreeViewCell : TallyEntryViewCell_Base
     {
         public ICommand EditCommand
         {
@@ -36,25 +35,7 @@ namespace FScruiser.XF.ViewCells
             set { _untallyButton.CommandParameter = value; }
         }
 
-        public event EventHandler<TallyEntry> EditClicked;
-
-        public event EventHandler<TallyEntry> UntallyClicked;
-
-        public event EventHandler<bool> IsSelectedChanged;
-
-        private bool _isSelected;
         private TreeEditViewModel _treeViewModel;
-
-        public bool IsSelected
-        {
-            get { return _isSelected; }
-            private set
-            {
-                if (_isSelected == value) { return; }
-                _isSelected = value;
-                RaiseIsSelectedChanged();
-            }
-        }
 
         public TallyEntryTreeViewCell()
         {
@@ -86,31 +67,18 @@ namespace FScruiser.XF.ViewCells
         {
             var view = MakeEditControlContainer(TreeViewModel.TreeFields);
 
-            view.BindingContextChanged += View_BindingContextChanged;
             _treeEditScrollView.Content = view;
             view.BindingContext = TreeViewModel;
         }
 
-        private void View_BindingContextChanged(object sender, EventArgs e)
-        {
-            System.Diagnostics.Debug.Write("binding context changed");
-        }
-
-        private void _untallyButton_Clicked(object sender, EventArgs e)
-        {
-            MessagingCenter.Send<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, BindingContext as TallyEntry);
-        }
-
         private void _editButton_Clicked(object sender, EventArgs e)
         {
+            TreeViewModel?.SaveTree();
             MessagingCenter.Send<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED, BindingContext as TallyEntry);
         }
 
-        private void RaiseIsSelectedChanged()
+        protected override void OnIsSelectedChanged(bool isSelected)
         {
-            var isSelected = IsSelected;
-            MessagingCenter.Send<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED, isSelected);
-
             if (isSelected)
             {
                 var tallyItem = BindingContext as TallyEntry;
@@ -128,13 +96,12 @@ namespace FScruiser.XF.ViewCells
                 _treeEditScrollView.Content = null;
             }
 
-            _treeEditPanel.IsVisible = isSelected;
+            base.OnIsSelectedChanged(isSelected);
+        }
 
-            base.ForceUpdateSize();
-            if (isSelected)
-            {
-                EnsureVisable();
-            }
+        protected override void RefreshDrawer(bool isSelected)
+        {
+            _treeEditPanel.IsVisible = isSelected;
         }
 
         private static View MakeEditControlContainer(System.Collections.Generic.IEnumerable<CruiseDAL.DataObjects.TreeFieldSetupDO> treeFields)
@@ -182,99 +149,5 @@ namespace FScruiser.XF.ViewCells
                 TreeViewModel?.Init(tallyItem.Tree_GUID);
             }
         }
-
-        private void EnsureVisable()
-        {
-            var item = BindingContext;
-            if (item == null) { return; }
-            var parent = RealParent;
-            if (parent != null && parent is ListView listView)
-            {
-                listView.ScrollTo(item, ScrollToPosition.MakeVisible, true);
-            }
-        }
-
-        protected override void OnTapped()
-        {
-            base.OnTapped();
-
-            IsSelected = true;
-        }
-
-        //protected override void OnAppearing()
-        //{
-        //    base.OnAppearing();
-
-        //    RefreshTree();
-        //}
-
-        //protected override void OnDisappearing()
-        //{
-        //    base.OnDisappearing();
-
-        //    IsSelected = false;
-        //}
-
-        protected override void OnPropertyChanging(string propertyName = null)
-        {
-            if (propertyName == nameof(Parent))
-            {
-                var parent = RealParent;
-                if (parent != null && parent is ListView listView)
-                {
-                    UnwireListView(listView);
-                }
-            }
-
-            base.OnPropertyChanging(propertyName);
-        }
-
-        protected override void OnParentSet()
-        {
-            base.OnParentSet();
-
-            var parent = RealParent;
-            if (parent != null && parent is ListView listView)
-            {
-                WireListView(listView);
-            }
-        }
-
-        protected virtual void UnwireListView(ListView listView)
-        {
-            listView.ItemSelected -= ListView_ItemSelected;
-
-            //if (listView is CustomListView customListView)
-            //{
-            //    customListView.Scroll -= CustomListView_Scroll;
-            //}
-        }
-
-        protected virtual void WireListView(ListView listView)
-        {
-            listView.ItemSelected += ListView_ItemSelected;
-            //if (listView is CustomListView customListView)
-            //{
-            //    customListView.Scroll += CustomListView_Scroll;
-            //}
-        }
-
-        //private void CustomListView_Scroll(object sender, System.EventArgs e)
-        //{
-        //    //IsSelected = false;
-        //}
-
-        private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
-        {
-            var myItem = BindingContext;
-            var selectedItem = e.SelectedItem;
-
-            if (selectedItem == null || object.ReferenceEquals(myItem, selectedItem) == false)
-            {
-                if (IsSelected) { IsSelected = false; }
-            }
-        }
-
-        
     }
 }
