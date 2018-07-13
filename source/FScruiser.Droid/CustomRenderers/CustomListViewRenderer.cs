@@ -53,17 +53,17 @@ namespace FScruiser.Droid.CustomRenderers
 
         private void NativeListView_Scroll(object sender, Android.Widget.AbsListView.ScrollEventArgs e)
         {
-            if (Element is CustomListView listViewController)
-            {
-                if (_cachedFirstVisableItem != e.FirstVisibleItem && !_isScrolling)
-                {
-                    _isScrolling = true;
-                    listViewController?.RaiseScroll();
-                    _isScrolling = false;
-                }
+            //if (Element is CustomListView listViewController)
+            //{
+            //    if (_cachedFirstVisableItem != e.FirstVisibleItem && !_isScrolling)
+            //    {
+            //        _isScrolling = true;
+            //        listViewController?.RaiseScroll();
+            //        _isScrolling = false;
+            //    }
 
-                _cachedFirstVisableItem = e.FirstVisibleItem;
-            }
+            //    _cachedFirstVisableItem = e.FirstVisibleItem;
+            //}
         }
     }
 }

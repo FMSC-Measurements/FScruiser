@@ -4,6 +4,7 @@ using CruiseDAL.Schema;
 using FMSC.ORM.Core.SQL.QueryBuilder;
 using FScruiser.Models;
 using FScruiser.Util;
+using FScruiser.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -144,7 +145,8 @@ namespace FScruiser.Services
                 "@p9,\r\n " + //kpi
                 "@p10);\r\n "; //stm
 
-        DAL _database; 
+        private DAL _database;
+
         public DAL Database
         {
             get { return _database; }
@@ -154,8 +156,6 @@ namespace FScruiser.Services
                 OnDatabaseChanged();
             }
         }
-
-        
 
         public CuttingUnitDatastore(string path)
         {
@@ -172,10 +172,10 @@ namespace FScruiser.Services
         private void OnDatabaseChanged()
         {
             var database = Database;
-            if(database == null) { return; }
-            var databaseversion = Database.DatabaseVersion; 
+            if (database == null) { return; }
+            var databaseversion = Database.DatabaseVersion;
 
-            if(databaseversion.StartsWith("2.2."))
+            if (databaseversion.StartsWith("2.2."))
             {
                 database.BeginTransaction();
                 try
@@ -696,6 +696,36 @@ namespace FScruiser.Services
         }
 
         #endregion Tally Entry
+
+        public IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead)
+        {
+            return Database.Query<TreeAuditRule>("SELECT * FROM TreeAuditValue " +
+                "JOIN TreeDefaultValueTreeAuditValue USING (TreeAuditValue_CN) " +
+                "JOIN TreeDefaultValue AS TDV USING (TreeDefaultValue_CN) " +
+                "JOIN SampleGroup ON TDV.PrimaryProduct = SampleGroup.PrimaryProduct " +
+                "JOIN Stratum USING (Stratum_CN) " +
+                "WHERE Stratum.Code = @p1 " +
+                "AND SampleGroup.Code = @p2 " +
+                "AND TDV.Species = @p3 " +
+                "AND TDV.LiveDead = @p4;", new object[] { stratum, sampleGroup, species, livedead });
+        }
+
+        public void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors)
+        {
+            Database.Execute("DELETE FROM ErrorLog WHERE TableName = 'Tree' " +
+                "AND CN_Number = (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1) " +
+                "AND Suppress = 0;", tree_GUID);
+
+            foreach (var error in errors)
+            {
+                Database.Execute("INSERT OR IGNORE INTO ErrorLog (TableName, CN_Number, ColumnName, Level, Message, Program) " +
+                    "VALUES ('Tree', (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1), @p2, @p3, @p4, 'FScruiser');",
+                    tree_GUID,
+                    error.Property,
+                    error.Level.ToString(),
+                    error.Message);
+            }
+        }
 
         public void LogMessage(string message, string level)
         {

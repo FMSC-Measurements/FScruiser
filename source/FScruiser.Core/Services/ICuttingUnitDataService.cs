@@ -1,7 +1,7 @@
 ﻿using CruiseDAL.DataObjects;
 using FMSC.Sampling;
 using FScruiser.Models;
-using System;
+using FScruiser.Validation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -18,6 +18,8 @@ namespace FScruiser.Services
         IEnumerable<TallyPopulation> GetTallyPopulations();
 
         IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratumCode(string stratumCode);
+
+        IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead);
 
         IEnumerable<TreeFieldSetupDO> GetSimplifiedTreeFieldsByStratumCode(string stratumCode);
 
@@ -46,6 +48,8 @@ namespace FScruiser.Services
         string CreateTree(TallyPopulation tallyPopulation);
 
         void UpdateTreeInitials(string tree_GUID, string result);
+
+        void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors);
 
         #endregion tree
 

@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CruiseDAL" Version="2.2.1.2" />
-    <PackageReference Include="FMSC.ORM" Version="2.0.0.4" />
+    <PackageReference Include="CruiseDAL" Version="2.2.1.3" />
+    <PackageReference Include="FMSC.ORM" Version="2.0.0.5" />
     <PackageReference Include="FMSC.Sampling" Version="1.1.3" />
     <PackageReference Include="SqlBuilder" Version="1.0.1" />
   </ItemGroup>

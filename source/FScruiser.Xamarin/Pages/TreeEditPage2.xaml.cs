@@ -1,10 +1,10 @@
 ﻿using CruiseDAL.DataObjects;
+using FScruiser.Validation;
 using FScruiser.XF.Util;
 using FScruiser.XF.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -15,6 +15,63 @@ namespace FScruiser.XF.Pages
     public partial class TreeEditPage2 : ContentPage
     {
         private Color _altRowColor;
+
+        #region ErrorsAndWarnings
+
+        /// <summary>
+        /// Identifies the <see cref="ErrorsAndWarnings"/> bindable property.
+        /// </summary>
+        public static readonly BindableProperty ErrorsAndWarningsProperty =
+            BindableProperty.Create(nameof(ErrorsAndWarnings),
+              typeof(IEnumerable<ValidationError>),
+              typeof(TreeEditPage2),
+              defaultValue: default(IEnumerable<ValidationError>),
+              defaultBindingMode: BindingMode.Default,
+              propertyChanged: (bindable, oldValue, newValue) => ((TreeEditPage2)bindable).OnErrorsAndWarningsChanged((IEnumerable<ValidationError>)oldValue, (IEnumerable<ValidationError>)newValue));
+
+        /// <summary>
+        /// Invoked after changes have been applied to the <see cref="ErrorsAndWarnings"/> property.
+        /// </summary>
+        /// <param name="oldValue">The old value of the <see cref="ErrorsAndWarnings"/> property.</param>
+        /// <param name="newValue">The new value of the <see cref="ErrorsAndWarnings"/> property.</param>
+        protected void OnErrorsAndWarningsChanged(IEnumerable<ValidationError> oldValue, IEnumerable<ValidationError> newValue)
+        {
+            _errorMessageContainer.Children.Clear();
+
+            foreach(var error in newValue)
+            {
+                //var newRow = new StackLayout
+                //{
+                //    Orientation = StackOrientation.Horizontal,
+                //    BackgroundColor = Color.Red
+                //};
+
+                var row = new Label { Text = error.Message };
+
+                switch (error.Level)
+                {
+                    case ValidationLevel.Error: { row.BackgroundColor = Color.OrangeRed; break; }
+                    case ValidationLevel.Warning: { row.BackgroundColor = Color.Gold; break; }
+                    case ValidationLevel.Info: { row.BackgroundColor = Color.DodgerBlue; break; }
+                }
+
+                _errorMessageContainer.Children.Add(row);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ErrorsAndWarnings" /> property. This is a bindable property.
+        /// </summary>
+        /// <value>
+        ///
+        /// </value>
+        public IEnumerable<ValidationError> ErrorsAndWarnings
+        {
+            get { return (IEnumerable<ValidationError>)GetValue(ErrorsAndWarningsProperty); }
+            set { SetValue(ErrorsAndWarningsProperty, value); }
+        }
+
+        #endregion ErrorsAndWarnings
 
         public TreeEditPage2()
         {
@@ -39,7 +96,7 @@ namespace FScruiser.XF.Pages
             {
                 viewModel.SaveTree();
             }
-            base.OnDisappearing();
+            //base.OnDisappearing();
         }
 
         protected void UpdateTreeFields(TreeEditViewModel viewModel)
@@ -55,7 +112,7 @@ namespace FScruiser.XF.Pages
 
         private View MakeTreeFields(IEnumerable<TreeFieldSetupDO> treeFields)
         {
-            if(treeFields == null) { throw new ArgumentNullException(nameof(treeFields)); }
+            if (treeFields == null) { throw new ArgumentNullException(nameof(treeFields)); }
 
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 50 });
@@ -72,6 +129,9 @@ namespace FScruiser.XF.Pages
                 }
 
                 var header = new Label() { Text = field.Heading };
+                if(field.Field == "Species")
+                { header.Text = "Sp/LD"; }
+
                 grid.Children.Add(header, 0, index);
 
                 var editView = TreeEditControlFactory.MakeEditView(field);

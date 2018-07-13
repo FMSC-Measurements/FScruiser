@@ -1,11 +1,12 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
+using FScruiser.Models.Validators;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace FScruiser.XF.ViewModels
 {
@@ -18,22 +19,41 @@ namespace FScruiser.XF.ViewModels
         private IEnumerable<SampleGroupProxy> _sampleGroups;
         private IEnumerable<TreeDefaultProxy> _treeDefaults;
         private IEnumerable<StratumProxy> _strata;
+        private ValidationResult _lastValidationResult;
+        private bool _suspendSave;
+
+        public event EventHandler<IEnumerable<TreeFieldSetupDO>> TreeFieldsChanged;
+
+        public event EventHandler ErrorsAndWarningsChanged;
 
         protected ICuttingUnitDataService Dataservice => ServiceService.CuttingUnitDataService;
         protected IDialogService DialogService => ServiceService.DialogService;
 
-        public event EventHandler<IEnumerable<TreeFieldSetupDO>> TreeFieldsChanged;
+        public IEnumerable<ValidationError> ErrorsAndWarnings => _lastValidationResult?.Errors.OrEmpty();
 
         public IEnumerable<TreeFieldSetupDO> TreeFields
         {
             get
             {
-                return _treeFields;
+                if (_useSimplifiedTreeFields)
+                {
+                    return _treeFieldsExtended.Where(x => Constants.LESS_IMPORTANT_TREE_FIELDS.Contains(x.Field) == false);
+                }
+                else
+                {
+                    return _treeFieldsExtended;
+                }
             }
+        }
+
+        public IEnumerable<TreeFieldSetupDO> TreeFieldsExtended
+        {
+            get { return _treeFieldsExtended; }
             set
             {
-                SetValue(ref _treeFields, value);
+                SetValue(ref _treeFieldsExtended, value);
                 TreeFieldsChanged?.Invoke(this, value);
+                RaisePropertyChanged(nameof(TreeFields));
             }
         }
 
@@ -75,12 +95,20 @@ namespace FScruiser.XF.ViewModels
             //{
             //    Tree.SampleGroupCode = "";
             //}
-            tree.SampleGroupCode = "";
-            tree.Species = "";
-            tree.LiveDead = "";
+            try
+            {
+                _suspendSave = true;
+                tree.SampleGroupCode = "";
+                tree.Species = "";
+                tree.LiveDead = "";
+            }
+            finally
+            { _suspendSave = false; }
 
-            SaveTree(tree);
+            //SaveTree(tree);
 
+            RefreshValidationRules(tree);
+            RefreshErrorsAndWarnings(tree);
             RefreshSampleGroups(tree);
             RefreshTreeDefaults(tree);
             RefreshTreeFields(tree);
@@ -150,10 +178,20 @@ namespace FScruiser.XF.ViewModels
 
             //Dataservice.LogMessage($"Tree SampleGroupCanged, Tree_GUID:{Tree.Tree_GUID}, OldSG:{oldValue}, NewSG:{newValue}", "high");
 
-            tree.Species = "";
-            tree.LiveDead = "";
-            SaveTree(tree);
+            try
+            {
+                _suspendSave = true;
+                tree.Species = "";
+                tree.LiveDead = "";
+            }
+            finally
+            {
+                _suspendSave = false;
+            }
+            //SaveTree(tree);
 
+            RefreshValidationRules(tree);
+            RefreshErrorsAndWarnings(tree);
             RefreshTreeDefaults(tree);
         }
 
@@ -199,25 +237,38 @@ namespace FScruiser.XF.ViewModels
         {
             get
             {
-                var tree = Tree;
-                return TreeDefaults.OrEmpty().Where(x => x.Species == tree.Species && x.LiveDead == tree.LiveDead).FirstOrDefault();
+                return FindTreeDefault(Tree);
             }
 
             set
             {
                 var tree = Tree;
-                if (value != null)
+                var existingTreeDefault = FindTreeDefault(tree);
+                if (value == existingTreeDefault) { return; }
+
+                try
                 {
-                    tree.Species = value.Species;
-                    tree.LiveDead = value.LiveDead;
+                    if (value != null)
+                    {
+                        tree.Species = value.Species;
+                        tree.LiveDead = value.LiveDead;
+                    }
+                    else
+                    {
+                        tree.Species = "";
+                        tree.LiveDead = "";
+                    }
                 }
-                else
-                {
-                    tree.Species = "";
-                    tree.LiveDead = "";
-                }
-                SaveTree();
+                finally { _suspendSave = false; }
+
+                RefreshValidationRules(tree);
+                RefreshErrorsAndWarnings(tree);
             }
+        }
+
+        protected TreeDefaultProxy FindTreeDefault(Tree tree)
+        {
+            return TreeDefaults.OrEmpty().Where(x => x.Species == tree.Species && x.LiveDead == tree.LiveDead).FirstOrDefault();
         }
 
         public Tree Tree
@@ -227,11 +278,11 @@ namespace FScruiser.XF.ViewModels
             {
                 if (_tree != null) { _tree.PropertyChanged -= _tree_PropertyChanged; }
                 SetValue(ref _tree, value);
+                if (value != null) { value.PropertyChanged += _tree_PropertyChanged; }
+
                 RaisePropertyChanged(nameof(this.StratumCode));
                 RaisePropertyChanged(nameof(this.SampleGroupCode));
                 //RaisePropertyChanged(nameof(this.TreeDefault));
-
-                if (_tree != null) { _tree.PropertyChanged += _tree_PropertyChanged; }
             }
         }
 
@@ -254,12 +305,12 @@ namespace FScruiser.XF.ViewModels
             RefreshSampleGroups(tree);
             RefreshTreeDefaults(tree);
             RefreshTreeFields(tree);
+            RefreshValidationRules(tree);
+            RefreshErrorsAndWarnings(tree);
         }
 
         private void RefreshSampleGroups(Tree tree)
         {
-            
-
             var stratum = tree.StratumCode;
             var sampleGroups = Dataservice.GetSampleGroupProxies(StratumCode);
             _sampleGroups = sampleGroups.Prepend(_nullSampleGroup).ToArray();
@@ -268,7 +319,6 @@ namespace FScruiser.XF.ViewModels
 
         private void RefreshTreeDefaults(Tree tree)
         {
-
             var sampleGroup = tree.SampleGroupCode;
             var stratum = tree.StratumCode;
             var treeDefaults = Dataservice.GetTreeDefaultProxies(stratum, sampleGroup);
@@ -281,38 +331,64 @@ namespace FScruiser.XF.ViewModels
         {
             var stratumCode = tree.StratumCode;
 
-            if (_useSimplifiedTreeFields)
+            TreeFieldsExtended = Dataservice.GetTreeFieldsByStratumCode(stratumCode);
+        }
+
+        protected void RefreshValidationRules(Tree tree)
+        {
+            if (tree == null) { return; }
+
+            _treeValidator = new TreeValidator();
+            if (!string.IsNullOrWhiteSpace(tree.StratumCode)
+                && !string.IsNullOrWhiteSpace(tree.SampleGroupCode)
+                && !string.IsNullOrWhiteSpace(tree.Species)
+                && !string.IsNullOrWhiteSpace(tree.LiveDead))
             {
-                TreeFields = Dataservice.GetSimplifiedTreeFieldsByStratumCode(stratumCode);
+                var treeAuditRules = Dataservice.GetTreeAuditRules(tree.StratumCode, tree.SampleGroupCode, tree.Species, tree.LiveDead);
+                _treeValidator.Rules.AddRange(treeAuditRules);
             }
-            else
-            {
-                TreeFields = Dataservice.GetTreeFieldsByStratumCode(stratumCode);
-            }
+        }
+
+        protected void RefreshErrorsAndWarnings(Tree tree)
+        {
+            if (tree == null) { return; }
+
+            _lastValidationResult = _treeValidator.Validate(tree, TreeFields.Select(x => x.Field)
+                .Append("Heights")
+                .Append("Diameters"));
+
+            RaiseErrorsAndWarningsChanged();
+        }
+
+        protected void RaiseErrorsAndWarningsChanged()
+        {
+            ErrorsAndWarningsChanged?.Invoke(this, null);
+            RaisePropertyChanged(nameof(ErrorsAndWarnings));
         }
 
         private void _tree_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(Tree.Species)
-                || e.PropertyName == nameof(Tree.LiveDead)
-                || e.PropertyName == nameof(Tree.StratumCode)
-                || e.PropertyName == nameof(Tree.SampleGroupCode))
-            { return; }//when these properties change we will call save manualy
+            var property = e.PropertyName;
+            if (property == nameof(Tree.Species)
+                || property == nameof(Tree.StratumCode)
+                || property == nameof(Tree.SampleGroupCode)
+                || property == nameof(Tree.LiveDead)) { return; }//when these property change we will be saving the tree manualy
 
-            SaveTree();
+            RefreshErrorsAndWarnings(Tree);
         }
 
         public void SaveTree()
         {
             SaveTree(Tree);
-            
         }
 
-        void SaveTree(Tree tree)
+        private void SaveTree(Tree tree)
         {
+            if (_suspendSave) { return; }
             if (tree != null)
             {
                 Dataservice.UpdateTree(Tree);
+                Dataservice.UpdateTreeErrors(tree.Tree_GUID, ErrorsAndWarnings);
             }
         }
 
@@ -344,6 +420,8 @@ namespace FScruiser.XF.ViewModels
         #region IDisposable Support
 
         private bool disposedValue = false; // To detect redundant calls
+        private TreeValidator _treeValidator;
+        private IEnumerable<TreeFieldSetupDO> _treeFieldsExtended;
 
         protected virtual void Dispose(bool disposing)
         {

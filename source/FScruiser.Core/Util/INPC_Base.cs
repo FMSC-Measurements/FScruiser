@@ -19,6 +19,7 @@ namespace FScruiser.Util
 
         public void SetValue<tTarget>(ref tTarget target, tTarget value, [CallerMemberName] string propName = null)
         {
+            if (object.Equals(target, value)) { return; }
             target = value;
             if (propName != null) { RaisePropertyChanged(propName); }
         }

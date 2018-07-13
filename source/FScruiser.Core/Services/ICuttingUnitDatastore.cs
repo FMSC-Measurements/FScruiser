@@ -1,6 +1,6 @@
 ﻿using CruiseDAL.DataObjects;
 using FScruiser.Models;
-using System;
+using FScruiser.Validation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -40,6 +40,8 @@ namespace FScruiser.Services
 
         #endregion treeFields
 
+        IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead);
+
         #region tree
 
         string CreateTree(string unitCode, string stratumCode, string sampleGroupCode = null, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false);
@@ -56,6 +58,8 @@ namespace FScruiser.Services
 
         void UpdateTreeInitials(string tree_guid, string value);
 
+        void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors);
+
         Task UpdateTreeAsync(Tree tree);
 
         void DeleteTree(Tree tree);
@@ -71,6 +75,5 @@ namespace FScruiser.Services
         void DeleteTally(TallyEntry tallyEntry);
 
         void LogMessage(string message, string level);
-        
     }
 }

@@ -2,6 +2,7 @@
 using FMSC.Sampling;
 using FScruiser.Logic;
 using FScruiser.Models;
+using FScruiser.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -248,6 +249,16 @@ namespace FScruiser.Services
         {
             var fields = Datastore.GetTreeFieldsByStratumCode(stratumCode);
             return fields.Where(x => Constants.LESS_IMPORTANT_TREE_FIELDS.Contains(x.Field) == false).ToArray();
+        }
+
+        public IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead)
+        {
+            return Datastore.GetTreeAuditRules(stratum, sampleGroup, species, livedead);
+        }
+
+        public void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors)
+        {
+            Datastore.UpdateTreeErrors(tree_GUID, errors);
         }
     }
 }
