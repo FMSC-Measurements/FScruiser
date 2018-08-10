@@ -1,32 +1,66 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tkConv="clr-namespace:Xamarin.Toolkit.Converters;assembly=Xamarin.Toolkit.Converters"
+             xmlns:tkBehv="clr-namespace:Xamarin.Toolkit.Behaviors;assembly=Xamarin.Toolkit.Behaviors"
              x:Class="FScruiser.Pages.PlotEditPage">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Label Text="Plot #" Grid.Row="0" Grid.Column="0" />
-        <Editor Text="{Binding Plot.PlotNumber}" Grid.Row="0" Grid.Column="1" />
+    <StackLayout Orientation="Vertical">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!--plot number-->
+                <RowDefinition Height="Auto"/>
+                <!--slope-->
+                <RowDefinition Height="Auto"/>
+                <!--Aspect-->
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <Label Text="Null Plot" Grid.Row="1" Grid.Column="0" />
-        <Switch IsToggled="{Binding Plot.IsEmpty}" Grid.Row="1" Grid.Column="1" />
+            <!--plot number-->
+            <Label Grid.Row="0" Grid.Column="0" Text="Plot" VerticalTextAlignment="Center" Margin="10,0,30,0"/>
+            <Entry Grid.Row="0" Grid.Column="1" Text="{Binding PlotNumber}" WidthRequest="50" Keyboard="Numeric"/>
+            <!--slope-->
+            <Label Grid.Row="1" Grid.Column="0" Text="Slope" VerticalTextAlignment="Center" Margin="10,0,30,0"/>
+            <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Slope}" WidthRequest="50" Keyboard="Numeric"/>
+            <!--aspect-->
+            <Label Grid.Row="2" Grid.Column="0" Text="Aspect" VerticalTextAlignment="Center" Margin="10,0,30,0"/>
+            <Entry Grid.Row="2" Grid.Column="1" Text="{Binding Aspect}" WidthRequest="50" Keyboard="Numeric"/>
+        </Grid>
 
-        <Label Text="Slope" Grid.Row="2" Grid.Column="0" />
-        <Entry Text="{Binding Plot.Slope}" Grid.Row="2" Grid.Column="1" Keyboard="Numeric" />
 
-        <Label Text="Aspect" Grid.Row="3" Grid.Column="0" />
-        <Entry Text="{Binding Plot.Aspect}" Grid.Row="3" Grid.Column="1" Keyboard="Numeric" />
 
-        <Label Text="Remarks" Grid.Row="4" Grid.Column="0" />
-        <Editor Text="{Binding Plot.Remarks}" Grid.Row="4" Grid.Column="1" />
-    </Grid>
+        <ListView x:Name="_plotListView" ItemsSource="{Binding StratumPlots}" BackgroundColor="Silver" HasUnevenRows="True" SelectionMode="None">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <!--<SwitchCell Text="{Binding StratumCode}" On="{Binding InCruise}"  />-->
+                    <ViewCell>
+                        <Frame HasShadow="True" Margin="7" Padding="3,0,3,5" CornerRadius="0" BackgroundColor="{StaticResource accent}">
+                            <StackLayout>
+                                <StackLayout Orientation="Horizontal">
+                                    <Label Text="{Binding StratumPlot.StratumCode}" Margin="10,0,30,0" VerticalTextAlignment="Center" HorizontalOptions="StartAndExpand"/>
+                                    <Button Text="Add/Remove" Command="{Binding ToggleInCruiseCommand}" HorizontalOptions="End"/>
+                                </StackLayout>
+                                <StackLayout IsVisible="{Binding InCruise, Mode=OneWay}">
+                                    <StackLayout Orientation="Horizontal">
+                                        <Label Text="Empty Plot" VerticalTextAlignment="Center" Margin="10,0,30,0"/>
+                                        <Switch IsToggled="{Binding IsEmpty}" />
+                                    </StackLayout>
+                                    <Label Text="Remarks" VerticalTextAlignment="End" Margin="10,0,30,0"/>
+                                    <Entry 
+                                        Text="{Binding Remarks}" 
+                                        HorizontalOptions="FillAndExpand" HeightRequest="200"  />
+                                    <Button Text="Calculate Limiting Distances" 
+                                        VerticalOptions="FillAndExpand" />
+                                </StackLayout>
+                            </StackLayout>
+                        </Frame>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+    </StackLayout>
 </ContentPage>

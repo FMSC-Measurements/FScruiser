@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FScruiser.XF.Pages"
+             xmlns:views="clr-namespace:FScruiser.XF.Views"
+             xmlns:cells="clr-namespace:FScruiser.XF.ViewCells"
+             xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
+             x:Class="FScruiser.XF.Pages.PlotTallyPage"
+             BackgroundColor ="White"
+             x:Name="_page">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="tallyButtonBgColor">Green</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <StackLayout>
+            <ListView x:Name="_tallyFeedListView" 
+                      HasUnevenRows="True"
+                      ItemsSource="{Binding Trees}" 
+                      ItemSelected="TallyFeedListView_ItemSelected"
+                      CachingStrategy="RetainElement"
+                      SeparatorColor="Silver">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <cells:PlotTreeViewCell />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+
+            <flow:FlowListView  x:Name="TallyListView" 
+                                FlowItemsSource="{Binding TalliesFiltered}"
+                                FlowItemTappedCommand="{Binding TallyCommand}"
+                                FlowColumnCount="3" 
+                                SeparatorVisibility="None" 
+                                HasUnevenRows="True"  
+                                BackgroundColor="White"
+                                VerticalOptions="CenterAndExpand">
+                <flow:FlowListView.FlowColumnTemplate>
+                    <DataTemplate>
+                        <Frame CornerRadius="5" Margin ="3" >
+                            <Frame.Triggers>
+                                <DataTrigger TargetType="Frame" Binding="{Binding InCruise}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource primary_500}"  />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Frame" Binding="{Binding InCruise}" Value="False">
+                                    <Setter Property="BackgroundColor" Value="Silver" />
+                                </DataTrigger>
+                            </Frame.Triggers>
+                            <StackLayout HorizontalOptions="Fill" 
+                                         VerticalOptions="Fill" Padding="3">
+                                <Label Text="{Binding TallyDescription}" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="{Binding TallyHotKey}"
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </flow:FlowListView.FlowColumnTemplate>
+            </flow:FlowListView>
+
+            <flow:FlowListView x:Name="StratumFilterListView" 
+                               FlowColumnCount="6" SeparatorVisibility="None" HasUnevenRows="False"
+                               VerticalOptions="End"
+                               HeightRequest="44"
+                               FlowItemsSource="{Binding StrataFilterOptions}">
+                <flow:FlowListView.FlowColumnTemplate>
+                    <DataTemplate>
+                        <Button Text="{Binding .}" 
+                                TextColor="{StaticResource white_90}" BackgroundColor="{StaticResource primary_500}" 
+                                Margin="2" HeightRequest="40" 
+                                Clicked="_stratumFilterButton_Clicked"/>
+                    </DataTemplate>
+                </flow:FlowListView.FlowColumnTemplate>
+            </flow:FlowListView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
