@@ -53,11 +53,15 @@ namespace FScruiser.XF.ViewModels
         {
             if (unit == null) { throw new ArgumentNullException(nameof(unit)); }
 
-            var cruiseDataService = DataService;
-            var unitDataService = new CuttingUnitDataService(cruiseDataService.Path, unit);
-            ServiceService.CuttingUnitDataService = unitDataService;
+            var cruisePath = DataService.Path;
+            var datastore = new CuttingUnitDatastore(cruisePath);
+            //var unitDataService = new CuttingUnitDataService(datastore, unit);
 
-            MessagingCenter.Send<object>(this, Messages.CUTTING_UNIT_SELECTED);
+            //ServiceService.CuttingUnitDataService = unitDataService;
+            ServiceService.Datastore = datastore;
+            ServiceService.SampleSelectorRepository = new SampleSelectorRepository(datastore);
+
+            MessagingCenter.Send<string>(unit.Code, Messages.CUTTING_UNIT_SELECTED);
         }
 
         #region IDisposable Support

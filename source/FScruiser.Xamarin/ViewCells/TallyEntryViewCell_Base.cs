@@ -1,11 +1,4 @@
-﻿using FScruiser.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Xamarin.Forms;
+﻿using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewCells
 {
@@ -44,11 +37,6 @@ namespace FScruiser.XF.ViewCells
 
         //    IsSelected = false;
         //}
-
-        protected void _untallyButton_Clicked(object sender, EventArgs e)
-        {
-            MessagingCenter.Send<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, BindingContext as TallyEntry);
-        }
 
         protected override void OnPropertyChanging(string propertyName = null)
         {

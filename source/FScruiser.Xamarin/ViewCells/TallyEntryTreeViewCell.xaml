@@ -5,7 +5,7 @@
              xmlns:local="clr-namespace:FScruiser.XF.ViewCells">
     <ViewCell.View>
         <ContentView BackgroundColor="Silver">
-            <Frame BackgroundColor="#30C1BC" CornerRadius="5" Margin="2,5,2,0" Padding="0">
+            <Frame BackgroundColor="{StaticResource accent}" CornerRadius="5" Margin="2,5,2,0" Padding="0">
                 <StackLayout>
                     <StackLayout Orientation="Horizontal">
                         <!--<StackLayout.Triggers>
@@ -19,14 +19,14 @@
                         <StackLayout.Resources>
                             <ResourceDictionary>
                                 <Style TargetType="Label">
-                                    <Setter Property="TextColor" Value="Black" />
+                                    <Setter Property="TextColor" Value="{StaticResource black_70}" />
                                 </Style>
                             </ResourceDictionary>
                         </StackLayout.Resources>
                         <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20" VerticalTextAlignment="Center" />
                         <Label Text="{Binding TallyDescription, StringFormat='| {0}'}" FontSize="30" VerticalTextAlignment="Center" />
-                        <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" TextColor="Blue" FontSize="30" VerticalTextAlignment="Center" />
-                        <Label x:Name="CruiserInitialsLabel" Text="{Binding Tree.Initials}" TextColor="Black"
+                        <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" TextColor="{StaticResource accentText}" FontSize="30" VerticalTextAlignment="Center" />
+                        <Label x:Name="CruiserInitialsLabel" Text="{Binding Tree.Initials}"
                                            HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
                                            HorizontalOptions="EndAndExpand" />
                     </StackLayout>

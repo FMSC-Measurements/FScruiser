@@ -36,12 +36,14 @@ namespace FScruiser.XF.Services
             if (result == "Cancel") { return; }
 
             tallyEntry.Initials = result;
-            _serviceService.CuttingUnitDataService.UpdateTreeInitials(tallyEntry.Tree_GUID, result);
+            _serviceService.Datastore.UpdateTreeInitials(tallyEntry.Tree_GUID, result);
         }
 
-        public Task<string> AskValue(string prompt, params string[] values)
+        public async Task<string> AskValueAsync(string prompt, params string[] values)
         {
-            return App.Current.MainPage.DisplayActionSheet(prompt, "Cancel", null, values);
+            var result = await App.Current.MainPage.DisplayActionSheet(prompt, "Cancel", null, values);
+            if(result == "Cancel") { result = null; }
+            return result;
         }
 
         public Task<int?> AskKPIAsync(int max, int min = 1)

@@ -14,20 +14,36 @@ namespace FScruiser.XF.Pages
 
             _goToEndButton.Clicked += _goToEndButton_Clicked;
             _goToStartButton.Clicked += _goToStartButton_Clicked;
-
             _treeListView.ItemSelected += _treeListView_ItemSelected;
 
-            var viewModel = new TreeListViewModel();
-            viewModel.TreeAdded += ViewModel_TreeAdded;
-            BindingContext = viewModel;
 
-            Appearing += async (sender, ea) =>
+        }
+
+        public TreeListPage(string unitCode) : this()
+        {
+            BindingContext = new TreeListViewModel(unitCode);
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            if (BindingContext is TreeListViewModel vm && vm != null)
             {
-                if (BindingContext is TreeListViewModel vm)
-                {
-                    await vm.InitAsync();
-                }
-            };
+                vm.TreeAdded += ViewModel_TreeAdded;
+
+                vm.InitAsync().ConfigureAwait(false);
+            }
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            if (BindingContext is TreeListViewModel vm && vm != null)
+            {
+                vm.TreeAdded -= ViewModel_TreeAdded;
+            }
         }
 
         private void ViewModel_TreeAdded(object sender, EventArgs e)

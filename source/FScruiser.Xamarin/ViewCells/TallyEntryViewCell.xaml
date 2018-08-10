@@ -11,7 +11,7 @@
                         <StackLayout.Resources>
                             <ResourceDictionary>
                                 <Style TargetType="Label">
-                                    <Setter Property="TextColor" Value="Black" />
+                                    <Setter Property="TextColor" Value="{StaticResource black_70}" />
                                 </Style>
                             </ResourceDictionary>
                         </StackLayout.Resources>

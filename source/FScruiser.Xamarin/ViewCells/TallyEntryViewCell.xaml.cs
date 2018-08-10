@@ -1,4 +1,7 @@
-﻿using System.Windows.Input;
+﻿using FScruiser.Models;
+using System;
+using System.Windows.Input;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 namespace FScruiser.XF.ViewCells
@@ -23,6 +26,11 @@ namespace FScruiser.XF.ViewCells
             InitializeComponent();
 
             _untallyButton.Clicked += _untallyButton_Clicked;
+        }
+
+        protected void _untallyButton_Clicked(object sender, EventArgs e)
+        {
+            MessagingCenter.Send<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, BindingContext as TallyEntry);
         }
 
         protected override void RefreshDrawer(bool isSelected)

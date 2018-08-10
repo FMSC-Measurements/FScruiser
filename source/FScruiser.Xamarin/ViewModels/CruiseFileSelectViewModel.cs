@@ -44,7 +44,8 @@ namespace FScruiser.XF.ViewModels
             if (file.Exists == false) { throw new FileNotFoundException("cruise file not found", file.FullName); }
 
             ServiceService.CruiseDataService = new CruiseDataService(file.FullName);
-            ServiceService.CuttingUnitDataService = null;
+            //ServiceService.CuttingUnitDataService = null;
+            ServiceService.Datastore = null;
             MessagingCenter.Send<object>(this, Messages.CRUISE_FILE_SELECTED);
         }
 

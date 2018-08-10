@@ -32,37 +32,37 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand EditTreeCommand => _editTreeCommand ?? (_editTreeCommand = new Command<TreeStub>(ShowEditTree));
 
-        public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataService;
+        //public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataService;
+
+        public ICuttingUnitDatastore Datastore => ServiceService.Datastore;
 
         public IDialogService DialogService => ServiceService.DialogService;
 
+        public string UnitCode { get; }
+
         public event EventHandler TreeAdded;
 
-        public TreeListViewModel()
+        public TreeListViewModel(string unitCode)
         {
+            UnitCode = unitCode;
         }
 
         public async Task InitAsync()
         {
-            var dataService = DataService;
-            if (dataService != null)
-            {
-                //await dataService.RefreshDataAsync();
-                Trees = DataService.GetTreeStubs().ToObservableCollection();
-            }
+            Trees = Datastore.GetTreeStubsByUnitCode(UnitCode).ToObservableCollection();
         }
 
         public async void AddTreeAsync()
         {
-            var dataService = DataService;
+            var datastore = Datastore;
 
-            var stratumCodes = dataService.GetStratumProxies().Select(x => x.Code).ToArray();
+            var stratumCodes = datastore.GetStrataProxiesByUnitCode(UnitCode).Select(x => x.Code).ToArray();
 
-            var stratumCode = await DialogService.AskValue("Select Stratum", stratumCodes);
+            var stratumCode = await DialogService.AskValueAsync("Select Stratum", stratumCodes);
             if (stratumCode != null)
             {
-                var tree_guid = dataService.CreateTree(stratumCode);
-                var newTree = dataService.GetTreeStub(tree_guid);
+                var tree_guid = datastore.CreateTree(UnitCode, stratumCode);
+                var newTree = datastore.GetTreeStub(tree_guid);
                 _trees.Add(newTree);
                 OnTreeAdded(null);
             }

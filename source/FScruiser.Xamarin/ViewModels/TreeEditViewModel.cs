@@ -16,6 +16,9 @@ namespace FScruiser.XF.ViewModels
         private IEnumerable<TreeFieldSetupDO> _treeFields;
 
         private bool _useSimplifiedTreeFields;
+
+        public string UnitCode { get; }
+
         private IEnumerable<SampleGroupProxy> _sampleGroups;
         private IEnumerable<TreeDefaultProxy> _treeDefaults;
         private IEnumerable<StratumProxy> _strata;
@@ -26,7 +29,8 @@ namespace FScruiser.XF.ViewModels
 
         public event EventHandler ErrorsAndWarningsChanged;
 
-        protected ICuttingUnitDataService Dataservice => ServiceService.CuttingUnitDataService;
+        //protected ICuttingUnitDataService Dataservice => ServiceService.CuttingUnitDataService;
+        protected ICuttingUnitDatastore Datastore => ServiceService.Datastore;
         protected IDialogService DialogService => ServiceService.DialogService;
 
         public IEnumerable<ValidationError> ErrorsAndWarnings => _lastValidationResult?.Errors.OrEmpty();
@@ -293,8 +297,12 @@ namespace FScruiser.XF.ViewModels
 
         public void Init(string tree_guid)
         {
-            var tree = Tree = Dataservice.GetTree(tree_guid);
-            Strata = Dataservice.GetStratumProxies().ToArray();
+            var datastore = Datastore;
+
+            var tree = Tree = Datastore.GetTree(tree_guid);
+
+            var unitCode = tree.UnitCode;
+            Strata = Datastore.GetStrataProxiesByUnitCode(unitCode).ToArray();
 
             if (tree == null)
             {
@@ -312,7 +320,7 @@ namespace FScruiser.XF.ViewModels
         private void RefreshSampleGroups(Tree tree)
         {
             var stratum = tree.StratumCode;
-            var sampleGroups = Dataservice.GetSampleGroupProxies(StratumCode);
+            var sampleGroups = Datastore.GetSampleGroupProxies(StratumCode);
             _sampleGroups = sampleGroups.Prepend(_nullSampleGroup).ToArray();
             RaisePropertyChanged(nameof(this.SampleGroups));
         }
@@ -321,7 +329,7 @@ namespace FScruiser.XF.ViewModels
         {
             var sampleGroup = tree.SampleGroupCode;
             var stratum = tree.StratumCode;
-            var treeDefaults = Dataservice.GetTreeDefaultProxies(stratum, sampleGroup);
+            var treeDefaults = Datastore.GetTreeDefaultProxies(stratum, sampleGroup);
             _treeDefaults = treeDefaults.Prepend(_nullTreeDefault).ToArray();
             RaisePropertyChanged(nameof(this.TreeDefaults));
             RaisePropertyChanged(nameof(this.TreeDefault));
@@ -331,7 +339,7 @@ namespace FScruiser.XF.ViewModels
         {
             var stratumCode = tree.StratumCode;
 
-            TreeFieldsExtended = Dataservice.GetTreeFieldsByStratumCode(stratumCode);
+            TreeFieldsExtended = Datastore.GetTreeFieldsByStratumCode(stratumCode);
         }
 
         protected void RefreshValidationRules(Tree tree)
@@ -344,7 +352,7 @@ namespace FScruiser.XF.ViewModels
                 && !string.IsNullOrWhiteSpace(tree.Species)
                 && !string.IsNullOrWhiteSpace(tree.LiveDead))
             {
-                var treeAuditRules = Dataservice.GetTreeAuditRules(tree.StratumCode, tree.SampleGroupCode, tree.Species, tree.LiveDead);
+                var treeAuditRules = Datastore.GetTreeAuditRules(tree.StratumCode, tree.SampleGroupCode, tree.Species, tree.LiveDead);
                 _treeValidator.Rules.AddRange(treeAuditRules);
             }
         }
@@ -387,8 +395,8 @@ namespace FScruiser.XF.ViewModels
             if (_suspendSave) { return; }
             if (tree != null)
             {
-                Dataservice.UpdateTree(Tree);
-                Dataservice.UpdateTreeErrors(tree.Tree_GUID, ErrorsAndWarnings);
+                Datastore.UpdateTree(Tree);
+                Datastore.UpdateTreeErrors(tree.Tree_GUID, ErrorsAndWarnings);
             }
         }
 

@@ -1,4 +1,6 @@
 ﻿using FScruiser.Models;
+using FScruiser.Services;
+using FScruiser.Util;
 using FScruiser.XF.ViewModels;
 using System;
 using System.Linq;
@@ -18,41 +20,70 @@ namespace FScruiser.XF.Pages
         {
             InitializeComponent();
 
-            BindingContext = new UnitTreeTallyViewModel();
             Appearing += async (sender, ea) =>
             {
-                if (BindingContext is UnitTreeTallyViewModel vm)
-                {
-                    await vm.InitAsync();
-                    vm.TallyEntryAdded += TallyFeed_CollectionChanged;
-                }
-
-                MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED, _tallyEntryViewCell_editClicked);
-                MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, _tallyEntryViewCell_UntallyClicked);
-                MessagingCenter.Subscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED, _tallyEntryViewCell_IsSelectedChanged);
+                
 
             };
 
             Disappearing += (x, ea) =>
             {
-                if (BindingContext is UnitTreeTallyViewModel vm)
-                {
-                    vm.TallyEntryAdded -= TallyFeed_CollectionChanged;
-                }
-
-                MessagingCenter.Unsubscribe<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED);
-                MessagingCenter.Unsubscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED);
-                MessagingCenter.Unsubscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED);
+                
             };
 
             
+        }
+
+        public UnitTreeTallyPage(string unitCode,
+            ICuttingUnitDatastore datastore,
+            IDialogService dialogService,
+            ISampleSelectorDataService sampleSelectorDataService,
+            ITallySettingsDataService tallySettings,
+            ISoundService soundService) : this()
+        {
+            BindingContext = new UnitTreeTallyViewModel(unitCode,
+                datastore,
+                dialogService,
+                sampleSelectorDataService,
+                tallySettings,
+                soundService);
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            if (BindingContext is UnitTreeTallyViewModel vm)
+            {
+                vm.InitAsync().ConfigureAwait(true);
+                vm.TallyEntryAdded += TallyFeed_CollectionChanged;
+                TallyFeed_CollectionChanged(null, null);
+            }
+
+            MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED, _tallyEntryViewCell_editClicked);
+            MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, _tallyEntryViewCell_UntallyClicked);
+            MessagingCenter.Subscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED, _tallyEntryViewCell_IsSelectedChanged);
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            if (BindingContext is UnitTreeTallyViewModel vm)
+            {
+                vm.TallyEntryAdded -= TallyFeed_CollectionChanged;
+            }
+
+            MessagingCenter.Unsubscribe<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED);
+            MessagingCenter.Unsubscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED);
+            MessagingCenter.Unsubscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED);
         }
 
         private void TallyFeed_CollectionChanged(object sender, EventArgs e)
         {
             if (_treeCellIsSelected) { return; } //dont scroll down it tree entry is in edit mode
 
-            var lastItem = _tallyFeedListView.ItemsSource.OfType<object>().LastOrDefault();
+            var lastItem = _tallyFeedListView.ItemsSource.OrEmpty().OfType<object>().LastOrDefault();
             if (lastItem != null)
             {
                 _tallyFeedListView.ScrollTo(lastItem, ScrollToPosition.End, false);
@@ -105,6 +136,7 @@ namespace FScruiser.XF.Pages
             if(tallyEntry != null)
             {
                 ViewModel.Untally(tallyEntry);
+                _treeCellIsSelected = false;
             }
         }
 
@@ -118,16 +150,5 @@ namespace FScruiser.XF.Pages
         }
     }
 
-    public class TreeDataTemplateSelector : DataTemplateSelector
-    {
-        public DataTemplate TreeItemTemplate { get; set; }
-        public DataTemplate BasicTemplate { get; set; }
-
-        protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
-        {
-            var tallyEntry = (TallyEntry)item;
-
-            return (tallyEntry.HasTree) ? TreeItemTemplate : BasicTemplate;
-        }
-    }
+    
 }

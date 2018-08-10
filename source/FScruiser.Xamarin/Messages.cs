@@ -13,5 +13,6 @@ namespace FScruiser.XF
         public const string EDIT_TREE_CLICKED = "EditTreeClicked";
         public const string UNTALLY_CLICKED = "UntallyClicked";
         public const string TREECELL_ISELECTED_CHANGED = "TreeCellIsSelectedChanged";
+        public const string DELETE_TREE_CLICKED = "DeleteTreeClicked";
     }
 }

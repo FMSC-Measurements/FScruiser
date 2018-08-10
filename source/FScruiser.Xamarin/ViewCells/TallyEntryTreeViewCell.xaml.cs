@@ -91,6 +91,11 @@ namespace FScruiser.XF.ViewCells
             MessagingCenter.Send<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED, BindingContext as TallyEntry);
         }
 
+        protected void _untallyButton_Clicked(object sender, EventArgs e)
+        {
+            MessagingCenter.Send<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, BindingContext as TallyEntry);
+        }
+
         protected override void OnIsSelectedChanged(bool isSelected)
         {
             if (isSelected)

@@ -10,7 +10,7 @@ namespace FScruiser.Services
 
         Task AskCruiserAsync(TallyEntry tree);
 
-        Task<string> AskValue(string prompt, params string[] values);
+        Task<string> AskValueAsync(string prompt, params string[] values);
 
         Task<int?> AskKPIAsync(int max, int min = 1);
 

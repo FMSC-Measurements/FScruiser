@@ -1,6 +1,7 @@
 ﻿using FScruiser.Services;
 using FScruiser.XF.ViewModels;
 using Plugin.FilePicker;
+using Plugin.FilePicker.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,7 +35,7 @@ namespace FScruiser.XF.Pages
                 navigation.PopToRootAsync();
             });
 
-            MessagingCenter.Subscribe<object>(this, Messages.CUTTING_UNIT_SELECTED, (o) =>
+            MessagingCenter.Subscribe<string>(this, Messages.CUTTING_UNIT_SELECTED, (o) =>
             {
                 IsPresented = true;
 
@@ -59,7 +60,7 @@ namespace FScruiser.XF.Pages
 
         private async System.Threading.Tasks.Task ShowPageFromNavigationListItemAsync(NavigationListItem item)
         {
-            if(item.CanShow == false) { return; }
+            if (item.CanShow == false) { return; }
 
             var navigation = Detail.Navigation;
             if (item.ResetsNavigation)
@@ -68,7 +69,7 @@ namespace FScruiser.XF.Pages
             }
             else
             {
-                var page = item.MakePage() ;
+                var page = item.MakePage();
                 page.Title = item.Title;
 
                 page.SetValue(NavigationPage.HasBackButtonProperty, false);
@@ -88,9 +89,9 @@ namespace FScruiser.XF.Pages
 
         public bool CanShowCuttingUnits => ServiceService.CruiseDataService != null;
 
-        public bool CanShowTallies => ServiceService.CuttingUnitDataService != null;
+        public bool CanShowTallies => ServiceService.Datastore != null;
 
-        public bool CanShowTrees => ServiceService.CuttingUnitDataService != null;
+        public bool CanShowTrees => ServiceService.Datastore != null;
 
         public IEnumerable<NavigationListItem> NavigationListItems { get; set; }
 
@@ -116,19 +117,25 @@ namespace FScruiser.XF.Pages
             {
                     new NavigationListItem {Title = "Cutting Units"
                     , MakePage = () => new CuttingUnitListPage()
-                    , MakeViewModel = () => new ViewModels.CuttingUnitListViewModel()
                     , ResetsNavigation = true
                     , CanShowAction = () => CanShowCuttingUnits},
 
                     new NavigationListItem {Title = "Tally"
-                    , MakePage = () => new UnitTreeTallyPage()
-                    , MakeViewModel = () => new UnitTreeTallyViewModel()
+                    , MakePage = () => new UnitTreeTallyPage(CurrentUnit,
+                        ServiceService.Datastore,
+                        ServiceService.DialogService,
+                        ServiceService.SampleSelectorRepository,
+                        ServiceService.TallySettingsDataService,
+                        ServiceService.SoundService)
                     , CanShowAction = () => CanShowTallies },
 
                     new NavigationListItem {Title="Trees"
-                    , MakePage = ()=> new TreeListPage()
-                    , MakeViewModel = ()=> new TreeListViewModel()
+                    , MakePage = ()=> new TreeListPage(CurrentUnit)
                     , CanShowAction = () => CanShowTrees },
+
+                    new NavigationListItem {Title="Plots"
+                    , MakePage = ()=> new PlotListPage(CurrentUnit)
+                    , CanShowAction = () => CanShowTallies},
 
                     new NavigationListItem {Title="Cruisers"
                     , MakePage = ()=> new ManageCruisersPage()
@@ -141,12 +148,16 @@ namespace FScruiser.XF.Pages
                 RaisePropertyChanged(nameof(NavigationListItems));
             });
 
-            MessagingCenter.Subscribe<object>(this, Messages.CUTTING_UNIT_SELECTED, (o) =>
+            MessagingCenter.Subscribe<string>(this, Messages.CUTTING_UNIT_SELECTED, (string unit) =>
             {
-                RaisePropertyChanged(nameof(NavigationListItems));
+                if (string.IsNullOrEmpty(unit)) { return; }
 
+                CurrentUnit = unit;
+                RaisePropertyChanged(nameof(NavigationListItems));
             });
         }
+
+        public string CurrentUnit { get; set; }
 
         public Task InitAsync()
         {
@@ -166,6 +177,10 @@ namespace FScruiser.XF.Pages
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"Error:::{ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+
+                await ServiceService.DialogService.ShowMessageAsync(ex.ToString(), "File Could Not Be Opended");
             }
         }
 
@@ -179,7 +194,8 @@ namespace FScruiser.XF.Pages
             }
 
             ServiceService.CruiseDataService = new CruiseDataService(path);
-            ServiceService.CuttingUnitDataService = null;
+            //ServiceService.CuttingUnitDataService = null;
+            ServiceService.Datastore = null;
 
             MessagingCenter.Send<object>(this, Messages.CRUISE_FILE_SELECTED);
         }

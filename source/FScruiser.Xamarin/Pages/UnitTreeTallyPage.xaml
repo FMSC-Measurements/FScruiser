@@ -22,8 +22,8 @@
                       CachingStrategy="RetainElement"
                       SeparatorColor="Silver">
                 <ListView.ItemTemplate>
-                    <local:TreeDataTemplateSelector>
-                        <local:TreeDataTemplateSelector.TreeItemTemplate>
+                    <cells:TreeDataTemplateSelector>
+                        <cells:TreeDataTemplateSelector.TreeItemTemplate>
                             <DataTemplate>
                                 <cells:TallyEntryTreeViewCell/>
                                 <!--<ViewCell>
@@ -52,8 +52,8 @@
                                     </StackLayout>
                                 </ViewCell>-->
                             </DataTemplate>
-                        </local:TreeDataTemplateSelector.TreeItemTemplate>
-                        <local:TreeDataTemplateSelector.BasicTemplate>
+                        </cells:TreeDataTemplateSelector.TreeItemTemplate>
+                        <cells:TreeDataTemplateSelector.BasicTemplate>
                             <DataTemplate>
                                 <cells:TallyEntryViewCell/>
                                 <!--<ViewCell>
@@ -70,8 +70,8 @@
                                     </StackLayout>
                                 </ViewCell>-->
                             </DataTemplate>
-                        </local:TreeDataTemplateSelector.BasicTemplate>
-                    </local:TreeDataTemplateSelector>
+                        </cells:TreeDataTemplateSelector.BasicTemplate>
+                    </cells:TreeDataTemplateSelector>
                     <!--<DataTemplate>
                         <ViewCell>
                             <StackLayout Orientation="Horizontal">
