@@ -4,7 +4,6 @@ using FluentAssertions;
 using FScruiser.Models;
 using FScruiser.Services;
 using System;
-using System.IO;
 using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -34,6 +33,7 @@ namespace FScruiser.Core.Test.Services
                 Area = 0,
             });
 
+
             //Strata
             database.Insert(new StratumDO
             {
@@ -46,6 +46,8 @@ namespace FScruiser.Core.Test.Services
                 Code = "st2",
                 Method = "something",
             });
+
+            
 
             //Unit - Strata
             database.Insert(new CuttingUnitStratumDO
@@ -66,6 +68,8 @@ namespace FScruiser.Core.Test.Services
                 Stratum_CN = 2,
             });
 
+            
+
             //Sample Groups
             database.Insert(new SampleGroupDO
             {
@@ -84,6 +88,8 @@ namespace FScruiser.Core.Test.Services
                 UOM = "01",
                 PrimaryProduct = "01"
             });
+
+            
 
             //TreeDefaults
 
@@ -127,6 +133,8 @@ namespace FScruiser.Core.Test.Services
                 TreeDefaultValue_CN = 3
             });
 
+            
+
             database.Insert(new TallyDO { Hotkey = "A", Description = "something" });
 
             database.Insert(new CountTreeDO()
@@ -144,8 +152,327 @@ namespace FScruiser.Core.Test.Services
                 TreeDefaultValue_CN = 1
             });
 
+            
+
             return database;
         }
+
+        #region plot
+
+        [Fact]
+        public void GetNextPlotNumber()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                datastore.GetNextPlotNumber("u1").Should().Be(1, "unit with no plots, should return 1 for first plot number");
+
+                database.Insert(new PlotDO
+                {
+                    CuttingUnit_CN = 1,
+                    Stratum_CN = 1,
+                    CreatedBy = "someone",
+                    PlotNumber = 1
+                });
+
+                datastore.GetNextPlotNumber("u1").Should().Be(2, "unit with a plot, should return max plot number + 1");
+            }
+        }
+
+        [Fact]
+        public void IsPlotNumberAvalible()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                datastore.IsPlotNumberAvalible("u1", 1).Should().BeTrue("no plots in unit yet");
+
+                database.Insert(new PlotDO
+                {
+                    CuttingUnit_CN = 1,
+                    Stratum_CN = 1,
+                    CreatedBy = "someone",
+                    PlotNumber = 1
+                });
+
+                datastore.IsPlotNumberAvalible("u1", 1).Should().BeFalse("we just inserted a plot");
+            }
+        }
+
+        [Fact]
+        public void GetPlotsByUnitCode()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                datastore.GetPlotsByUnitCode("u1").Should().BeEmpty("we havn't added any plots yet");
+
+                database.Insert(new PlotDO
+                {
+                    CuttingUnit_CN = 1,
+                    Stratum_CN = 1,
+                    CreatedBy = "someone",
+                    PlotNumber = 1
+                });
+
+                datastore.GetPlotsByUnitCode("u1").Should().ContainSingle();
+            }
+        }
+
+        [Fact]
+        public void InsertStratumPlot()
+        {
+            var plotNumber = 1;
+            var stratumCode = "st1";
+            var unitCode = "u1";
+            var isEmpty = "True";
+            var kpi = 101;
+            var remarks = "something";
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var stratumPlot = new StratumPlot()
+                {
+                    PlotNumber = plotNumber,
+                    StratumCode = stratumCode,
+                    IsEmpty = isEmpty,
+                    KPI = kpi,
+                    Remarks = remarks
+                };
+
+                datastore.InsertStratumPlot(unitCode, stratumPlot);
+
+                var plot_guid = stratumPlot.Plot_GUID;
+                plot_guid.Should().NotBeNullOrEmpty();
+                
+
+                datastore.IsPlotNumberAvalible(unitCode, plotNumber).Should().BeFalse("we just took that plot number");
+
+                var ourStratumPlot = datastore.GetStratumPlot(unitCode, stratumCode, plotNumber);
+                ourStratumPlot.Should().NotBeNull();
+                ourStratumPlot.Plot_GUID.Should().Be(plot_guid);
+                ourStratumPlot.PlotNumber.Should().Be(plotNumber);
+                ourStratumPlot.Remarks.Should().Be(remarks);
+                ourStratumPlot.KPI.Should().Be(kpi);
+                ourStratumPlot.IsEmpty.Should().Be(isEmpty);
+                ourStratumPlot.StratumCode.Should().Be(stratumCode);
+
+            }
+        }
+
+        [Fact]
+        public void UpdateStratumPlot()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var stratumPlot = new StratumPlot()
+                {
+                    PlotNumber = 1,
+                    StratumCode = "st1"
+                };
+
+                datastore.InsertStratumPlot("u1", stratumPlot);
+
+                stratumPlot.Remarks = "hey";
+                datastore.UpdateStratumPlot(stratumPlot);
+
+                var ourStratumPlot = datastore.GetStratumPlot("u1", "st1", 1);
+
+                ourStratumPlot.Remarks.Should().Be("hey");
+
+            }
+        }
+
+        [Fact]
+        public void DeleteStratumPlot()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var stratumPlot = new StratumPlot()
+                {
+                    PlotNumber = 1,
+                    StratumCode = "st1"
+                };
+
+                datastore.InsertStratumPlot("u1", stratumPlot);
+
+                var echo = datastore.GetStratumPlot("u1", "st1", 1);
+                echo.Should().NotBeNull("where's my echo");
+
+                datastore.DeleteStratumPlot(echo.Plot_GUID);
+
+            }
+        }
+
+        [Fact]
+        public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_no_tally_setup()
+        {
+            var method = CruiseDAL.Schema.CruiseMethods.PNT;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                database.Insert(new CuttingUnitDO
+                {
+                    Code = "u3",
+                    Area = 0
+                });
+
+                database.Insert(new StratumDO
+                {
+                    Code = "st3",
+                    Method = method
+                });
+
+                database.Insert(new StratumDO
+                {
+                    Code = "st4",
+                    Method = CruiseDAL.Schema.CruiseMethods.PCM
+                });
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 3,
+                    Stratum_CN = 3
+                });
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 3,
+                    Stratum_CN = 4
+                });
+
+                database.Insert(new SampleGroupDO
+                {
+                    Stratum_CN = 3,
+                    Code = "sg3",
+                    CutLeave = "C",
+                    UOM = "01",
+                    PrimaryProduct = "01"
+                });
+
+                database.Insert(new SampleGroupTreeDefaultValueDO
+                {
+                    SampleGroup_CN = 3,
+                    TreeDefaultValue_CN = 1
+                });
+
+                {
+                    //we are going to check that the tally population returned is vallid for a 
+                    //tally population with no count tree record associated
+                    //it should return one tally pop per sample group in the unit, that is associated with a FIX or PNT stratum
+                    var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
+                    unit3tallyPops.Should().HaveCount(1);
+                    var unit3tallyPop = unit3tallyPops.Single();
+                    unit3tallyPop.CountTree_CN.Should().BeNull("countTree_CN");
+                    unit3tallyPop.Species.Should().BeNull("Species");
+                    unit3tallyPop.LiveDead.Should().BeNull("liveDead");
+                    unit3tallyPop.StratumCode.Should().Be("st3");
+                    unit3tallyPop.SampleGroupCode.Should().Be("sg3");
+                    unit3tallyPop.InCruise.Should().BeTrue();
+                }
+
+
+
+            }
+        }
+
+        [Fact]
+        public void GetPlotTallyPopulationsByUnitCode()
+        {
+            var method = CruiseDAL.Schema.CruiseMethods.PCM;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+
+                //set up two cutting units one (u3) will be given a count tree record
+                //the other (u4) will not, 
+                //so that we can test situations where count tree records are missing for a unit
+                database.Insert(new CuttingUnitDO
+                {
+                    Code = "u3",
+                    Area = 0,
+                });
+
+                database.Insert(new CuttingUnitDO
+                {
+                    Code = "u4",
+                    Area = 0,
+                });
+
+                database.Insert(new StratumDO
+                {
+                    Code = "st3",
+                    Method = method,
+                });
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 3,
+                    Stratum_CN = 3,
+                });
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 4,
+                    Stratum_CN = 3,
+                });
+
+                database.Insert(new SampleGroupDO
+                {
+                    Stratum_CN = 3,
+                    Code = "sg3",
+                    CutLeave = "C",
+                    UOM = "01",
+                    PrimaryProduct = "01"
+                });
+
+                database.Insert(new SampleGroupTreeDefaultValueDO
+                {
+                    SampleGroup_CN = 3,
+                    TreeDefaultValue_CN = 1
+                });
+
+                database.Insert(new CountTreeDO()
+                {
+                    CuttingUnit_CN = 3,
+                    SampleGroup_CN = 3,
+                    Tally_CN = 1,
+                    TreeDefaultValue_CN = 1
+                });
+
+                //tally population should 
+                var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
+                unit3tallyPops.Should().HaveCount(1);
+                var unit3tallyPop = unit3tallyPops.Single();
+                unit3tallyPop.CountTree_CN.Should().NotBeNull();
+                unit3tallyPop.Species.Should().Be("sp1");
+                unit3tallyPop.StratumCode.Should().Be("st3");
+                unit3tallyPop.SampleGroupCode.Should().Be("sg3");
+                unit3tallyPop.InCruise.Should().BeFalse();
+
+                var unit4tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u4", 1);
+                unit4tallyPops.Should().HaveCount(1);
+                var unit4tallyPop = unit4tallyPops.Single();
+                unit4tallyPop.CountTree_CN.Should().BeNull();
+                unit4tallyPop.InCruise.Should().BeFalse();
+
+            }
+        }
+
+        #endregion plot
 
         [Theory]
         [InlineData("u1", "st1", "st2")]
@@ -230,6 +557,8 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
+        #region tree
+
         [Fact]
         public void CreateTree()
         {
@@ -295,6 +624,8 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
+        #endregion
+
         [Theory]
         [InlineData(null, null)]
         [InlineData("", "")]
@@ -306,7 +637,6 @@ namespace FScruiser.Core.Test.Services
             var sgCode = "sg1";
             var countMeasure = "C";
             var treeCount = 50;
-
 
             using (var database = CreateDatabase())
             {
@@ -358,10 +688,9 @@ namespace FScruiser.Core.Test.Services
                 tree.CountOrMeasure.Should().Be(countMeasure);
                 tree.TreeCount.Should().Be(treeCount);
 
-                if(string.IsNullOrWhiteSpace(species))
+                if (string.IsNullOrWhiteSpace(species))
                 {
                     tree.TreeDefaultValue_CN.Should().BeNull();
-                    
                 }
                 else
                 {
@@ -391,7 +720,6 @@ namespace FScruiser.Core.Test.Services
             var tallyLedgerID = Guid.NewGuid().ToString();
             var treeCount = 1;
 
-
             using (var database = CreateDatabase())
             {
                 var datastore = new CuttingUnitDatastore(database);
@@ -402,10 +730,10 @@ namespace FScruiser.Core.Test.Services
                     UnitCode = unitCode,
                     SampleGroupCode = sgCode,
                     StratumCode = stratumCode,
-                    Species = "sp1",
-                    LiveDead = "L",
+                    Species = species,
+                    LiveDead = liveDead,
                     Tree_GUID = tree_guid,
-                    TreeCount = 1
+                    TreeCount = treeCount
                 };
 
                 datastore.InsertTallyEntry(tallyEntry);

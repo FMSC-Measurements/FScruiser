@@ -16,6 +16,9 @@ namespace FScruiser.Models
         [Field(Name = "Code")]
         public string Code { get; set; }
 
+        [Field(Name = "Method")]
+        public string Method { get; set; }
+
         public override string ToString()
         {
             return Code;

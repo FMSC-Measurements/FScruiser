@@ -1,19 +1,25 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
     [EntitySource("Plot")]
     public class Plot
     {
+        [Field("PlotNumber")]
         public int PlotNumber { get; set; }
 
-        public int CuttingUnit_CN { get; set; }
+        [Field("Slope")]
+        public double Slope { get; set; }
 
-        public IList<StratumPlot> Plots { get; protected set; } = new List<StratumPlot>();
+        [Field("Aspect")]
+        public double Aspect { get; set; }
+
+        [Field("XCoordinate")]
+        public double XCoordinate { get; set; }
+
+        [Field("YCoordinate")]
+        public double YCoordinate { get; set; }
+
+        //public int CuttingUnit_CN { get; set; }
     }
 }

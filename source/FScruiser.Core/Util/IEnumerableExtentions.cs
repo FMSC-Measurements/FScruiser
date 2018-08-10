@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -10,6 +11,11 @@ namespace FScruiser.Util
         public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T> @this)
         {
             return @this ?? Enumerable.Empty<T>();
+        }
+
+        public static IEnumerable OrEmpty(this IEnumerable @this)
+        {
+            return @this ?? Enumerable.Empty<object>();
         }
 
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> e)

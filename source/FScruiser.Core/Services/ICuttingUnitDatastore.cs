@@ -8,11 +8,40 @@ namespace FScruiser.Services
 {
     public interface ICuttingUnitDatastore
     {
+        string GetCruisePurpose();
+
+        #region plots
+        int GetNextPlotNumber(string unitCode);
+
+        bool IsPlotNumberAvalible(string unitCode, int plotNumber);
+
+        IEnumerable<Plot> GetPlotsByUnitCode(string unitCode);
+
+        Plot GetPlot(string unitCode, int plotNumber);
+
+        //void UpsertStratumPlot(string unit, StratumPlot stratumPlot);
+
+        StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber);
+
+        void InsertStratumPlot(string unitCode, StratumPlot stratumPlot);
+
+        void UpdateStratumPlot(StratumPlot stratumPlot);
+
+        void DeleteStratumPlot(string plot_guid);
+
+        void DeletePlot(string unitCode, int plotNumber);
+
+        int GetNumTreeRecords(string unitCode, string stratumCode, int plotNumber);
+
+        #endregion plots
+
         #region stratra
 
         IEnumerable<Stratum> GetStrataByUnitCode(string unitCode);
 
         IEnumerable<StratumProxy> GetStrataProxiesByUnitCode(string unitCode);
+
+        IEnumerable<StratumProxy> GetPlotStrataProxies(string unitCode);
 
         #endregion stratra
 
@@ -32,6 +61,8 @@ namespace FScruiser.Services
 
         IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode);
 
+        IEnumerable<TallyPopulation_Plot> GetPlotTallyPopulationsByUnitCode(string unitCode, int plotNumber);
+
         #region treeFields
 
         IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode);
@@ -44,15 +75,23 @@ namespace FScruiser.Services
 
         #region tree
 
+        bool IsTreeNumberAvalible(string unitCode, int treeNumber, int? plotNumber = null);
+
+        int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon);
+
         string CreateTree(string unitCode, string stratumCode, string sampleGroupCode = null, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false);
 
         Tree GetTree(string tree_GUID);
 
         TreeStub GetTreeStub(string tree_GUID);
 
+        IEnumerable<TreeStub_Plot> GetPlotTreeProxies(string unitCode, int plotNumber);
+
         IEnumerable<Tree> GetTreesByUnitCode(string unitCode);
 
         IEnumerable<TreeStub> GetTreeStubsByUnitCode(string unitCode);
+
+        void InsertTree(TreeStub_Plot tree);
 
         void UpdateTree(Tree tree);
 
@@ -68,7 +107,15 @@ namespace FScruiser.Services
 
         #endregion tree
 
+        #region plot tree
+
+        string CreatePlotTree(string unitCode, int plotNumber, string stratumCode, string sampleGroupCode = null, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false);
+
+        #endregion plot tree
+
         IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
+
+        IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber);
 
         void InsertTallyEntry(TallyEntry entry);
 

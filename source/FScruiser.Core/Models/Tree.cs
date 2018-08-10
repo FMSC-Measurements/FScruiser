@@ -12,6 +12,13 @@ namespace FScruiser.Models
         [Field(Name = "Tree_GUID")]
         public string Tree_GUID { get; set; }
 
+        [Field(Alias = "unitCode", SQLExpression = "CuttingUnit.Code")]
+        public string UnitCode
+        {
+            get { return _unitCode; }
+            set { SetValue(ref _unitCode, value); }
+        }
+
         [Field(Alias = "stratumCode", SQLExpression = "Stratum.Code")]
         public string StratumCode
         {
@@ -24,6 +31,13 @@ namespace FScruiser.Models
         {
             get { return _sampleGroupCode; }
             set { SetValue(ref _sampleGroupCode, value); }
+        }
+
+        [Field(Alias = "PlotNumber", SQLExpression = "Plot.PlotNumber")]
+        public long? PlotNumber
+        {
+            get { return _plotNumber; }
+            set { SetValue(ref _plotNumber, value); }
         }
 
         [Field(Name = "TreeNumber")]
@@ -303,7 +317,6 @@ namespace FScruiser.Models
 
         #endregion table fields
 
-        private bool _hasFieldData;
         private string _stratumCode;
         private string _sampleGroupCode;
         private int _treeNumber;
@@ -344,6 +357,8 @@ namespace FScruiser.Models
         private DateTime _createdDate;
         private string _modifiedBy;
         private string _modifiedDate;
+        private long? _plotNumber;
+        private string _unitCode;
         private static readonly string DEFAULT_STM = "N";
         private static readonly string DEFAULT_COUNT_MEASURE = "C";
         private static readonly string DEFAULT_LIVE_DEAD = "L";

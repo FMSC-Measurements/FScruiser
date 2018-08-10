@@ -30,5 +30,8 @@ namespace FScruiser.Models
 
         [Field(Alias = "Diameter", SQLExpression = "max(DBH, DRC, DBHDoubleBarkThickness)")]
         public int Diameter { get; set; }
+
+        [Field(Name = "CountOrMeasure")]
+        public string CountOrMeasure { get; set; }
     }
 }
