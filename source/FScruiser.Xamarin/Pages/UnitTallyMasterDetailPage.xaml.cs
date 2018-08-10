@@ -1,5 +1,6 @@
 ﻿using FScruiser.Services;
 using FScruiser.XF.ViewModels;
+using Microsoft.AppCenter.Crashes;
 using Plugin.FilePicker;
 using Plugin.FilePicker.Abstractions;
 using System;
@@ -166,38 +167,52 @@ namespace FScruiser.XF.Pages
 
         private async void SelectFileAsync(object obj)
         {
+            string filePath = null;
+
             try
             {
                 var fileData = await CrossFilePicker.Current.PickFile();
                 if (fileData == null) { return; }//user canceled file picking
 
-                var filePath = fileData.FilePath;
+                filePath = fileData.FilePath;
 
                 LoadCruiseAsync(filePath);
             }
-            catch (Exception ex)
+            catch ()
             {
-                Debug.WriteLine($"Error:::{ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
 
-                await ServiceService.DialogService.ShowMessageAsync(ex.ToString(), "File Could Not Be Opended");
             }
         }
 
         private void LoadCruiseAsync(string path)
         {
-            //Check path is valid
-            if (File.Exists(path) == false)
+            try
             {
-                Debug.WriteLine($"           Cruise File Not Found {path}");
-                return;
+                if(path == null) { throw new ArgumentNullException(nameof(path)); }
+
+                //Check path is valid
+                if (File.Exists(path) == false) { throw new FileNotFoundException($"File Could Not Be Opened Because it Doesn't Exist: {path}"); }
+
+                ServiceService.CruiseDataService = new CruiseDataService(path);
+                //ServiceService.CuttingUnitDataService = null;
+                ServiceService.Datastore = null;//set data store to null incase we are changing files
+
+                MessagingCenter.Send<object>(this, Messages.CRUISE_FILE_SELECTED);
             }
+            catch (FileNotFoundException ex)
+            {
+                Debug.WriteLine($"Error:::{ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                Crashes.TrackError(ex, new Dictionary<string, string> { { "FilePath", path } });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error:::{ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                Crashes.TrackError(ex, new Dictionary<string, string> { { "FilePath", path } });
 
-            ServiceService.CruiseDataService = new CruiseDataService(path);
-            //ServiceService.CuttingUnitDataService = null;
-            ServiceService.Datastore = null;
-
-            MessagingCenter.Send<object>(this, Messages.CRUISE_FILE_SELECTED);
+                ServiceService.DialogService.ShowMessageAsync(ex.ToString(), "File Could Not Be Opended").ConfigureAwait(false);
+            }
         }
     }
 

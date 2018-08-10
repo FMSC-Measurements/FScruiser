@@ -3,6 +3,11 @@ using FScruiser.XF.Pages;
 using FScruiser.XF.Services;
 using Xamarin.Forms.Xaml;
 
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+using Microsoft.AppCenter.Distribute;
+
 namespace FScruiser.XF
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
@@ -38,6 +43,11 @@ namespace FScruiser.XF
         protected override void OnStart()
         {
             // Handle when your app starts
+
+            //start app center services
+//#if !DEBUG
+            AppCenter.Start($"ios={Secrets.APPCENTER_KEY_IOS};android={Secrets.APPCENTER_KEY_DROID};uwp={Secrets.APPCENTER_KEY_UWP}", typeof(Distribute), typeof(Analytics), typeof(Crashes));
+//#endif
         }
 
         protected override void OnSleep()
