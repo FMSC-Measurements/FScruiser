@@ -167,20 +167,20 @@ namespace FScruiser.XF.Pages
 
         private async void SelectFileAsync(object obj)
         {
-            string filePath = null;
-
             try
             {
                 var fileData = await CrossFilePicker.Current.PickFile();
                 if (fileData == null) { return; }//user canceled file picking
 
-                filePath = fileData.FilePath;
+                var filePath = fileData.FilePath;
 
                 LoadCruiseAsync(filePath);
             }
-            catch ()
+            catch(Exception ex)
             {
-
+                Debug.WriteLine($"Error:::{ex.Message}");
+                Debug.WriteLine(ex.StackTrace);
+                Crashes.TrackError(ex);
             }
         }
 
