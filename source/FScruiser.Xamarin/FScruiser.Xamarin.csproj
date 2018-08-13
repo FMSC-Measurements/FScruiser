@@ -7,13 +7,8 @@
     <AssemblyName>FScruiser.XF</AssemblyName>
     <Version>0.2</Version>
     <VersionSuffix>alpha</VersionSuffix>
-    <TransformOnBuild>true</TransformOnBuild>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <TextTransformPath>$(NuGetPackageRoot)\mono.texttransform\1.0.0\TextTransform.exe</TextTransformPath>
-  </PropertyGroup>
-    
   <!--<PropertyGroup>
     --><!-- 15.0 is for VS2017, adjust if necessary --><!--
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
@@ -79,13 +74,13 @@
   </ItemGroup>-->
 
   <ItemGroup>
-    <PackageReference Include="Clarius.TransformOnBuild" Version="1.21.0" />
     <PackageReference Include="DLToolkit.Forms.Controls.FlowListView" Version="2.0.10" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.8.0" />
     <PackageReference Include="Mono.TextTransform" Version="1.0.0" />
     <PackageReference Include="pt.Xamarin.Plugin.FilePicker" Version="2.0.0-beta" />
+    <PackageReference Include="Scripty.MsBuild" Version="0.7.4" />
     <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
     <PackageReference Include="Xamarin.Toolkit.Behaviors" Version="0.0.1.34-preview" />
     <PackageReference Include="Xamarin.Toolkit.Converters" Version="0.0.1.34-preview" />
@@ -108,11 +103,6 @@
     </Compile>
     <Compile Update="Pages\CuttingUnitListPage.xaml.cs">
       <DependentUpon>CuttingUnitListPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Secrets.local.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Secrets.local.tt</DependentUpon>
     </Compile>
     <Compile Update="ViewCells\TallyEntryTreeViewCell.xaml.cs">
       <DependentUpon>TallyEntryTreeViewCell.xaml</DependentUpon>
@@ -166,10 +156,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Secrets.local.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Secrets.local.cs</LastGenOutput>
-    </None>
     <T4Transform Include="Secrets.local.tt">
       <OutputFilePath>$(OutputPath)</OutputFilePath>
       <!-- Where the generated file should go -->
@@ -182,6 +168,12 @@
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Secrets.local.csx">
+      <Generator>ScriptyGenerator</Generator>
+    </None>
   </ItemGroup>
 
   <!--explicitly import default sdk targets here so that we can import text templating targets after -->
