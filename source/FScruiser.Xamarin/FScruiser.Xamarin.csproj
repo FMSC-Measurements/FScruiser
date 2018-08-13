@@ -8,6 +8,16 @@
     <Version>0.2</Version>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
+    
+  <PropertyGroup>
+    <!-- 15.0 is for VS2017, adjust if necessary -->
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <!-- This is what will cause the templates to be transformed when the project is built (default is false) -->
+    <TransformOnBuild>true</TransformOnBuild>
+    <!-- Set to false to transform files even if the output appears to be up-to-date (default is true)  -->
+    <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="NewFolder\**" />
@@ -98,6 +108,11 @@
     <Compile Update="Pages\CuttingUnitListPage.xaml.cs">
       <DependentUpon>CuttingUnitListPage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Secrets.local.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Secrets.local.tt</DependentUpon>
+    </Compile>
     <Compile Update="ViewCells\TallyEntryTreeViewCell.xaml.cs">
       <DependentUpon>TallyEntryTreeViewCell.xaml</DependentUpon>
     </Compile>
@@ -149,4 +164,18 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Secrets.local.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Secrets.local.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <!--explicitly import default sdk targets here so that we can import text templating targets after -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="$(VSToolsPath)\TextTemplating\Microsoft.TextTemplating.targets" />
 </Project>
