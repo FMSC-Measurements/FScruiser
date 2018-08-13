@@ -7,17 +7,18 @@
     <AssemblyName>FScruiser.XF</AssemblyName>
     <Version>0.2</Version>
     <VersionSuffix>alpha</VersionSuffix>
+    <TransformOnBuild>true</TransformOnBuild>
   </PropertyGroup>
     
-  <PropertyGroup>
-    <!-- 15.0 is for VS2017, adjust if necessary -->
+  <!--<PropertyGroup>
+    --><!-- 15.0 is for VS2017, adjust if necessary --><!--
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <!-- This is what will cause the templates to be transformed when the project is built (default is false) -->
+    --><!-- This is what will cause the templates to be transformed when the project is built (default is false) --><!--
     <TransformOnBuild>true</TransformOnBuild>
-    <!-- Set to false to transform files even if the output appears to be up-to-date (default is true)  -->
+    --><!-- Set to false to transform files even if the output appears to be up-to-date (default is true)  --><!--
     <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
-  </PropertyGroup>
+  </PropertyGroup>-->
 
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
@@ -79,6 +80,7 @@
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.8.0" />
     <PackageReference Include="pt.Xamarin.Plugin.FilePicker" Version="2.0.0-beta" />
+    <PackageReference Include="Unofficial.Microsoft.TextTemplating.BuildTasks" Version="15.0.0" />
     <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
     <PackageReference Include="Xamarin.Toolkit.Behaviors" Version="0.0.1.34-preview" />
     <PackageReference Include="Xamarin.Toolkit.Converters" Version="0.0.1.34-preview" />
@@ -163,6 +165,14 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Secrets.local.cs</LastGenOutput>
     </None>
+    <T4Transform Include="Secrets.local.tt">
+      <OutputFilePath>$(OutputPath)</OutputFilePath>
+      <!-- Where the generated file should go -->
+    </T4Transform>
+    <FileWrites Include="$(OutputPath)Secrets.local.tt">
+      <Visible>false</Visible>
+      <!-- so that it won't show up in the Solution Explorer -->
+    </FileWrites>
   </ItemGroup>
 
   <ItemGroup>
@@ -170,6 +180,6 @@
   </ItemGroup>
 
   <!--explicitly import default sdk targets here so that we can import text templating targets after -->
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
+  <!--<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />-->
 </Project>
