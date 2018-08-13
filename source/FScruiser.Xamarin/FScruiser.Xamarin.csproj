@@ -9,6 +9,10 @@
     <VersionSuffix>alpha</VersionSuffix>
     <TransformOnBuild>true</TransformOnBuild>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <TextTransformPath>$(NuGetPackageRoot)\mono.texttransform\1.0.0\TextTransform.exe</TextTransformPath>
+  </PropertyGroup>
     
   <!--<PropertyGroup>
     --><!-- 15.0 is for VS2017, adjust if necessary --><!--
@@ -80,6 +84,7 @@
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.8.0" />
+    <PackageReference Include="Mono.TextTransform" Version="1.0.0" />
     <PackageReference Include="pt.Xamarin.Plugin.FilePicker" Version="2.0.0-beta" />
     <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
     <PackageReference Include="Xamarin.Toolkit.Behaviors" Version="0.0.1.34-preview" />
