@@ -9,76 +9,11 @@
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
-  <!--<PropertyGroup>
-    --><!-- 15.0 is for VS2017, adjust if necessary --><!--
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    --><!-- This is what will cause the templates to be transformed when the project is built (default is false) --><!--
-    <TransformOnBuild>true</TransformOnBuild>
-    --><!-- Set to false to transform files even if the output appears to be up-to-date (default is true)  --><!--
-    <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
-  </PropertyGroup>-->
-
-  <ItemGroup>
-    <Compile Remove="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-
-  <!--<ItemGroup>
-    <None Remove="Cells\TallyCell.xaml" />
-    <None Remove="Cells\TallyFeedCell.xaml" />
-    <None Remove="Cells\TreeCell.xaml" />
-    <None Remove="Pages\CruisePage.xaml" />
-    <None Remove="Pages\MainPage.xaml" />
-    <None Remove="Pages\PlotEditPage.xaml" />
-    <None Remove="Pages\StratumTalliesPage.xaml" />
-    <None Remove="Pages\TallyPage.xaml" />
-    <None Remove="Pages\TreeEditPage.xaml" />
-    <None Remove="Pages\TreeListPage.xaml" />
-    <None Remove="Pages\TreeMasterDetailPage.xaml" />
-  </ItemGroup>-->
-
-  <!--<ItemGroup>
-    <EmbeddedResource Include="Cells\TallyCell.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Cells\TallyFeedCell.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Cells\TreeCell.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\CruisePage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\MainPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\PlotEditPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\StratumTalliesPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\TallyPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\TreeEditPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\TreeListPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pages\TreeMasterDetailPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-  </ItemGroup>-->
-
   <ItemGroup>
     <PackageReference Include="DLToolkit.Forms.Controls.FlowListView" Version="2.0.10" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.8.0" />
-    <PackageReference Include="Mono.TextTransform" Version="1.0.0" />
     <PackageReference Include="pt.Xamarin.Plugin.FilePicker" Version="2.0.0-beta" />
     <PackageReference Include="Scripty.MsBuild" Version="0.7.4" />
     <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
@@ -156,17 +91,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <T4Transform Include="Secrets.local.tt">
-      <OutputFilePath>$(OutputPath)</OutputFilePath>
-      <!-- Where the generated file should go -->
-    </T4Transform>
-    <FileWrites Include="$(OutputPath)Secrets.local.tt">
-      <Visible>false</Visible>
-      <!-- so that it won't show up in the Solution Explorer -->
-    </FileWrites>
-  </ItemGroup>
-
-  <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
@@ -175,8 +99,4 @@
       <Generator>ScriptyGenerator</Generator>
     </None>
   </ItemGroup>
-
-  <!--explicitly import default sdk targets here so that we can import text templating targets after -->
-  <!--<Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />-->
 </Project>
