@@ -82,7 +82,9 @@ namespace FScruiser.XF.ViewModels
 
         private void DeleteTree(TreeStub tree)
         {
-            throw new NotImplementedException();
+            if(tree == null) { return;  }
+
+            Datastore.DeleteTree(tree.Tree_GUID);
         }
     }
 }

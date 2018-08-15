@@ -47,7 +47,7 @@ namespace FScruiser.Core.Test.Services
                 Method = "something",
             });
 
-            
+
 
             //Unit - Strata
             database.Insert(new CuttingUnitStratumDO
@@ -68,7 +68,7 @@ namespace FScruiser.Core.Test.Services
                 Stratum_CN = 2,
             });
 
-            
+
 
             //Sample Groups
             database.Insert(new SampleGroupDO
@@ -89,7 +89,7 @@ namespace FScruiser.Core.Test.Services
                 PrimaryProduct = "01"
             });
 
-            
+
 
             //TreeDefaults
 
@@ -133,7 +133,7 @@ namespace FScruiser.Core.Test.Services
                 TreeDefaultValue_CN = 3
             });
 
-            
+
 
             database.Insert(new TallyDO { Hotkey = "A", Description = "something" });
 
@@ -152,7 +152,7 @@ namespace FScruiser.Core.Test.Services
                 TreeDefaultValue_CN = 1
             });
 
-            
+
 
             return database;
         }
@@ -249,7 +249,7 @@ namespace FScruiser.Core.Test.Services
 
                 var plot_guid = stratumPlot.Plot_GUID;
                 plot_guid.Should().NotBeNullOrEmpty();
-                
+
 
                 datastore.IsPlotNumberAvalible(unitCode, plotNumber).Should().BeFalse("we just took that plot number");
 
@@ -621,6 +621,33 @@ namespace FScruiser.Core.Test.Services
                 var treeAgain = datastore.GetTree(tree_GUID);
 
                 treeAgain.DBH.Should().Be(tree.DBH);
+            }
+        }
+
+        [Fact]
+        public void DeleteTree()
+        {
+            var unitCode = "u1";
+            var stratumCode = "st1";
+            var sgCode = "sg1";
+            var species = "sp1";
+            var liveDead = "L";
+            var countMeasure = "C";
+            var treeCount = 1;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var tree_GUID = datastore.CreateTree(unitCode, stratumCode, sgCode, species, liveDead, countMeasure, treeCount);
+
+                var tree = datastore.GetTree(tree_GUID);
+                tree.Should().NotBeNull();
+
+                datastore.DeleteTree(tree_GUID);
+
+                tree = datastore.GetTree(tree_GUID);
+                tree.Should().BeNull();
             }
         }
 
