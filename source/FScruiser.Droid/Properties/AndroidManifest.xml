@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" android:versionCode="2" android:versionName="0.2">
 	<application android:label="FScruiser" android:theme="@style/MyTheme"></application>
-	<uses-sdk android:minSdkVersion="22" />
+	<uses-sdk android:minSdkVersion="22" android:targetSdkVersion="27" />
 </manifest>

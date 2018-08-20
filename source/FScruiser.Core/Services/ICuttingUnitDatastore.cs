@@ -21,7 +21,7 @@ namespace FScruiser.Services
 
         //void UpsertStratumPlot(string unit, StratumPlot stratumPlot);
 
-        StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber);
+        StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber, bool insertIfNotExists = false);
 
         void InsertStratumPlot(string unitCode, StratumPlot stratumPlot);
 

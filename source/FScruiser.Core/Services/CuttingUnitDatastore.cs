@@ -108,26 +108,35 @@ namespace FScruiser.Services
                 , new object[] { unitCode, plotNumber }).FirstOrDefault();
         }
 
-        public StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber)
+        public StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber, bool insertIfNotExists = false)
         {
-            //var count = Database.ExecuteScalar<int>("SELECT count(*) FROM Plot " +
-            //        "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-            //        "JOIN Stratum USING (Stratum_CN) " +
-            //        "WHERE CuttingUnit.Code = @p1 " +
-            //        "AND Stratum.Code = @p2 " +
-            //        //"AND PlotNumber = @p3" +
-            //        ";"
-            //        , new object[] { unitCode, stratumCode, plotNumber });
-
-            var plotStratum = Database.Query<StratumPlot>("SELECT 1 AS InCruise, Stratum.Code AS StratumCode, Plot.* FROM Plot " +
+            var stratumPlot = Database.Query<StratumPlot>("SELECT 1 AS InCruise, Stratum.Code AS StratumCode, Plot.* FROM Plot " +
                     "JOIN CuttingUnit USING (CuttingUnit_CN) " +
                     "JOIN Stratum USING (Stratum_CN) " +
                     "WHERE CuttingUnit.Code = @p1 " +
                     "AND Stratum.Code = @p2 " +
                     "AND PlotNumber = @p3;", new object[] { unitCode, stratumCode, plotNumber }).FirstOrDefault();
-            if(plotStratum != null) { plotStratum.InCruise = true; }
 
-            return plotStratum;
+            if(stratumPlot == null)
+            {
+                stratumPlot = new StratumPlot()
+                {
+                    PlotNumber = plotNumber,
+                    StratumCode = stratumCode,
+                    InCruise = false
+                };
+
+                if(insertIfNotExists)
+                {
+                    InsertStratumPlot(unitCode, stratumPlot);
+                }
+            }
+            else
+            {
+                stratumPlot.InCruise = true;
+            }
+
+            return stratumPlot;
         }
 
         public void InsertStratumPlot(string unitCode, StratumPlot stratumPlot)
@@ -159,6 +168,7 @@ namespace FScruiser.Services
                         "AndroidUser"});
 
             stratumPlot.Plot_GUID = plot_guid;
+            stratumPlot.InCruise = true;
         }
 
         public void UpdateStratumPlot(StratumPlot stratumPlot)
