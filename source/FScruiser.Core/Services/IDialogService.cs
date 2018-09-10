@@ -8,7 +8,7 @@ namespace FScruiser.Services
     {
         Task<bool> AskCancelAsync(String message, String caption, bool defaultCancel);
 
-        Task AskCruiserAsync(TallyEntry tree);
+        Task<string> AskCruiserAsync();
 
         Task<string> AskValueAsync(string prompt, params string[] values);
 
@@ -17,7 +17,5 @@ namespace FScruiser.Services
         Task<bool> AskYesNoAsync(string message, String caption, bool defaultNo = false);
 
         Task ShowMessageAsync(string message, string caption = null);
-
-        Task ShowEditTreeAsync(string tree_guid);
     }
 }

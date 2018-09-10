@@ -73,6 +73,12 @@ namespace FScruiser.Services
             return Database.ExecuteScalar<string>("SELECT Purpose FROM Sale LIMIT 1;");
         }
 
+        public IEnumerable<CuttingUnit> GetUnits()
+        {
+            return Database.From<CuttingUnit>()
+                .Query().ToList();
+        }
+
         #region plot
 
         public int GetNextPlotNumber(string unitCode)
@@ -129,6 +135,7 @@ namespace FScruiser.Services
                 if(insertIfNotExists)
                 {
                     InsertStratumPlot(unitCode, stratumPlot);
+                    stratumPlot.InCruise = true;
                 }
             }
             else
@@ -362,8 +369,8 @@ namespace FScruiser.Services
                         sg.SgCode, sg.StCode
                     }).ToArray();
 
-                //if there are no tally populations in the sample group
-                //and the cruise method is a single stage plot method
+                //if there are tally populations then go through them and 
+                //check if they are in the cruise for this plot number
                 if (sgTallyPops.Any())
                 {
                     foreach(var tallyPop in sgTallyPops)
@@ -381,6 +388,8 @@ namespace FScruiser.Services
                             "WHERE Stratum.Code = @p1 AND CuttingUnit.Code = @p2 AND PlotNumber = @p3;", tallyPop.StratumCode, unitCode, plotNumber) ?? false;
                     }
                 }
+                //if there are no tally populations in the sample group
+                //and the cruise method is a single stage plot method
                 else if (sg.Method == CruiseMethods.FIX || sg.Method == CruiseMethods.PNT)
                 {
                     sgTallyPops = new TallyPopulation_Plot[]
@@ -872,7 +881,8 @@ namespace FScruiser.Services
         {
             return Database.From<TallyEntry>()
                 .LeftJoin("Tree", "USING (Tree_GUID)")
-                .Where("UnitCode = @p1 AND PlotNumber IS NULL ")
+                //.Where("UnitCode = @p1 AND PlotNumber IS NULL ")
+                .Where("UnitCode = @p1")
                 .OrderBy("TimeStamp DESC")
                 .Limit(NUMBER_OF_TALLY_ENTRIES_PERPAGE, 0 * NUMBER_OF_TALLY_ENTRIES_PERPAGE)
                 .Query(unitCode);

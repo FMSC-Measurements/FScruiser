@@ -2,6 +2,8 @@
 using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.XF.Services;
+using Prism.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,7 +79,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public string UnitCode { get; }
+        public string UnitCode { get; set; }
 
         public ICommand TallyCommand => _tallyCommand
             ?? (_tallyCommand = new Command<TallyPopulation>(async (x) => await this.TallyAsync(x)));
@@ -86,32 +88,67 @@ namespace FScruiser.XF.ViewModels
             ?? (_stratumSelectedCommand = new Command<string>(x => SetStratumFilter(x)));
 
         public ICommand EditTreeCommand => _editTreeCommand
-            ?? (_editTreeCommand = new Command<TallyEntry>(EditTree));
+            ?? (_editTreeCommand = new Command<string>(EditTree));
 
-        public void EditTree(TallyEntry entry)
+        public void EditTree(string tree_guid)
         {
-            var task = DialogService.ShowEditTreeAsync(entry.Tree_GUID);
+            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { "Tree_Guid", tree_guid } }, useModalNavigation: true);
         }
 
         public ICuttingUnitDatastore Datastore { get; }
+
         public IDialogService DialogService { get; }
         public ISampleSelectorDataService SampleSelectorService { get; }
         public ITallySettingsDataService TallySettings { get; }
         public ISoundService SoundService { get; }
 
-        public UnitTreeTallyViewModel(string unitCode, 
-            ICuttingUnitDatastore datastore, 
-            IDialogService dialogService, 
-            ISampleSelectorDataService sampleSelectorDataService,
-            ITallySettingsDataService tallySettings, 
-            ISoundService soundService)
+        public UnitTreeTallyViewModel(INavigationService navigationService,
+            ICuttingUnitDatastoreProvider datastoreProvider,
+            IDialogService dialogService,
+            ITallySettingsDataService tallySettings,
+            ISoundService soundService) : base(navigationService)
         {
-            UnitCode = unitCode;
-            Datastore = datastore;
+            Datastore = datastoreProvider.CuttingUnitDatastore;
+            SampleSelectorService = datastoreProvider.SampleSelectorDataService;
             DialogService = dialogService;
-            SampleSelectorService = sampleSelectorDataService;
             TallySettings = tallySettings;
             SoundService = soundService;
+        }
+
+        public override void OnNavigatedTo(NavigationParameters parameters)
+        {
+            LoadData(parameters);
+
+            base.OnNavigatedTo(parameters);
+
+            MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, (sender, tree_guid) => EditTree(tree_guid));
+            MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, (sender, tallyEntry) => Untally(tallyEntry));
+        }
+
+        public override void OnNavigatedFrom(NavigationParameters parameters)
+        {
+            base.OnNavigatedFrom(parameters);
+
+            MessagingCenter.Unsubscribe<object>(this, Messages.EDIT_TREE_CLICKED);
+            MessagingCenter.Unsubscribe<object>(this, Messages.UNTALLY_CLICKED);
+        }
+
+        private void LoadData(NavigationParameters parameters)
+        {
+            
+            if (UnitCode == null) //don't reload param if navigating backwards
+            {
+                UnitCode = parameters.GetValue<string>("UnitCode");
+            }
+
+            var datastore = Datastore;
+
+            var tallyLookup = datastore.GetTallyPopulationsByUnitCode(UnitCode)
+                .GroupBy(x => x.StratumCode)
+                .ToDictionary(x => x.Key, x => (IEnumerable<TallyPopulation>)x.ToArray());
+            Tallies = tallyLookup;
+
+            TallyFeed = datastore.GetTallyEntriesByUnitCode(UnitCode).Reverse().ToObservableCollection();
         }
 
         protected void RaiseTallyEntryAdded()
@@ -119,26 +156,11 @@ namespace FScruiser.XF.ViewModels
             TallyEntryAdded?.Invoke(this, null);
         }
 
-        public async Task InitAsync()
-        {
-            var datastore = Datastore;
-            var unitCode = UnitCode;
-            if (datastore != null)
-            {
-                //await dataService.RefreshDataAsync();
-
-                var tallyLookup = datastore.GetTallyPopulationsByUnitCode(unitCode)
-                    .GroupBy(x => x.StratumCode)
-                    .ToDictionary(x => x.Key, x => (IEnumerable<TallyPopulation>)x.ToArray());
-                Tallies = tallyLookup;
-
-                TallyFeed = datastore.GetTallyEntriesByUnitCode(unitCode).Reverse().ToObservableCollection();
-            }
-        }
-
         private async Task TallyAsync(TallyPopulation pop)
         {
             var entry = await TreeBasedTallyLogic.TallyAsync(UnitCode, pop, Datastore, SampleSelectorService, DialogService);//TODO async
+
+            if(entry == null) { return; }
             Datastore.InsertTallyEntry(entry);
 
             TallyFeed.Add(entry);
@@ -169,7 +191,11 @@ namespace FScruiser.XF.ViewModels
 
                 if (TallySettings.EnableCruiserPopup)
                 {
-                    await DialogService.AskCruiserAsync(entry);
+                    var cruiser = await DialogService.AskCruiserAsync();
+                    if (cruiser != null)
+                    {
+                        entry.Initials = cruiser;
+                    }
                 }
                 else
                 {
@@ -184,6 +210,7 @@ namespace FScruiser.XF.ViewModels
                 //}
             }
         }
+
 
         public void Untally(TallyEntry tallyEntry)
         {

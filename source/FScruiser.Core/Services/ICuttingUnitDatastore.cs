@@ -10,6 +10,8 @@ namespace FScruiser.Services
     {
         string GetCruisePurpose();
 
+        IEnumerable<CuttingUnit> GetUnits();
+
         #region plots
         int GetNextPlotNumber(string unitCode);
 

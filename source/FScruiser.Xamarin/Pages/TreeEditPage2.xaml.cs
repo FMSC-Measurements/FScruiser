@@ -86,17 +86,23 @@ namespace FScruiser.XF.Pages
 
             if (BindingContext is TreeEditViewModel viewModel)
             {
-                UpdateTreeFields(viewModel);
+                viewModel.TreeFieldsChanged += ViewModel_TreeFieldsChanged;
             }
         }
 
         protected override void OnDisappearing()
         {
+            base.OnDisappearing();
+
             if (BindingContext is TreeEditViewModel viewModel)
             {
-                viewModel.SaveTree();
+                viewModel.TreeFieldsChanged -= ViewModel_TreeFieldsChanged;
             }
-            //base.OnDisappearing();
+        }
+
+        private void ViewModel_TreeFieldsChanged(object sender, IEnumerable<TreeFieldSetupDO> e)
+        {
+            UpdateTreeFields((TreeEditViewModel)sender);
         }
 
         protected void UpdateTreeFields(TreeEditViewModel viewModel)

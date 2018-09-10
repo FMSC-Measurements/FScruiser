@@ -22,9 +22,9 @@
                        VerticalTextAlignment="Center"
                        HorizontalOptions="FillAndExpand" 
                        Margin="10,0,0,0"/>
-                <Switch  IsToggled="{Binding DataService.EnableCruiserPopup}" HorizontalOptions="End"/>
+                <Switch  IsToggled="{Binding EnableCruiserPopup}" HorizontalOptions="End"/>
             </StackLayout>
-            <ListView x:Name="_cruisersListView" Grid.Row="2" ItemsSource="{Binding DataService.Cruisers}">
+            <ListView x:Name="_cruisersListView" Grid.Row="2" ItemsSource="{Binding Cruisers}">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell x:Name="something" >
@@ -48,7 +48,7 @@
                                 <BoxView Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" />
                                 <BoxView Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2"/>
                                 <Label Grid.Column="1" Grid.Row="0" Text="{Binding .}" TextColor="Black" VerticalTextAlignment="Center" Margin="10,0,0,0"/>
-                                <Button Grid.Column="2" Grid.Row="0" Text="X" Command="{Binding RemoveCruiserCommand, Source={x:Reference _self}}" CommandParameter="{Binding .}" BackgroundColor="Red"/>
+                                <Button Grid.Column="2" Grid.Row="0" Text="X" Command="{Binding BindingContext.RemoveCruiserCommand, Source={x:Reference _self}}" CommandParameter="{Binding .}" BackgroundColor="Red"/>
                             </Grid>
 
                         </ViewCell>
@@ -59,7 +59,9 @@
                 <Button x:Name="_addCruiserButton"
                     Style="{StaticResource button_base}" 
                         HorizontalOptions="Start" 
-                        Image="ic_plus_white_18dp.png" 
+                        Image="ic_plus_white_18dp.png"
+                        Command="{Binding AddCruiserCommand}"
+                        CommandParameter="{Binding Text, Source={x:Reference _addCruiserEntry}}"
                         BackgroundColor="{StaticResource primary_500}" 
                         WidthRequest="60"/>
                 <Entry x:Name="_addCruiserEntry" 

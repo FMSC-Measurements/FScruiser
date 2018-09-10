@@ -14,7 +14,7 @@ namespace FScruiser.Util
             "( " +
             "TallyLedgerID TEXT PRIMARY KEY, " +
             "UnitCode TEXT NOT NULL, " +
-            "PlotNumber INTEGER, " +
+            //"PlotNumber INTEGER, " + // no plot number, currently we are only using tally ledger for tree based
             "StratumCode TEXT NOT NULL, " +
             "SampleGroupCode TEXT NOT NULL, " +
             "Species TEXT, " +

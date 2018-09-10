@@ -15,7 +15,7 @@ namespace FScruiser.Droid
 
             Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            var app = new App(new AndroidServiceService(this.ApplicationContext));
+            var app = new App(new AndroidPlatformInitializer(this));
 
             LoadApplication(app);
         }

@@ -34,34 +34,19 @@ namespace FScruiser.XF.Pages
             
         }
 
-        public UnitTreeTallyPage(string unitCode,
-            ICuttingUnitDatastore datastore,
-            IDialogService dialogService,
-            ISampleSelectorDataService sampleSelectorDataService,
-            ITallySettingsDataService tallySettings,
-            ISoundService soundService) : this()
-        {
-            BindingContext = new UnitTreeTallyViewModel(unitCode,
-                datastore,
-                dialogService,
-                sampleSelectorDataService,
-                tallySettings,
-                soundService);
-        }
-
         protected override void OnAppearing()
         {
             base.OnAppearing();
 
             if (BindingContext is UnitTreeTallyViewModel vm)
             {
-                vm.InitAsync().ConfigureAwait(true);
+                //vm.InitAsync().ConfigureAwait(true);
                 vm.TallyEntryAdded += TallyFeed_CollectionChanged;
                 TallyFeed_CollectionChanged(null, null);
             }
 
-            MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED, _tallyEntryViewCell_editClicked);
-            MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, _tallyEntryViewCell_UntallyClicked);
+            //MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, _tallyEntryViewCell_editClicked);
+            //MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, _tallyEntryViewCell_UntallyClicked);
             MessagingCenter.Subscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED, _tallyEntryViewCell_IsSelectedChanged);
         }
 
@@ -74,8 +59,6 @@ namespace FScruiser.XF.Pages
                 vm.TallyEntryAdded -= TallyFeed_CollectionChanged;
             }
 
-            MessagingCenter.Unsubscribe<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED);
-            MessagingCenter.Unsubscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED);
             MessagingCenter.Unsubscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED);
         }
 
@@ -128,26 +111,31 @@ namespace FScruiser.XF.Pages
         void _tallyEntryViewCell_IsSelectedChanged(object sender, bool isSelected)
         {
             _treeCellIsSelected = isSelected;
-        }
 
-
-        void _tallyEntryViewCell_UntallyClicked(object sender, TallyEntry tallyEntry)
-        {
-            if(tallyEntry != null)
+            if(isSelected && sender != null)
             {
-                ViewModel.Untally(tallyEntry);
-                _treeCellIsSelected = false;
+                _tallyFeedListView.ScrollTo(sender, ScrollToPosition.MakeVisible, false);
             }
         }
 
-        void _tallyEntryViewCell_editClicked(object sender, TallyEntry tallyEntry)
-        {
-            if (tallyEntry != null)
-            {
-                var viewModel = ViewModel;
-                viewModel.EditTree(tallyEntry);
-            }
-        }
+
+        //void _tallyEntryViewCell_UntallyClicked(object sender, TallyEntry tallyEntry)
+        //{
+        //    if(tallyEntry != null)
+        //    {
+        //        ViewModel.Untally(tallyEntry);
+        //        _treeCellIsSelected = false;
+        //    }
+        //}
+
+        //void _tallyEntryViewCell_editClicked(object sender, string tree_guid)
+        //{
+        //    if (tree_guid != null)
+        //    {
+        //        var viewModel = ViewModel;
+        //        viewModel.EditTree(tree_guid);
+        //    }
+        //}
     }
 
     

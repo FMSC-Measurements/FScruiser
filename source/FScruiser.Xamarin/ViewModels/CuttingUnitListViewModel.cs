@@ -1,21 +1,18 @@
 ﻿using FScruiser.Models;
-using FScruiser.Services;
-using FScruiser.XF.Pages;
-using Plugin.FilePicker;
+using FScruiser.XF.Services;
+using Prism.Ioc;
+using Prism.Navigation;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
-    public class CuttingUnitListViewModel : ViewModelBase, IDisposable
+    public class CuttingUnitListViewModel : ViewModelBase
     {
         private IEnumerable<CuttingUnit> _units;
 
-        public ICruiseDataService DataService => ServiceService.CruiseDataService;
+        public IContainerExtension Container { get; protected set; }
 
         public bool IsFileNotOpen => Units == null;
 
@@ -25,9 +22,13 @@ namespace FScruiser.XF.ViewModels
             set { SetValue(ref _units, value); }
         }
 
-        public CuttingUnitListViewModel()
+        public ICuttingUnitDatastoreProvider CuttingUnitDatastoreProvider { get; }
+
+        public CuttingUnitListViewModel(ICuttingUnitDatastoreProvider cuttingUnitDatastoreProvider, INavigationService navigationService) : base(navigationService)
         {
-            MessagingCenter.Subscribe<object>(this, Messages.CRUISE_FILE_SELECTED, (sender) =>
+            CuttingUnitDatastoreProvider = cuttingUnitDatastoreProvider ?? throw new ArgumentNullException(nameof(cuttingUnitDatastoreProvider));
+
+            MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_OPENED, (sender, path) =>
             {
                 LoadData();
             });
@@ -35,71 +36,26 @@ namespace FScruiser.XF.ViewModels
 
         private void LoadData()
         {
-            var dataService = DataService;
-            if (dataService != null)
+            var datastore = CuttingUnitDatastoreProvider.CuttingUnitDatastore;
+            if (datastore != null)
             {
-                Units = DataService.Units;
+                Units = datastore.GetUnits();
                 base.RaisePropertyChanged(nameof(IsFileNotOpen));
             }
         }
 
-        public Task InitAsync()
+        public override void OnNavigatedTo(NavigationParameters parameters)
         {
             LoadData();
-            return Task.CompletedTask;
+
+            base.OnNavigatedTo(parameters);
         }
 
         public void SelectUnit(CuttingUnit unit)
         {
             if (unit == null) { throw new ArgumentNullException(nameof(unit)); }
 
-            var cruisePath = DataService.Path;
-            var datastore = new CuttingUnitDatastore(cruisePath);
-            //var unitDataService = new CuttingUnitDataService(datastore, unit);
-
-            //ServiceService.CuttingUnitDataService = unitDataService;
-            ServiceService.Datastore = datastore;
-            ServiceService.SampleSelectorRepository = new SampleSelectorRepository(datastore);
-
             MessagingCenter.Send<string>(unit.Code, Messages.CUTTING_UNIT_SELECTED);
         }
-
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-        
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-
-                disposedValue = true;
-            }
-        }
-
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~MainViewModel() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-
-        #endregion IDisposable Support
     }
 }

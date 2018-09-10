@@ -4,44 +4,44 @@ using FScruiser.Models.Validators;
 using FScruiser.Services;
 using FScruiser.Util;
 using FScruiser.Validation;
+using FScruiser.XF.Services;
+using Microsoft.AppCenter.Crashes;
+using Prism.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace FScruiser.XF.ViewModels
 {
-    public class TreeEditViewModel : ViewModelBase, IDisposable
+    public class TreeEditViewModel : ViewModelBase
     {
-        private Tree _tree;
-        private IEnumerable<TreeFieldSetupDO> _treeFields;
+        private static readonly TreeDefaultProxy NULL_TREE_DEFAULT = new TreeDefaultProxy() { Species = "", LiveDead = "" };
 
-        private bool _useSimplifiedTreeFields;
+        protected ICuttingUnitDatastore Datastore { get; set; }
+        protected IDialogService DialogService { get; set; }
 
-        public string UnitCode { get; }
+        private TreeValidator _treeValidator;
 
-        private IEnumerable<SampleGroupProxy> _sampleGroups;
+        public bool UseSimplifiedTreeFields { get; set; } = false;
+
         private IEnumerable<TreeDefaultProxy> _treeDefaults;
-        private IEnumerable<StratumProxy> _strata;
-        private ValidationResult _lastValidationResult;
+
         private bool _suspendSave;
 
         public event EventHandler<IEnumerable<TreeFieldSetupDO>> TreeFieldsChanged;
 
         public event EventHandler ErrorsAndWarningsChanged;
 
-        //protected ICuttingUnitDataService Dataservice => ServiceService.CuttingUnitDataService;
-        protected ICuttingUnitDatastore Datastore => ServiceService.Datastore;
-        protected IDialogService DialogService => ServiceService.DialogService;
-
+        private ValidationResult _lastValidationResult;
         public IEnumerable<ValidationError> ErrorsAndWarnings => _lastValidationResult?.Errors.OrEmpty();
 
         public IEnumerable<TreeFieldSetupDO> TreeFields
         {
             get
             {
-                if (_useSimplifiedTreeFields)
+                if (UseSimplifiedTreeFields)
                 {
-                    return _treeFieldsExtended.Where(x => Constants.LESS_IMPORTANT_TREE_FIELDS.Contains(x.Field) == false);
+                    return _treeFieldsExtended.Where(x => FScruiser.Constants.LESS_IMPORTANT_TREE_FIELDS.Contains(x.Field) == false);
                 }
                 else
                 {
@@ -49,6 +49,8 @@ namespace FScruiser.XF.ViewModels
                 }
             }
         }
+
+        private IEnumerable<TreeFieldSetupDO> _treeFieldsExtended;
 
         public IEnumerable<TreeFieldSetupDO> TreeFieldsExtended
         {
@@ -62,6 +64,8 @@ namespace FScruiser.XF.ViewModels
         }
 
         #region Stratum
+
+        private IEnumerable<StratumProxy> _strata;
 
         public IEnumerable<StratumProxy> Strata
         {
@@ -229,7 +233,9 @@ namespace FScruiser.XF.ViewModels
 
         #endregion SampleGroup
 
-        private TreeDefaultProxy _nullTreeDefault = new TreeDefaultProxy() { Species = "", LiveDead = "" };
+        #region TreeDefault
+
+        private IEnumerable<SampleGroupProxy> _sampleGroups;
 
         public IEnumerable<TreeDefaultProxy> TreeDefaults
         {
@@ -275,6 +281,12 @@ namespace FScruiser.XF.ViewModels
             return TreeDefaults.OrEmpty().Where(x => x.Species == tree.Species && x.LiveDead == tree.LiveDead).FirstOrDefault();
         }
 
+        #endregion TreeDefault
+
+        #region tree property
+
+        private Tree _tree;
+
         public Tree Tree
         {
             get { return _tree; }
@@ -290,25 +302,56 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public TreeEditViewModel(bool useSimplifiedTreeFields = false) : base()
+        private void _tree_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            _useSimplifiedTreeFields = useSimplifiedTreeFields;
+            var property = e.PropertyName;
+            if (property == nameof(Tree.Species)
+                || property == nameof(Tree.StratumCode)
+                || property == nameof(Tree.SampleGroupCode)
+                || property == nameof(Tree.LiveDead)) { return; }//when these property change we will be saving the tree manualy
+
+            RefreshErrorsAndWarnings(Tree);
         }
 
-        public void Init(string tree_guid)
+        #endregion tree property
+
+        public TreeEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
+            , IDialogService dialogService)
         {
+            Datastore = datastoreProvider.CuttingUnitDatastore;
+            DialogService = dialogService;
+        }
+
+        public override void OnNavigatedFrom(NavigationParameters parameters)
+        {
+            base.OnNavigatedFrom(parameters);
+            Tree = null;//unwire tree
+        }
+
+        public override void OnNavigatedTo(NavigationParameters parameters)
+        {
+            LoadData(parameters);
+            base.OnNavigatedTo(parameters);
+        }
+
+        private void LoadData(NavigationParameters parameters)
+        {
+            var tree_guid = parameters.GetValue<string>("Tree_Guid");
+
             var datastore = Datastore;
 
-            var tree = Tree = Datastore.GetTree(tree_guid);
-
-            var unitCode = tree.UnitCode;
-            Strata = Datastore.GetStrataProxiesByUnitCode(unitCode).ToArray();
+            var tree = Tree = datastore.GetTree(tree_guid);
 
             if (tree == null)
             {
-                System.Diagnostics.Debug.Write("Tree was null when it souldn't have");
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("Tree Read Error", new Dictionary<string, string>() { { "params", parameters.ToString() } });
+
+                System.Diagnostics.Debug.Write("Error::::Tree was null when it souldn't have");
                 return;
             }
+
+            var unitCode = tree.UnitCode;
+            Strata = datastore.GetStrataProxiesByUnitCode(unitCode).ToArray();
 
             RefreshSampleGroups(tree);
             RefreshTreeDefaults(tree);
@@ -330,7 +373,7 @@ namespace FScruiser.XF.ViewModels
             var sampleGroup = tree.SampleGroupCode;
             var stratum = tree.StratumCode;
             var treeDefaults = Datastore.GetTreeDefaultProxies(stratum, sampleGroup);
-            _treeDefaults = treeDefaults.Prepend(_nullTreeDefault).ToArray();
+            _treeDefaults = treeDefaults.Prepend(NULL_TREE_DEFAULT).ToArray();
             RaisePropertyChanged(nameof(this.TreeDefaults));
             RaisePropertyChanged(nameof(this.TreeDefault));
         }
@@ -339,7 +382,7 @@ namespace FScruiser.XF.ViewModels
         {
             var stratumCode = tree.StratumCode;
 
-            TreeFieldsExtended = Datastore.GetTreeFieldsByStratumCode(stratumCode);
+            TreeFieldsExtended = Datastore.GetTreeFieldsByStratumCode(stratumCode).ToArray();
         }
 
         protected void RefreshValidationRules(Tree tree)
@@ -372,17 +415,6 @@ namespace FScruiser.XF.ViewModels
         {
             ErrorsAndWarningsChanged?.Invoke(this, null);
             RaisePropertyChanged(nameof(ErrorsAndWarnings));
-        }
-
-        private void _tree_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            var property = e.PropertyName;
-            if (property == nameof(Tree.Species)
-                || property == nameof(Tree.StratumCode)
-                || property == nameof(Tree.SampleGroupCode)
-                || property == nameof(Tree.LiveDead)) { return; }//when these property change we will be saving the tree manualy
-
-            RefreshErrorsAndWarnings(Tree);
         }
 
         public void SaveTree()
@@ -424,34 +456,5 @@ namespace FScruiser.XF.ViewModels
         //        //this.HiddenPrimary = 0;
         //    }
         //}
-
-        #region IDisposable Support
-
-        private bool disposedValue = false; // To detect redundant calls
-        private TreeValidator _treeValidator;
-        private IEnumerable<TreeFieldSetupDO> _treeFieldsExtended;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    Tree = null;
-                }
-                disposedValue = true;
-            }
-            else
-            {
-                throw new ObjectDisposedException(nameof(TreeEditViewModel));
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        #endregion IDisposable Support
     }
 }

@@ -1,13 +1,10 @@
-﻿using System;
+﻿using FScruiser.Models;
+using FScruiser.Services;
+using FScruiser.XF.Services;
+using Prism.Navigation;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using FScruiser.Models;
-using FScruiser.Pages;
-using FScruiser.Services;
-using FScruiser.XF.Pages;
 using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
@@ -21,47 +18,44 @@ namespace FScruiser.XF.ViewModels
 
         public IEnumerable<Plot> Plots { get; protected set; }
 
-        public ICuttingUnitDatastore Datastore => ServiceService.Datastore;
+        public ICuttingUnitDatastore Datastore { get; set; }
 
         public ICommand AddPlotCommand => _addPlotCommand ?? (_addPlotCommand = new Command(AddPlot));
 
         public ICommand EditPlotCommand => _editPlotCommand ?? (_editPlotCommand = new Command<Plot>(ShowEditPlot));
 
-        public INavigation NavigationService { get; set; }
-        
-
-        public PlotListViewModel(INavigation navigationService, ServiceService serviceService, string unitCode) : base(serviceService)
+        public PlotListViewModel(INavigationService navigationService
+            , ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
         {
-            NavigationService = navigationService;
-            UnitCode = unitCode;
+            Datastore = datastoreProvider.CuttingUnitDatastore;
         }
 
-        public void Init()
+        public override void OnNavigatedTo(NavigationParameters parameters)
         {
+            if (UnitCode == null) //don't reload param if navigating backwards
+            {
+                UnitCode = parameters.GetValue<string>("UnitCode");
+            }
+
             Plots = Datastore.GetPlotsByUnitCode(UnitCode).ToArray();
             RaisePropertyChanged(nameof(Plots));
+
+            base.OnNavigatedTo(parameters);
         }
 
         public void AddPlot(object obj)
         {
-            //show plot edit dialog with plot number = null
-            var view = new PlotEditPage(ServiceService, UnitCode, (int?)null);
-
-            NavigationService.PushAsync(view);
+            NavigationService.NavigateAsync($"PlotEdit?UnitCode={UnitCode}&IsAddingPlot=true");
         }
 
         public void ShowEditPlot(Plot plot)
         {
-            var view = new PlotEditPage(ServiceService, UnitCode, plot.PlotNumber);
-
-            NavigationService.PushAsync(view);
+            NavigationService.NavigateAsync($"PlotEdit?UnitCode={UnitCode}&PlotNumber={plot.PlotNumber}");
         }
 
         public void ShowTallyPlot(Plot plot)
         {
-            var view = new PlotTallyPage(ServiceService, UnitCode, plot.PlotNumber);
-
-            NavigationService.PushAsync(view);
+            NavigationService.NavigateAsync($"PlotTally?UnitCode={UnitCode}&PlotNumber={plot.PlotNumber}");
         }
     }
 }

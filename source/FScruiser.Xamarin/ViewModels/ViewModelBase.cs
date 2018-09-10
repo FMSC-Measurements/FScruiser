@@ -1,27 +1,27 @@
 ﻿using FScruiser.Services;
+using Prism.Navigation;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
-    public abstract class ViewModelBase : INotifyPropertyChanged
+    public abstract class ViewModelBase : INotifyPropertyChanged, INavigatedAware
     {
-        public ServiceService ServiceService { get; }
+        protected INavigationService NavigationService { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ViewModelBase()
-        {
-            ServiceService = App.ServiceService;
-        }
-
-        public ViewModelBase(ServiceService serviceService)
-        {
-            ServiceService = serviceService;
-        }
-
         //public abstract Task InitAsync();
+
+        protected ViewModelBase()
+        { }
+
+        protected ViewModelBase(INavigationService navigationService)
+        {
+            NavigationService = navigationService;
+        }
 
         protected virtual void RaisePropertyChanged(string propName)
         {
@@ -37,6 +37,16 @@ namespace FScruiser.XF.ViewModels
         {
             target = value;
             if (propName != null) { RaisePropertyChanged(propName); }
+        }
+
+        public virtual void OnNavigatedFrom(NavigationParameters parameters)
+        {
+            
+        }
+
+        public virtual void OnNavigatedTo(NavigationParameters parameters)
+        {
+            MessagingCenter.Send<object, string>(this, Messages.PAGE_NAVIGATED_TO, parameters.ToString());
         }
     }
 }

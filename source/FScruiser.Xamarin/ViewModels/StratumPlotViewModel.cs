@@ -1,58 +1,65 @@
 ﻿using FScruiser.Models;
 using FScruiser.Services;
+using FScruiser.Util;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
-    public class StratumPlotViewModel : ViewModelBase
+    public class StratumPlotViewModel : INPC_Base
     {
         private bool _inCruise;
         private StratumPlot _stratumPlot;
         private Command _toggleInCruiseCommand;
         private bool _isToggleingInCruise;
 
-        ICuttingUnitDatastore Datastore => ServiceService.Datastore;
+        ICuttingUnitDatastore Datastore { get; }
+        IDialogService DialogService { get; }
 
         public ICommand ToggleInCruiseCommand => _toggleInCruiseCommand ?? (_toggleInCruiseCommand = new Command(async () => await ToggleInCruiseAsync()));
 
-        public StratumPlotViewModel(ServiceService serviceService, string unitCode, string stratumCode, int plotNumber) : base(serviceService)
+        public StratumPlotViewModel(ICuttingUnitDatastore datastore
+            , IDialogService dialogService
+            , string unitCode
+            , string stratumCode
+            , int plotNumber
+            , bool isAddingPlot)
         {
+            Datastore = datastore;
+            DialogService = dialogService;
+
             UnitCode = unitCode;
 
-            var stratumPlot = Datastore.GetStratumPlot(unitCode, stratumCode, plotNumber);
-
-            if (stratumPlot == null)
-            {
-                stratumPlot = new StratumPlot()
-                {
-                    PlotNumber = plotNumber,
-                    StratumCode = stratumCode,
-                };
-                _inCruise = false;
-            }
-            else
-            { _inCruise = true; }
-
-            stratumPlot.PropertyChanged += StratumPlot_PropertyChanged;
-            _stratumPlot = stratumPlot;
+            StratumPlot = Datastore.GetStratumPlot(unitCode, stratumCode, plotNumber, isAddingPlot);
         }
 
         public StratumPlot StratumPlot
         {
             get { return _stratumPlot; }
-            set { SetValue(ref _stratumPlot, value); }
-        }
-
-        public bool InCruise
-        {
-            get { return _inCruise; }
             set
             {
-                SetValue(ref _inCruise, value);
+                if(_stratumPlot != null)
+                {
+                    _stratumPlot.PropertyChanged -= StratumPlot_PropertyChanged;
+                }
+                SetValue(ref _stratumPlot, value);
+                if(value != null)
+                {
+                    value.PropertyChanged += StratumPlot_PropertyChanged;
+                }
+                RaisePropertyChanged(nameof(InCruise));
             }
         }
+
+        public bool InCruise => StratumPlot?.InCruise ?? false;
+        //{
+        //    get { return _inCruise; }
+        //    set
+        //    {
+        //        SetValue(ref _inCruise, value);
+        //    }
+        //}
 
         public bool IsEmpty
         {
@@ -89,7 +96,7 @@ namespace FScruiser.XF.ViewModels
 
                     if (hasTreeData)
                     {
-                        if (await ServiceService.DialogService.AskYesNoAsync("Removing stratum will delete all tree data", "Continue?"))
+                        if (await DialogService.AskYesNoAsync("Removing stratum will delete all tree data", "Continue?"))
                         {
                             Datastore.DeleteStratumPlot(StratumPlot.Plot_GUID);
                             _inCruise = false;

@@ -1,16 +1,19 @@
 ﻿using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.XF.Services;
+using Microsoft.AppCenter.Crashes;
+using Prism.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
-    public class TreeListViewModel : ViewModelBase
+    public class TreeListViewModel : ViewModelBase, INavigatedAware
     {
         private ICommand _deleteTreeCommand;
         private Command<TreeStub> _editTreeCommand;
@@ -32,24 +35,32 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand EditTreeCommand => _editTreeCommand ?? (_editTreeCommand = new Command<TreeStub>(ShowEditTree));
 
-        //public ICuttingUnitDataService DataService => ServiceService.CuttingUnitDataService;
+        public string UnitCode { get; set; }
 
-        public ICuttingUnitDatastore Datastore => ServiceService.Datastore;
+        public ICuttingUnitDatastore Datastore { get; set; }
 
-        public IDialogService DialogService => ServiceService.DialogService;
-
-        public string UnitCode { get; }
+        public IDialogService DialogService { get; set; }
 
         public event EventHandler TreeAdded;
 
-        public TreeListViewModel(string unitCode)
+        public TreeListViewModel(IDialogService dialogService
+            , INavigationService navigationService
+            , ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
         {
-            UnitCode = unitCode;
+            DialogService = dialogService;
+            Datastore = datastoreProvider.CuttingUnitDatastore;
         }
 
-        public async Task InitAsync()
+        public override void OnNavigatedTo(NavigationParameters parameters)
         {
+            if(UnitCode == null) //don't reload param if navigating backwards
+            {
+                UnitCode = parameters.GetValue<string>("UnitCode");
+            }
+
             Trees = Datastore.GetTreeStubsByUnitCode(UnitCode).ToObservableCollection();
+
+            base.OnNavigatedTo(parameters);
         }
 
         public async void AddTreeAsync()
@@ -75,14 +86,20 @@ namespace FScruiser.XF.ViewModels
 
         public void ShowEditTree(TreeStub obj)
         {
-            var dialogSerive = ServiceService.DialogService;
-
-            dialogSerive.ShowEditTreeAsync(obj.Tree_GUID);
+            try
+            {
+                NavigationService.NavigateAsync("Tree", new NavigationParameters() { { "Tree_Guid", obj.Tree_GUID }, }, useModalNavigation: true);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ERROR::::" + ex);
+                Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", "/Main/Navigation/CuttingUnits" } });
+            }
         }
 
         private void DeleteTree(TreeStub tree)
         {
-            if(tree == null) { return;  }
+            if (tree == null) { return; }
 
             Datastore.DeleteTree(tree.Tree_GUID);
         }

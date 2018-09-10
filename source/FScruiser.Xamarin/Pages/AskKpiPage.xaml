@@ -17,7 +17,7 @@
             </Style>
             <Style  x:Key="numButton" BasedOn="{StaticResource buttonBase}" TargetType="Button">
                 <Setter Property="BackgroundColor" Value="#414143" />
-            </Style> >
+            </Style> 
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -43,6 +43,7 @@
             </Grid.ColumnDefinitions>
             <Label x:Name="_kpiLabel"
                    Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                   HorizontalOptions="FillAndExpand"
                    TextColor="Black" BackgroundColor="LightGray"
                    FontSize="60" HorizontalTextAlignment="End" VerticalTextAlignment="Center"
                    Margin="5,8,5,8"/>

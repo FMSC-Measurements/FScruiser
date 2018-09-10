@@ -119,7 +119,7 @@ namespace FScruiser.XF.ViewCells
             var parent = RealParent;
             if (parent != null && parent is ListView listView)
             {
-                listView.ScrollTo(item, ScrollToPosition.MakeVisible, true);
+                listView.ScrollTo(item, ScrollToPosition.MakeVisible, false);
             }
         }
     }

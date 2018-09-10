@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <MasterDetailPage xmlns="http://xamarin.com/schemas/2014/forms"
                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                  x:Class="FScruiser.XF.Pages.UnitTallyMasterDetailPage"
+                  x:Class="FScruiser.XF.Pages.MainPage"
                   xmlns:pages="clr-namespace:FScruiser.XF.Pages"
                   xmlns:local="clr-namespace:FScruiser;assembly=FScruiser.Core"
+                  xmlns:local_converters="clr-namespace:FScruiser.XF.Converters"
                   IsPresented="True">
     <MasterDetailPage.Master>
         <ContentPage x:Name="MasterPage" Title="Master" Icon="ic_menu_white_18dp.png"
@@ -19,7 +20,12 @@
                         <ContentView  BackgroundColor="Orange" HeightRequest="40">
                             <Image Source="ic_folder_open_black_36dp.png" />
                         </ContentView>
-                        <Label Text="{Binding CurrentFilePath}" TextColor="White" VerticalOptions="Fill" HorizontalOptions="Fill" VerticalTextAlignment="Center" />
+                        <Label x:Name="_currentFileLable" 
+                               Text="{Binding CurrentFilePath}" 
+                               TextColor="White" 
+                               VerticalOptions="Fill" 
+                               HorizontalOptions="Fill" 
+                               VerticalTextAlignment="Center"/>
                     </StackLayout>
                 </Frame>
 
@@ -44,11 +50,11 @@
             </StackLayout>
         </ContentPage>
     </MasterDetailPage.Master>
-    <MasterDetailPage.Detail>
+    <!--<MasterDetailPage.Detail>
         <NavigationPage BarBackgroundColor="{StaticResource primary_500}" BarTextColor="{StaticResource white_90}">
-            <x:Arguments>
+            --><!--<x:Arguments>
                 <pages:CuttingUnitListPage NavigationPage.HasBackButton="False" />
-            </x:Arguments>
+            </x:Arguments>--><!--
         </NavigationPage>
-    </MasterDetailPage.Detail>
+    </MasterDetailPage.Detail>-->
 </MasterDetailPage>

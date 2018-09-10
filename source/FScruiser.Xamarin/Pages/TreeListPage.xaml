@@ -4,7 +4,8 @@
              xmlns:Cells="clr-namespace:FScruiser.XF.Cells"
              x:Class="FScruiser.XF.Pages.TreeListPage"
              x:Name="Page"
-             BackgroundColor="White">
+             BackgroundColor="White"
+             Title="Trees">
     <!--<ContentPage.Resources>
     </ContentPage.Resources>-->
     <StackLayout>

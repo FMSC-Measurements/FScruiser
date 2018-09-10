@@ -10,10 +10,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Pages\obj\**" />
+    <EmbeddedResource Remove="Pages\obj\**" />
+    <None Remove="Pages\obj\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="ViewModels\TallyEntryViewModel.cs~" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DLToolkit.Forms.Controls.FlowListView" Version="2.0.10" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.8.0" />
+    <PackageReference Include="Prism.Autofac.Forms" Version="7.0.0.396" />
     <PackageReference Include="pt.Xamarin.Plugin.FilePicker" Version="2.0.0-beta" />
     <PackageReference Include="Scripty.MsBuild" Version="0.7.4" />
     <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
@@ -39,6 +50,9 @@
     <Compile Update="Pages\CuttingUnitListPage.xaml.cs">
       <DependentUpon>CuttingUnitListPage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Pages\MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="ViewCells\TallyEntryTreeViewCell.xaml.cs">
       <DependentUpon>TallyEntryTreeViewCell.xaml</DependentUpon>
     </Compile>
@@ -55,10 +69,10 @@
     <EmbeddedResource Update="Pages\AskKpiPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Pages\CruiseFileSelectPage.xaml">
+    <EmbeddedResource Update="Pages\ManageCruisersPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Pages\ManageCruisersPage.xaml">
+    <EmbeddedResource Update="Pages\MyNavigationPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\PlotListPage.xaml">
@@ -70,7 +84,7 @@
     <EmbeddedResource Update="Pages\TreeEditPage2.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Update="Pages\UnitTallyMasterDetailPage.xaml">
+    <EmbeddedResource Update="Pages\MainPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\UnitTreeTallyPage.xaml">
@@ -95,8 +109,56 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\AskKpiPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\CuttingUnitListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\ManageCruisersPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\PlotEditPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\PlotListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\PlotTallyPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\TreeEditPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\TreeEditPage2.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\TreeListPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Pages\UnitTreeTallyPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
     <None Update="Secrets.local.csx">
       <Generator>ScriptyGenerator</Generator>
+    </None>
+    <None Update="ViewCells\PlotTreeViewCell.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="ViewCells\TallyEntryTreeViewCell.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="ViewCells\TallyEntryViewCell.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="Views\PlotEditView.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </None>
   </ItemGroup>
 </Project>

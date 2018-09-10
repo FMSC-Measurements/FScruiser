@@ -1,21 +1,38 @@
-﻿using FScruiser.Models;
-using FScruiser.Services;
+﻿using FScruiser.Services;
 using FScruiser.XF.Pages;
-using FScruiser.XF.ViewModels;
+using Prism.Common;
+using Prism.Ioc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Xamarin.Forms;
 
 namespace FScruiser.XF.Services
 {
     public class XamarinDialogService : IDialogService
     {
         private TaskCompletionSource<int?> _askKpiTcs;
-        private ServiceService _serviceService;
+        private IApplicationProvider _applicationProvider;
+        private IContainerExtension _container;
 
-        public XamarinDialogService(ServiceService serviceService)
+        public XamarinDialogService(IApplicationProvider applicationProvider, IContainerExtension container)
         {
-            _serviceService = serviceService;
+            _applicationProvider = applicationProvider;
+            _container = container;
+        }
+
+        private Page GetCurrentPage()
+        {
+            Page page = null;
+            if (_applicationProvider.MainPage.Navigation.ModalStack.Count > 0)
+                page = _applicationProvider.MainPage.Navigation.ModalStack.LastOrDefault();
+            else
+                page = _applicationProvider.MainPage.Navigation.NavigationStack.LastOrDefault();
+
+            if (page == null)
+                page = _applicationProvider.MainPage;
+
+            return page;
         }
 
         public Task<bool> AskCancelAsync(string message, string caption, bool defaultCancel)
@@ -24,25 +41,24 @@ namespace FScruiser.XF.Services
             return Task.FromResult(false);
         }
 
-        public async Task AskCruiserAsync(TallyEntry tallyEntry)
+        public async Task<string> AskCruiserAsync()
         {
-            var tallySettings = App.ServiceService.TallySettingsDataService;
+            var tallySettings = _container.Resolve<ITallySettingsDataService>();
             var cruisers = tallySettings.Cruisers.ToArray();
 
-            if(cruisers.Count() == 0) { return; }
+            if (cruisers.Count() == 0) { return null; }
 
-            var result = await App.Current.MainPage.DisplayActionSheet("Select Cruiser", "Cancel", null, cruisers);
+            var result = await GetCurrentPage().DisplayActionSheet("Select Cruiser", "Cancel", null, cruisers);
 
-            if (result == "Cancel") { return; }
+            if (result == "Cancel") { return null; }
 
-            tallyEntry.Initials = result;
-            _serviceService.Datastore.UpdateTreeInitials(tallyEntry.Tree_GUID, result);
+            return result;
         }
 
         public async Task<string> AskValueAsync(string prompt, params string[] values)
         {
-            var result = await App.Current.MainPage.DisplayActionSheet(prompt, "Cancel", null, values);
-            if(result == "Cancel") { result = null; }
+            var result = await GetCurrentPage().DisplayActionSheet(prompt, "Cancel", null, values);
+            if (result == "Cancel") { result = null; }
             return result;
         }
 
@@ -81,7 +97,7 @@ namespace FScruiser.XF.Services
 
             view.HandleClosed += handelClose;
 
-            App.Current.MainPage.Navigation.PushModalAsync(view);
+            GetCurrentPage().Navigation.PushModalAsync(view);
 
             return _askKpiTcs.Task;
         }
@@ -91,21 +107,9 @@ namespace FScruiser.XF.Services
             return App.Current.MainPage.DisplayAlert(caption, message, "Yes", "No");
         }
 
-        public Task ShowEditTreeAsync(string tree_guid)
-        {
-            var navigation = App.Current.MainPage.Navigation;
-
-            var view = new TreeEditPage2();
-            var viewModel = new TreeEditViewModel();
-            view.BindingContext = viewModel;
-            viewModel.Init(tree_guid);
-
-            return App.Current.MainPage.Navigation.PushModalAsync(view);
-        }
-
         public Task ShowMessageAsync(string message, string caption = null)
         {
-            return App.Current.MainPage.DisplayAlert(caption, message, "OK");
+            return GetCurrentPage().DisplayAlert(caption, message, "OK");
         }
     }
 }

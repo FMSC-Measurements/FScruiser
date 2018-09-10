@@ -22,20 +22,6 @@ namespace FScruiser.XF.Pages
             _plotListView.ItemSelected += _plotListView_ItemSelected;
         }
 
-
-
-        public PlotListPage( string unitCode) : this()
-        {
-            BindingContext = new PlotListViewModel(this.Navigation, App.ServiceService, unitCode);
-        }
-
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-
-            ViewModel?.Init();
-        }
-
         private void _plotListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             if (e.SelectedItem is Plot plot && plot != null)

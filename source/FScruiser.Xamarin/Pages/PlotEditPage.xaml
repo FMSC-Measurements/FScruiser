@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tkConv="clr-namespace:Xamarin.Toolkit.Converters;assembly=Xamarin.Toolkit.Converters"
              xmlns:tkBehv="clr-namespace:Xamarin.Toolkit.Behaviors;assembly=Xamarin.Toolkit.Behaviors"
-             x:Class="FScruiser.Pages.PlotEditPage">
+             x:Class="FScruiser.XF.Pages.PlotEditPage">
     <StackLayout Orientation="Vertical">
         <Grid>
             <Grid.RowDefinitions>

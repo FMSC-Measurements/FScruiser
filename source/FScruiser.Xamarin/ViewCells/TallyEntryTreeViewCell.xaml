@@ -2,7 +2,8 @@
 <local:TallyEntryViewCell_Base xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FScruiser.XF.ViewCells.TallyEntryTreeViewCell"
-             xmlns:local="clr-namespace:FScruiser.XF.ViewCells">
+             xmlns:local="clr-namespace:FScruiser.XF.ViewCells"
+             xmlns:local_commands="clr-namespace:FScruiser.XF.Commands">
     <ViewCell.View>
         <ContentView BackgroundColor="Silver">
             <Frame BackgroundColor="{StaticResource accent}" CornerRadius="5" Margin="2,5,2,0" Padding="0">
@@ -54,7 +55,10 @@
                             </Grid>
                         </ScrollView>
 
-                        <Button Grid.Row="1" Grid.Column="1" x:Name="_editButton" Text="Edit"/>
+                        <Button Grid.Row="1" Grid.Column="1" x:Name="_editButton" Text="Edit">
+                            <!--<Button.Command>
+                            </Button.Command>-->
+                        </Button>
                         <Button Grid.Row="1" Grid.Column="2" x:Name="_untallyButton" Text="Untally"/>
                     </Grid>
                 </StackLayout>

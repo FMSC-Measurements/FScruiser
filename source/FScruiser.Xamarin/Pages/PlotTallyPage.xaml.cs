@@ -19,47 +19,34 @@ namespace FScruiser.XF.Pages
         public PlotTallyPage()
         {
             InitializeComponent();
-
-            ToolbarItems.Add(new ToolbarItem("Edit", "ic_edit_black_24dp.png", ShowEditPlot));
-
-            Appearing += (sender, ea) =>
-            {
-                if (BindingContext is PlotTallyViewModel vm)
-                {
-                    vm.Init();
-                    vm.TreeAdded += TallyFeed_CollectionChanged;
-                    TallyFeed_CollectionChanged(null, null);
-                }
-
-                MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, _plotTreeViewCell_editClicked);
-                MessagingCenter.Subscribe<object, string>(this, Messages.DELETE_TREE_CLICKED, _plotTreeViewCell_DeleteClicked);
-                MessagingCenter.Subscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED, _plotTreeViewCell_IsSelectedChanged);
-            };
-
-            Disappearing += (x, ea) =>
-            {
-                if (BindingContext is PlotTallyViewModel vm)
-                {
-                    vm.TreeAdded -= TallyFeed_CollectionChanged;
-                }
-
-                MessagingCenter.Unsubscribe<object, string>(this, Messages.EDIT_TREE_CLICKED);
-                MessagingCenter.Unsubscribe<object, string>(this, Messages.DELETE_TREE_CLICKED);
-                MessagingCenter.Unsubscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED);
-            };
         }
 
-        public PlotTallyPage(ServiceService serviceService, string unitCode, int plotNumber) : this()
+        protected override void OnAppearing()
         {
-            BindingContext = new PlotTallyViewModel(serviceService, Navigation, unitCode, plotNumber);
+            base.OnAppearing();
 
-            this.Title = $"Plot {plotNumber}";
+            if (BindingContext is PlotTallyViewModel vm)
+            {
+                vm.TreeAdded += TallyFeed_CollectionChanged;
+                TallyFeed_CollectionChanged(null, null);//Scroll to the bottom of the tally feed when page appears
+            }
 
+            
+            MessagingCenter.Subscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED, _plotTreeViewCell_IsSelectedChanged);
         }
 
-        public void ShowEditPlot()
+        protected override void OnDisappearing()
         {
-            ViewModel?.ShowEditPlot();
+            base.OnDisappearing();
+
+            if (BindingContext is PlotTallyViewModel vm)
+            {
+                vm.TreeAdded -= TallyFeed_CollectionChanged;
+            }
+
+            MessagingCenter.Unsubscribe<object, string>(this, Messages.EDIT_TREE_CLICKED);
+            MessagingCenter.Unsubscribe<object, string>(this, Messages.DELETE_TREE_CLICKED);
+            MessagingCenter.Unsubscribe<object, bool>(this, Messages.TREECELL_ISELECTED_CHANGED);
         }
 
         private void TallyFeed_CollectionChanged(object sender, EventArgs e)
@@ -90,22 +77,6 @@ namespace FScruiser.XF.Pages
         private void _plotTreeViewCell_IsSelectedChanged(object sender, bool isSelected)
         {
             _treeCellIsSelected = isSelected;
-        }
-
-        private void _plotTreeViewCell_DeleteClicked(object sender, string tree_guid)
-        {
-            if (tree_guid != null)
-            {
-                ViewModel.DeleteTree(tree_guid);
-            }
-        }
-
-        private void _plotTreeViewCell_editClicked(object sender, string tree_guid)
-        {
-            if (tree_guid != null)
-            {
-                App.ServiceService.DialogService.ShowEditTreeAsync(tree_guid);
-            }
         }
 
         private void _stratumFilterButton_Clicked(object sender, EventArgs e)

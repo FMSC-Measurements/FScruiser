@@ -1,5 +1,6 @@
 ﻿using FScruiser.Models;
 using FScruiser.XF.ViewModels;
+using Prism.Ioc;
 using System;
 using System.Linq;
 using System.Windows.Input;
@@ -11,30 +12,6 @@ namespace FScruiser.XF.ViewCells
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class TallyEntryTreeViewCell : TallyEntryViewCell_Base
     {
-        public ICommand EditCommand
-        {
-            get { return _editButton.Command; }
-            set { _editButton.Command = value; }
-        }
-
-        public object EditCommandParameter
-        {
-            get { return _editButton.CommandParameter; }
-            set { _editButton.CommandParameter = value; }
-        }
-
-        public ICommand UntallyCommand
-        {
-            get { return _untallyButton.Command; }
-            set { _untallyButton.Command = value; }
-        }
-
-        public object UntallyCommandParameter
-        {
-            get { return _untallyButton.CommandParameter; }
-            set { _untallyButton.CommandParameter = value; }
-        }
-
         private TreeEditViewModel _treeViewModel;
 
         public TallyEntryTreeViewCell()
@@ -54,7 +31,7 @@ namespace FScruiser.XF.ViewCells
                 {
                     _treeViewModel.TreeFieldsChanged -= _treeViewModel_TreeFieldsChanged;
                     _treeViewModel.ErrorsAndWarningsChanged -= _treeViewModel_ErrorsAndWarningsChanged;
-                    _treeViewModel.Dispose();
+                    _treeViewModel.OnNavigatedFrom(new Prism.Navigation.NavigationParameters());
                 }
                 _treeViewModel = value;
                 if (value != null)
@@ -88,7 +65,10 @@ namespace FScruiser.XF.ViewCells
         private void _editButton_Clicked(object sender, EventArgs e)
         {
             TreeViewModel?.SaveTree();
-            MessagingCenter.Send<object, TallyEntry>(this, Messages.EDIT_TREE_CLICKED, BindingContext as TallyEntry);
+            if (BindingContext is TallyEntry tallyEntry && tallyEntry != null)
+            {
+                MessagingCenter.Send<object, string>(this, Messages.EDIT_TREE_CLICKED, tallyEntry.Tree_GUID);
+            }
         }
 
         protected void _untallyButton_Clicked(object sender, EventArgs e)
@@ -103,7 +83,12 @@ namespace FScruiser.XF.ViewCells
                 var tallyItem = BindingContext as TallyEntry;
                 if (tallyItem?.HasTree ?? false)
                 {
-                    var treeEditViewModel = TreeViewModel = new TreeEditViewModel(true);
+                    var container = ((App)App.Current).Container;
+
+                    var treeEditViewModel = container.Resolve<TreeEditViewModel>();
+                    treeEditViewModel.UseSimplifiedTreeFields = true;
+
+                    TreeViewModel = treeEditViewModel;
                     RefreshTree();
                 }
             }
@@ -167,7 +152,7 @@ namespace FScruiser.XF.ViewCells
             var tallyItem = BindingContext as TallyEntry;
             if (tallyItem?.HasTree ?? false)
             {
-                TreeViewModel?.Init(tallyItem.Tree_GUID);
+                TreeViewModel?.OnNavigatedTo(new Prism.Navigation.NavigationParameters() { { "Tree_Guid", tallyItem.Tree_GUID } });
             }
         }
     }

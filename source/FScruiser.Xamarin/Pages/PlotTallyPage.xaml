@@ -1,18 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:FScruiser.XF.Pages"
-             xmlns:views="clr-namespace:FScruiser.XF.Views"
              xmlns:cells="clr-namespace:FScruiser.XF.ViewCells"
              xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
              x:Class="FScruiser.XF.Pages.PlotTallyPage"
              BackgroundColor ="White"
-             x:Name="_page">
+             x:Name="_page"
+             Title="{Binding PlotNumber, StringFormat='Plot Number {0}'}">
     <ContentPage.Resources>
         <ResourceDictionary>
             <Color x:Key="tallyButtonBgColor">Green</Color>
         </ResourceDictionary>
     </ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Edit" Icon="ic_edit_white_24dp.png" Command="{Binding EditPlotCommand}"/>
+    </ContentPage.ToolbarItems>
     <ContentPage.Content>
         <StackLayout>
             <ListView x:Name="_tallyFeedListView" 

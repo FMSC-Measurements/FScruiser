@@ -20,16 +20,16 @@ namespace FScruiser.Models
             LiveDead = population.LiveDead;
         }
 
-        public TallyEntry(string unitCode, int plotNumber, TallyPopulation population)
-        {
-            UnitCode = unitCode;
-            PlotNumber = plotNumber;
+        //public TallyEntry(string unitCode, int plotNumber, TallyPopulation population)
+        //{
+        //    UnitCode = unitCode;
+        //    PlotNumber = plotNumber;
 
-            StratumCode = population.StratumCode;
-            SampleGroupCode = population.SampleGroupCode;
-            Species = population.Species;
-            LiveDead = population.LiveDead;
-        }
+        //    StratumCode = population.StratumCode;
+        //    SampleGroupCode = population.SampleGroupCode;
+        //    Species = population.Species;
+        //    LiveDead = population.LiveDead;
+        //}
 
         [Field(nameof(TallyLedgerID))]
         public string TallyLedgerID { get; set; }
@@ -37,8 +37,8 @@ namespace FScruiser.Models
         [Field(nameof(UnitCode))]
         public string UnitCode { get; set; }
 
-        [Field(nameof(PlotNumber))]
-        public int? PlotNumber { get; set; }
+        //[Field(nameof(PlotNumber))]
+        //public int? PlotNumber { get; set; }
 
         [Field(nameof(StratumCode))]
         public string StratumCode { get; set; }

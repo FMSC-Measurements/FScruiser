@@ -1,5 +1,6 @@
 ﻿using FScruiser.Models;
 using FScruiser.XF.ViewModels;
+using Prism.Ioc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +17,19 @@ namespace FScruiser.XF.ViewCells
     {
         private TreeEditViewModel _treeViewModel;
 
-        public PlotTreeViewCell ()
-		{
+        public IContainerExtension Container { get; private set; }
+
+        public PlotTreeViewCell()
+        {
             InitializeComponent();
 
             _editButton.Clicked += _editButton_Clicked;
             _deleteButton.Clicked += _deleteButton_Clicked;
+        }
+
+        public PlotTreeViewCell (IContainerExtension container) : this()
+		{
+            Container = container;
         }
 
         public TreeEditViewModel TreeViewModel
@@ -33,7 +41,7 @@ namespace FScruiser.XF.ViewCells
                 {
                     _treeViewModel.TreeFieldsChanged -= _treeViewModel_TreeFieldsChanged;
                     _treeViewModel.ErrorsAndWarningsChanged -= _treeViewModel_ErrorsAndWarningsChanged;
-                    _treeViewModel.Dispose();
+                    _treeViewModel.OnNavigatedFrom(new Prism.Navigation.NavigationParameters());
                 }
                 _treeViewModel = value;
                 if (value != null)
@@ -44,6 +52,8 @@ namespace FScruiser.XF.ViewCells
                 }
             }
         }
+
+        
 
         private void _editButton_Clicked(object sender, EventArgs e)
         {
@@ -84,7 +94,12 @@ namespace FScruiser.XF.ViewCells
                 var tree = BindingContext as TreeStub_Plot;
                 if (tree != null)
                 {
-                    var treeEditViewModel = TreeViewModel = new TreeEditViewModel(true);
+                    var container = ((App)App.Current).Container;
+
+                    var treeEditViewModel = container.Resolve<TreeEditViewModel>();
+                    treeEditViewModel.UseSimplifiedTreeFields = true;
+
+                    TreeViewModel = treeEditViewModel;
                     RefreshTree();
                 }
             }
@@ -104,7 +119,9 @@ namespace FScruiser.XF.ViewCells
             var tree = BindingContext as TreeStub_Plot;
             if (tree != null)
             {
-                TreeViewModel?.Init(tree.Tree_GUID);
+                TreeViewModel?.OnNavigatedTo(new Prism.Navigation.NavigationParameters() { { "tree_guid", tree.Tree_GUID } });
+
+                //TreeViewModel?.Init(tree.Tree_GUID);
             }
         }
 

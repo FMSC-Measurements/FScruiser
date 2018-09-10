@@ -1,8 +1,9 @@
 ﻿using FScruiser.Logic;
 using FScruiser.Models;
-using FScruiser.Pages;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.XF.Services;
+using Prism.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,13 +28,23 @@ namespace FScruiser.XF.ViewModels
 
         public event EventHandler TreeAdded;
 
-        protected ICuttingUnitDatastore Datastore => ServiceService.Datastore;
+        protected ICuttingUnitDatastore Datastore { get; }
+        public IDialogService DialogService { get; }
+        public ISampleSelectorDataService SampleSelectorDataService { get; private set; }
+        public ITallySettingsDataService TallySettings { get; private set; }
+        public ISoundService SoundService { get; private set; }
 
-        public PlotTallyViewModel(ServiceService serviceService, INavigation navigation, string unitCode, int plotNumber) : base(serviceService)
+        public PlotTallyViewModel(INavigationService navigationService
+            , IDialogService dialogService
+            , ICuttingUnitDatastoreProvider datastoreProvider
+            , ISoundService soundService
+            , ITallySettingsDataService tallySettings) : base(navigationService)
         {
-            UnitCode = unitCode;
-            PlotNumber = plotNumber;
-            Navigation = navigation;
+            Datastore = datastoreProvider.CuttingUnitDatastore;
+            SampleSelectorDataService = datastoreProvider.SampleSelectorDataService;
+            DialogService = dialogService;
+            TallySettings = tallySettings;
+            SoundService = soundService;
         }
 
         public ICommand TallyCommand => _tallyCommand
@@ -47,8 +58,6 @@ namespace FScruiser.XF.ViewModels
             get { return _plotNumber; }
             set { SetValue(ref _plotNumber, value); }
         }
-
-        public INavigation Navigation { get; }
 
         public string UnitCode
         {
@@ -104,24 +113,43 @@ namespace FScruiser.XF.ViewModels
             TreeAdded?.Invoke(this, null);
         }
 
-        public void Init()
+        public override void OnNavigatedFrom(NavigationParameters parameters)
         {
-            var unitCode = UnitCode;
-            var plotNumber = PlotNumber;
+            MessagingCenter.Unsubscribe<object>(this, Messages.EDIT_TREE_CLICKED);
+            MessagingCenter.Unsubscribe<object>(this, Messages.DELETE_TREE_CLICKED);
+        }
+
+        public override void OnNavigatedTo(NavigationParameters parameters)
+        {
+            LoadData(parameters);
+
+            base.OnNavigatedTo(parameters);
+
+            MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, (sender, tree_guid) => ShowEditTree(tree_guid));
+            MessagingCenter.Subscribe<object, string>(this, Messages.DELETE_TREE_CLICKED, (sender, tree_guid) => DeleteTree(tree_guid));
+        }
+
+        private void LoadData(NavigationParameters parameters)
+        {
+            if (UnitCode == null) //don't reload param if navigating backwards
+            {
+                UnitCode = parameters.GetValue<string>("UnitCode");
+                PlotNumber = parameters.GetValue<int>("PlotNumber");
+            }
 
             var salePurpose = Datastore.GetCruisePurpose();
             IsRecon = salePurpose.ToLower() == "recon";
 
-            TallyPopulations = Datastore.GetPlotTallyPopulationsByUnitCode(unitCode, plotNumber).ToArray();
-            Strata = Datastore.GetPlotStrataProxies(unitCode).ToArray();
-            Trees = Datastore.GetPlotTreeProxies(unitCode, plotNumber).ToObservableCollection();
+            TallyPopulations = Datastore.GetPlotTallyPopulationsByUnitCode(UnitCode, PlotNumber).ToArray();
+            Strata = Datastore.GetPlotStrataProxies(UnitCode).ToArray();
+            Trees = Datastore.GetPlotTreeProxies(UnitCode, PlotNumber).ToObservableCollection();
         }
 
         public async Task TallyAsync(TallyPopulation_Plot pop)
         {
-            if(pop.InCruise == false) { return; }
+            if (pop.InCruise == false) { return; }
 
-            IDialogService dialogService = ServiceService.DialogService;
+            IDialogService dialogService = DialogService;
 
             if (pop.IsEmptyBool)
             {
@@ -129,15 +157,15 @@ namespace FScruiser.XF.ViewModels
                 return;
             }
 
-            ITallySettingsDataService tallySettings = ServiceService.TallySettingsDataService;
-            
-            ISoundService soundService = ServiceService.SoundService;
+            ITallySettingsDataService tallySettings = TallySettings;
+            ISoundService soundService = SoundService;
             ICuttingUnitDatastore dataService = Datastore;
-            ISampleSelectorDataService sampleSelectorRepository = ServiceService.SampleSelectorRepository;
+            ISampleSelectorDataService sampleSelectorRepository = SampleSelectorDataService;
 
             var nextTreeNumber = Datastore.GetNextPlotTreeNumber(UnitCode, pop.StratumCode, PlotNumber, IsRecon);
 
             var tree = await PlotBasedTallyLogic.TallyAsync(pop, UnitCode, PlotNumber, sampleSelectorRepository, dialogService);//TODO async
+            if(tree == null) { return; }
 
             tree.TreeNumber = nextTreeNumber;
             Datastore.InsertTree(tree);
@@ -145,6 +173,11 @@ namespace FScruiser.XF.ViewModels
             OnTreeAdded();
 
             await HandleTally(pop, tree, soundService, dialogService, tallySettings);
+        }
+
+        public void ShowEditTree(string tree_guid)
+        {
+            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { "Tree_Guid", tree_guid } }, useModalNavigation: true);
         }
 
         public static async Task HandleTally(TallyPopulation_Plot population,
@@ -173,9 +206,7 @@ namespace FScruiser.XF.ViewModels
 
         public void ShowEditPlot()
         {
-            var view = new PlotEditPage(ServiceService, UnitCode, PlotNumber);
-
-            Navigation.PushAsync(view);
+            NavigationService.NavigateAsync("Plot", new NavigationParameters($"UnitCode={UnitCode}&PlotNumber={PlotNumber}"));
         }
 
         public void DeleteTree(string tree_guid)

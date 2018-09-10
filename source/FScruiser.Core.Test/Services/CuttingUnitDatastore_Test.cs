@@ -222,6 +222,30 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
+        [Theory]
+        [InlineData("FIX")]
+        [InlineData("PCM")]
+        [InlineData("FCM")]
+        public void GetPlotStrataProxies(string method)
+        {
+            using (var database = CreateDatabase())
+            {
+                
+
+                var datastore = new CuttingUnitDatastore(database);
+
+                datastore.GetPlotStrataProxies("u1").Should().HaveCount(0);
+
+                database.Insert(new StratumDO() { Stratum_CN = 3, Code = "03", Method = CruiseDAL.Schema.CruiseMethods.FIX });
+                database.Insert(new CuttingUnitStratumDO() { Stratum_CN = 3, CuttingUnit_CN = 1 });
+
+                var result = datastore.GetPlotStrataProxies("u1").ToArray();
+
+                result.Should().HaveCount(1);
+
+            }
+        }
+
         [Fact]
         public void InsertStratumPlot()
         {
