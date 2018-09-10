@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<local:TallyEntryViewCell_Base xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FScruiser.XF.ViewCells"
+             x:Class="FScruiser.XF.ViewCells.PlotTreeViewCell">
+    <ViewCell.View>
+        <ContentView BackgroundColor="Silver">
+            <Frame BackgroundColor="#30C1BC" CornerRadius="5" Margin="2,5,2,0" Padding="0">
+                <Frame.Triggers>
+                    <DataTrigger TargetType="Frame" Binding="{Binding CountOrMeasure}" Value="M">
+                        <Setter Property="BackgroundColor" Value="#30C1BC" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Frame" Binding="{Binding CountOrMeasure}" Value="I">
+                        <Setter Property="BackgroundColor" Value="Silver" />
+                    </DataTrigger>
+                    <DataTrigger TargetType="Frame" Binding="{Binding CountOrMeasure}" Value="C">
+                        <Setter Property="BackgroundColor" Value="White" />
+                    </DataTrigger>
+                </Frame.Triggers>
+                <StackLayout>
+                    <StackLayout Orientation="Horizontal">
+                        <StackLayout.Resources>
+                            <ResourceDictionary>
+                                <Style TargetType="Label">
+                                    <Setter Property="TextColor" Value="Black" />
+                                    <Setter Property="VerticalTextAlignment" Value="Center" />
+                                </Style>
+                            </ResourceDictionary>
+                        </StackLayout.Resources>
+                        <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20"/>
+                        <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" TextColor="Blue" FontSize="30"/>
+                        <Label Text="{Binding CountOrMeasure}" FontSize="30"/>
+                        <Label x:Name="CruiserInitialsLabel" Text="{Binding }" TextColor="Black"
+                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                                           HorizontalOptions="EndAndExpand" />
+                    </StackLayout>
+
+                    <!--<StackLayout x:Name="_treeEditPanel" IsVisible="False">
+                <Label Text="Hello Expanded"  />
+            </StackLayout>-->
+                    <Grid x:Name="_treeEditPanel" IsVisible="False">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <ScrollView x:Name="_treeEditScrollView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+                            <Grid x:Name="_treeEditControlGrid">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                            </Grid>
+                        </ScrollView>
+
+                        <Button Grid.Row="1" Grid.Column="1" x:Name="_editButton" Text="Edit"/>
+                        <Button Grid.Row="1" Grid.Column="2" x:Name="_deleteButton" Text="Delete"/>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+        </ContentView>
+    </ViewCell.View>
+</local:TallyEntryViewCell_Base>

@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:FScruiser.XF.Pages"
+             xmlns:views="clr-namespace:FScruiser.XF.Views"
+             xmlns:cells="clr-namespace:FScruiser.XF.ViewCells"
+             xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
+             x:Class="FScruiser.XF.Pages.UnitTreeTallyPage"
+             BackgroundColor ="White"
+             x:Name="_page">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Color x:Key="tallyButtonBgColor">Green</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <StackLayout>
+            <ListView x:Name="_tallyFeedListView" 
+                      HasUnevenRows="True"
+                      ItemsSource="{Binding TallyFeed}" 
+                      ItemSelected="TallyFeedListView_ItemSelected"
+                      CachingStrategy="RetainElement"
+                      SeparatorColor="Silver">
+                <ListView.ItemTemplate>
+                    <cells:TreeDataTemplateSelector>
+                        <cells:TreeDataTemplateSelector.TreeItemTemplate>
+                            <DataTemplate>
+                                <cells:TallyEntryTreeViewCell/>
+                                <!--<ViewCell>
+                                    <StackLayout Orientation="Horizontal" BackgroundColor="#30C1BC">
+                                        <StackLayout.Triggers>
+                                            <DataTrigger TargetType="StackLayout" Binding="{Binding Tree.TallyFeedStatus}" Value="Error">
+                                                <Setter Property="BackgroundColor" Value="Red"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="StackLayout" Binding="{Binding Tree.TallyFeedStatus}" Value="HasData">
+                                                <Setter Property="BackgroundColor" Value="Green"/>
+                                            </DataTrigger>
+                                        </StackLayout.Triggers>
+                                        <StackLayout.Resources>
+                                            <ResourceDictionary>
+                                                <Style TargetType="Label">
+                                                    <Setter Property="TextColor" Value="Black"/>
+                                                </Style>
+                                            </ResourceDictionary>
+                                        </StackLayout.Resources>
+                                        <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20" VerticalTextAlignment="Center"/>
+                                        <Label Text="{Binding TallyDescription, StringFormat='| {0}'}" FontSize="30" VerticalTextAlignment="Center"/>
+                                        <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" TextColor="Blue" FontSize="30" VerticalTextAlignment="Center"/>
+                                        <Label x:Name="CruiserInitialsLabel" Text="{Binding Tree.Initials}" TextColor="Black" 
+                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center" 
+                                           HorizontalOptions="EndAndExpand"/>
+                                    </StackLayout>
+                                </ViewCell>-->
+                            </DataTemplate>
+                        </cells:TreeDataTemplateSelector.TreeItemTemplate>
+                        <cells:TreeDataTemplateSelector.BasicTemplate>
+                            <DataTemplate>
+                                <cells:TallyEntryViewCell/>
+                                <!--<ViewCell>
+                                    <StackLayout Orientation="Horizontal">
+                                        <StackLayout.Resources>
+                                            <ResourceDictionary>
+                                                <Style TargetType="Label">
+                                                    <Setter Property="TextColor" Value="Black"/>
+                                                </Style>
+                                            </ResourceDictionary>
+                                        </StackLayout.Resources>
+                                        <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20" VerticalTextAlignment="Center"/>
+                                        <Label Text="{Binding TallyDescription, StringFormat='| {0}'}" FontSize="30" VerticalTextAlignment="Center"/>
+                                    </StackLayout>
+                                </ViewCell>-->
+                            </DataTemplate>
+                        </cells:TreeDataTemplateSelector.BasicTemplate>
+                    </cells:TreeDataTemplateSelector>
+                    <!--<DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal">
+                                <StackLayout.Resources>
+                                    <ResourceDictionary>
+                                        <Style TargetType="Label">
+                                            <Setter Property="TextColor" Value="Black"/>
+                                        </Style>
+                                    </ResourceDictionary>
+                                </StackLayout.Resources>
+                                <BoxView Color="#Black" WidthRequest="3" />
+                                <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20" VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding TallyDescription, StringFormat='| {0}'}" FontSize="30" VerticalTextAlignment="Center"/>
+                                <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" TextColor="Blue" FontSize="30" VerticalTextAlignment="Center" IsVisible="{Binding HasTree}" />
+                                --><!--<Frame HorizontalOptions="EndAndExpand" BackgroundColor="#30C1BC" IsVisible="{Binding HasTree}" >
+                                    <Label x:Name="CruiserInitialsLabel" Text="{Binding Initials}" TextColor="Black"/>
+                                </Frame>--><!--
+                                <AbsoluteLayout IsVisible="{Binding HasTree}" HorizontalOptions="EndAndExpand">
+                                    <BoxView Color="#30C1BC" AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.8, 0.8" AbsoluteLayout.LayoutFlags="All"/>
+                                    <BoxView Color="White" AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.5" AbsoluteLayout.LayoutFlags="All">
+                                        <BoxView.Triggers>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding Tree.TallyFeedStatus}" Value="Error">
+                                                <Setter Property="Color" Value="Red"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="BoxView" Binding="{Binding Tree.TallyFeedStatus}" Value="HasData">
+                                                <Setter Property="BoxView.Color" Value="#30C1BC"/>
+                                            </DataTrigger>
+                                        </BoxView.Triggers>
+                                    </BoxView>
+                                    <Label x:Name="CruiserInitialsLabel" Text="{Binding Tree.Initials}" TextColor="Black" 
+                                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center" 
+                                           AbsoluteLayout.LayoutBounds="0.5, 0.5, 0.5, 0.5" AbsoluteLayout.LayoutFlags="All"/>
+                                </AbsoluteLayout>
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>-->
+                </ListView.ItemTemplate>
+            </ListView>
+
+
+            <flow:FlowListView  x:Name="TallyListView" 
+                                FlowItemsSource="{Binding TalliesFiltered}"
+                                FlowItemTappedCommand="{Binding TallyCommand}"
+                                FlowColumnCount="3" 
+                                SeparatorVisibility="None" 
+                                HasUnevenRows="True"  
+                                BackgroundColor="Gray"
+                                VerticalOptions="CenterAndExpand">
+                <flow:FlowListView.FlowColumnTemplate>
+                    <DataTemplate>
+                        <Frame CornerRadius="5" BackgroundColor="Green" Margin ="3">
+                            <StackLayout HorizontalOptions="Fill" 
+                                         VerticalOptions="Fill" Padding="3">
+                                <Label Text="{Binding TallyDescription}" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="{Binding TreeCount}" 
+                                       HorizontalTextAlignment="Center" 
+                                       BackgroundColor="White" 
+                                       TextColor="Black" />
+                                <Label Text="{Binding TallyHotKey}"
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </flow:FlowListView.FlowColumnTemplate>
+            </flow:FlowListView>
+
+            <flow:FlowListView x:Name="StratumFilterListView" 
+                               FlowColumnCount="6" SeparatorVisibility="None" HasUnevenRows="False"
+                               VerticalOptions="End"
+                               HeightRequest="44"
+                               FlowItemsSource="{Binding StrataFilterOptions}">
+                <flow:FlowListView.FlowColumnTemplate>
+                    <DataTemplate>
+                        <Button Text="{Binding .}" 
+                                TextColor="{StaticResource white_90}" BackgroundColor="{StaticResource primary_500}" 
+                                Margin="2" HeightRequest="40" 
+                                Command="{Binding BindingContext.StratumSelectedCommand, Source={x:Reference StratumFilterListView}}"
+                                CommandParameter="{Binding .}"/>
+                    </DataTemplate>
+                </flow:FlowListView.FlowColumnTemplate>
+            </flow:FlowListView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

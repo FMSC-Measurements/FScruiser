@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FScruiser.XF.Pages.TreeEditPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <StackLayout x:Name="_treeNumberField" Orientation="Horizontal">
+                <Label Text="Tree Number"/>
+                <Entry Text="{Binding Tree.TreeNumber}" HorizontalOptions="EndAndExpand"/>
+            </StackLayout>
+            <StackLayout x:Name="_sampleGroupField" Orientation="Horizontal">
+                <Label Text="Sample Group"/>
+                <Picker ItemsSource="{Binding SampleGroups}" SelectedItem="{Binding Tree.SampleGroup}" HorizontalOptions="EndAndExpand"/>
+            </StackLayout>
+            <StackLayout x:Name="_speciesField" Orientation="Horizontal">
+                <Label Text="Species"/>
+                <Picker ItemsSource="{Binding SpeciesOptions}" SelectedItem="{Binding Tree.Species}" HorizontalOptions="EndAndExpand"/>
+            </StackLayout>
+            <StackLayout x:Name="_heightsFieldGroup">
+                <Label Text="Height"/>
+                <StackLayout Orientation="Horizontal">
+                    
+                    <Button x:Name="_heightsToggleBtn" HorizontalOptions="EndAndExpand"/>
+                </StackLayout>
+                <StackLayout x:Name="_totalHeightField" Orientation="Horizontal">
+                    <Label Text="Total Height"/>
+                    <Entry x:Name="_totalHeightEntry" Text="{Binding Tree.TotalHeight}" Placeholder="Total Height" HorizontalOptions="EndAndExpand"/>
+                </StackLayout>
+                <!--TotalHeight MerchHeightPrimary HeightToFirstLiveLimb UpperStemHeight -->
+                <StackLayout x:Name="_merchHeightPrimaryField" Orientation="Horizontal">
+                    <Label Text="Merch Height Primary"/>
+                    <Entry x:Name="_merchHeightPrimaryEntry" Text="{Binding Tree.MerchHeightPrimary}" Placeholder="Merch Height Primary" HorizontalOptions="EndAndExpand"/>
+                </StackLayout>
+                <StackLayout x:Name="_merchHeightSecondaryField" Orientation="Horizontal">
+                    <Label Text="Merch Height Secondary"/>
+                    <Entry x:Name="_merchHeightSecondaryEntry" Text="{Binding Tree.MerchHeightSecondary}" Placeholder="Merch Height Secondary"/>
+                </StackLayout>
+                <StackLayout x:Name="_heightFllField" Orientation="Horizontal">
+                    <Label Text="Height To First Live Limb"/>
+                    <Entry x:Name="_heightFllEntry" Text="{Binding Tree.HeightToFirstLiveLimb}" Placeholder="Height First Live Limb"/>
+                </StackLayout>
+                <StackLayout x:Name="_upperStemHeightField" Orientation="Horizontal">
+                    <Label Text="Upper Stem Height"/>
+                    <Entry x:Name="_upperStemHeightEntry" Text="{Binding Tree.UpperStemHeight}" Placeholder="Upper Stem Height"/>
+                </StackLayout>
+            </StackLayout>
+            <StackLayout x:Name="_diameterFieldGroup">
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Diameters"/>
+                    <Button x:Name="_diameterToggleBTn" Text="+"/>
+                </StackLayout>
+                <StackLayout x:Name="_dbhField" Orientation="Horizontal">
+                    <Label Text="DBH"/>
+                    <Entry Text="{Binding Tree.DBH}"/>
+                </StackLayout>
+                <StackLayout x:Name="_dbhDoubleBarkThicknessField" Orientation="Horizontal">
+                    <Label Text="DBH Double Bark Thickness"/>
+                    <Entry Text="{Binding Tree.DBHDoubleBarkThickness}"/>
+                </StackLayout>
+                <StackLayout x:Name="_drcField" Orientation="Horizontal">
+                    <Label Text="DRC"/>
+                    <Entry Text="{Binding Tree.DRC}"/>
+                </StackLayout>
+                <StackLayout x:Name="_dibField">
+                    <StackLayout x:Name="_dibPrimaryField"  Orientation="Horizontal">
+                        <Label Text="Top DIB Primary"/>
+                        <Entry Text="{Binding Tree.TopDIBPrimary}"/>
+                    </StackLayout>
+                    <StackLayout x:Name="_dibSecondaryField" Orientation="Horizontal">
+                        <Label Text="Top DIB Secondary/"/>
+                        <Entry Text="{Binding Tree.TopDIBSecondary}"/>
+                    </StackLayout>
+                </StackLayout>
+                <StackLayout x:Name="_upperStemDiameterField" Orientation="Horizontal">
+                    <Label Text="Upper Stem Diameter"/>
+                    <Entry Text="{Binding Tree.UpperStemDiameter}"/>
+                </StackLayout>
+            </StackLayout>
+            <StackLayout x:Name="_countFieldGroup">
+                <StackLayout x:Name="_countOrMeasureField" Orientation="Horizontal">
+                    <Label Text="Count or Measure"/>
+                    <Picker x:Name="_countOrMeasurePicker" SelectedItem="{Binding CountOrMeasure}">
+                        <Picker.Items>
+                            <x:String>C</x:String>
+                            <x:String>M</x:String>
+                        </Picker.Items>
+                    </Picker>
+                </StackLayout>
+                <StackLayout x:Name="_treeCountField" Orientation="Horizontal">
+                    <Label Text="Tree Count"/>
+                    <Entry x:Name="_treeCountEntry" Text="{Binding TreeCount}"/>
+                </StackLayout>
+            </StackLayout>
+            <StackLayout x:Name="_threePFieldGroup">
+                <StackLayout x:Name="_kpiField" Orientation="Horizontal">
+                    <Label Text="KPI"/>
+                    <Entry x:Name="_kpiEntry" Text="{Binding KPI}"/>
+                    <Label Text="STM"/>
+                    <Switch x:Name="_isStmSwitch" IsToggled="{Binding IsSTM}"/>
+                </StackLayout>
+            </StackLayout>
+            <StackLayout x:Name="_defectFieldGroup">
+                <StackLayout Orientation="Horizontal">
+                    <Label Text="Defect"/>
+                    <Button x:Name="_toggleDefectBtn"/>
+                </StackLayout>
+                <StackLayout x:Name="_seenDefectField">
+                    <StackLayout x:Name="_seenDefectPrimaryField" Orientation="Horizontal">
+                        <Label Text="Seen Defect Primary"/>
+                        <Entry Text="{Binding Tree.SeenDefectPrimary}"/>
+                    </StackLayout>
+                    <StackLayout x:Name="_seenDefectSecondaryField" Orientation="Horizontal">
+                        <Label Text="Seen Defect Secondary"/>
+                        <Entry Text="{Binding Tree.SeenDefectSecondary}"/>
+                    </StackLayout>
+                </StackLayout>
+                <StackLayout x:Name="_recoverablePrimaryField" Orientation="Horizontal">
+                    <Label Text="Recoverable Primary"/>
+                    <Entry Text="{Binding Tree.RecoverablePrimary}"/>
+                </StackLayout>
+                <StackLayout x:Name="_hiddenPrimaryField" Orientation="Horizontal">
+                    <Label Text="Hidden Primary"/>
+                    <Entry Text="{Binding Tree.HiddenPrimary}"/>
+                </StackLayout>
+                <StackLayout x:Name="_defectCodeField" Orientation="Horizontal">
+                    <Label Text="Defect Code"/>
+                    <Entry Text="{Binding Tree.DefectCode}"/>
+                </StackLayout>
+                <StackLayout x:Name="_diameterAtDefectField">
+                    <Label Text="Diameter At Defect"/>
+                    <Entry Text="{Binding Tree.DiameterAtDefect}"/>
+                </StackLayout>
+            </StackLayout>
+            <StackLayout x:Name="_liveDeadField" Orientation="Horizontal">
+                <Label Text="Live Dead"/>
+                <Picker SelectedItem="{Binding Tree.LiveDead}">
+                    <Picker.Items>
+                        <x:String>L</x:String>
+                        <x:String>D</x:String>
+                    </Picker.Items>
+                </Picker>
+            </StackLayout>
+            <StackLayout x:Name="_gradeField">
+                <Label Text="Grade"/>
+                <Entry Text="{Binding Tree.Grade}"/>
+            </StackLayout>
+            <StackLayout x:Name="_clearFaceField" Orientation="Horizontal">
+                <Label Text="Clear Face"/>
+                <Entry Text="{Binding Tree.ClearFace}"/>
+            </StackLayout>
+            <StackLayout x:Name="_crownRatioField" Orientation="Horizontal">
+                <Label Text="Crown Ratio"/>
+                <Entry Text="{Binding Tree.CrownRatio}"/>
+            </StackLayout>
+            <StackLayout x:Name="_formClassField" Orientation="Horizontal">
+                <Label Text="Form Class"/>
+                <Entry Text="{Binding Tree.FormClass}"/>
+            </StackLayout>
+            <StackLayout x:Name="_voidPercentField" Orientation="Horizontal">
+                <Label Text="Void Percent"/>
+                <Entry Text="{Binding Tree.VoidPercent}"/>
+            </StackLayout>
+            <StackLayout x:Name="_isFallBuckScaleField">
+                <Label Text="Is Fall Buck Scale"/>
+                <Switch IsToggled="{Binding Tree.IsFallBuckScaleBool}"/>
+            </StackLayout>
+            <StackLayout x:Name="_geoDataFieldGroup">
+                <StackLayout x:Name="_slopeField" Orientation="Horizontal">
+                    <Label Text="Slope"/>
+                    <Entry Text="{Binding Tree.Slope}"/>
+                </StackLayout>
+                <StackLayout x:Name="_aspectField" Orientation="Horizontal">
+                    <Label Text="Aspect"/>
+                    <Entry Text="{Binding Tree.Aspect}"/>
+                </StackLayout>
+            </StackLayout>
+            <StackLayout x:Name="_remarksField">
+                <Label Text="Remarks"/>
+                <Editor Text="{Binding Tree.Remarks}"/>
+            </StackLayout>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

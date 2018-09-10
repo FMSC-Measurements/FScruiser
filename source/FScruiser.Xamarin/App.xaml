@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<prism:PrismApplication xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:prism="clr-namespace:Prism.Autofac;assembly=Prism.Autofac.Forms"
+             x:Class="FScruiser.XF.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="fs_brown">#312418</Color>
+            <Color x:Key="primary_500">#345E36</Color>
+            <Color x:Key="fs_green">#345E36</Color>
+            <Color x:Key="accent">#1E90FF</Color>
+            <Color x:Key="accentText">Blue</Color>
+            <Color x:Key="white_90">#E1ffffff</Color>
+            <Color x:Key="white_50">#7FFFFFFF</Color>
+            <Color x:Key="white_38">#60FFFFFF</Color>
+            <Color x:Key="white_12">#1EFFFFFF</Color>
+            <Color x:Key="black_70">#B2000000</Color>
+            <Color x:Key="black_30">#4C000000</Color>
+            <Color x:Key="black_12">#1E000000</Color>
+
+            <Style x:Key="button_base" TargetType="Button">
+                <Setter Property="CornerRadius"     Value="10" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</prism:PrismApplication>
