@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.8.0" />
     <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.8.0" />
+    <PackageReference Include="Plugin.Permissions" Version="3.0.0.12" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.0.0.396" />
     <PackageReference Include="pt.Xamarin.Plugin.FilePicker" Version="2.0.0-beta" />
     <PackageReference Include="Scripty.MsBuild" Version="0.7.4" />

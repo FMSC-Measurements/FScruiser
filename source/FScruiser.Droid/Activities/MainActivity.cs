@@ -1,7 +1,9 @@
 ﻿using Android.App;
 using Android.Content.PM;
 using Android.OS;
+using Android.Runtime;
 using FScruiser.XF;
+using Plugin.Permissions;
 using Xamarin.Forms.Platform.Android;
 
 namespace FScruiser.Droid
@@ -18,6 +20,12 @@ namespace FScruiser.Droid
             var app = new App(new AndroidPlatformInitializer(this));
 
             LoadApplication(app);
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
+        {
+            PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 }

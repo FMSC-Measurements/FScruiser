@@ -46,7 +46,7 @@ namespace FScruiser.XF.ViewModels
 
         public virtual void OnNavigatedTo(NavigationParameters parameters)
         {
-            MessagingCenter.Send<object, string>(this, Messages.PAGE_NAVIGATED_TO, parameters.ToString());
+            //MessagingCenter.Send<object, string>(this, Messages.PAGE_NAVIGATED_TO, parameters.ToString());
         }
     }
 }

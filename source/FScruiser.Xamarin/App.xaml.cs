@@ -3,13 +3,16 @@ using FScruiser.Util;
 using FScruiser.XF.Pages;
 using FScruiser.XF.Services;
 using Microsoft.AppCenter.Crashes;
+using Plugin.Permissions;
 using Prism;
 using Prism.Ioc;
 using Prism.Navigation;
+using Prism.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -20,6 +23,8 @@ namespace FScruiser.XF
     {
         public const string CURRENT_NAV_PATH = "current_nav_path";
         public const string CURRENT_NAV_PARAMS = "current_nav_params";
+
+        protected IPageDialogService DialogService => Container?.Resolve<IPageDialogService>();
 
         public ICuttingUnitDatastoreProvider CuttingUnitDatastoresProvider { get; private set; } = new CuttingUnitDatastoreProvider();
 
@@ -34,41 +39,43 @@ namespace FScruiser.XF
 
 #if RELEASE
             //start app center services
-            AppCenter.Start($"ios={Secrets.APPCENTER_KEY_IOS};android={Secrets.APPCENTER_KEY_DROID};uwp={Secrets.APPCENTER_KEY_UWP}", typeof(Distribute), typeof(Analytics), typeof(Crashes));
+            Microsoft.AppCenter.AppCenter.Start($"ios={Secrets.APPCENTER_KEY_IOS};android={Secrets.APPCENTER_KEY_DROID};uwp={Secrets.APPCENTER_KEY_UWP}"
+                , typeof(Microsoft.AppCenter.Distribute.Distribute)
+                , typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Crashes));
 #endif
 
-            MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_SELECTED, (sender, path) =>
+            MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_SELECTED, async (sender, path) =>
             {
-                LoadCruiseFile(path);
+                await LoadCruiseFileAsync(path);
             });
 
-            MessagingCenter.Subscribe<object, string>(this, Messages.PAGE_NAVIGATED_TO, (sender, navParams) =>
-            {
-                try
-                {
-                    var navigationPath = NavigationService.GetNavigationUriPath();
+            //MessagingCenter.Subscribe<object, string>(this, Messages.PAGE_NAVIGATED_TO, (sender, navParams) =>
+            //{
+            //    try
+            //    {
+            //        var navigationPath = NavigationService.GetNavigationUriPath();
 
-                    Properties.SetValue(CURRENT_NAV_PATH, navigationPath);
-                    Properties.SetValue(CURRENT_NAV_PARAMS, navParams);
-                }catch( Exception ex)
-                {
-                    Debug.WriteLine("ERROR::::" + ex);
-                    Crashes.TrackError(ex);
-                }
-            });
+            //        Properties.SetValue(CURRENT_NAV_PATH, navigationPath);
+            //        Properties.SetValue(CURRENT_NAV_PARAMS, navParams);
+            //    }catch( Exception ex)
+            //    {
+            //        Debug.WriteLine("ERROR::::" + ex);
+            //        Crashes.TrackError(ex);
+            //    }
+            //});
 
             try
             {
                 await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine("ERROR::::" + ex);
                 Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", "/Main/Navigation/CuttingUnits" } });
             }
         }
 
-        protected void LoadCruiseFile(string path)
+        protected async System.Threading.Tasks.Task LoadCruiseFileAsync(string path)
         {
             //var cruiseFileType = CruiseDAL.DAL.ExtrapolateCruiseFileType(path);
             //if (cruiseFileType.HasFlag(CruiseDAL.CruiseFileType.Cruise))
@@ -79,53 +86,70 @@ namespace FScruiser.XF
 
             try
             {
-                var datastore = new CuttingUnitDatastore(path);
+                var status = await CrossPermissions.Current.CheckPermissionStatusAsync(Plugin.Permissions.Abstractions.Permission.Storage);
 
-                CuttingUnitDatastoresProvider.CuttingUnitDatastore = datastore;
-                CuttingUnitDatastoresProvider.SampleSelectorDataService = new SampleSelectorRepository(datastore);
+                if(status != Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+                {
+                    if(await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Plugin.Permissions.Abstractions.Permission.Storage))
+                    {
+                        await DialogService.DisplayAlertAsync("Request Access To Storage", "FScruiser needs access to files on device", "OK");
+                    }
 
-                //((IContainerRegistry)Container).RegisterInstance<ICuttingUnitDatastore>(datastore);
-                //((IContainerRegistry)Container).RegisterInstance<ISampleSelectorDataService>(new SampleSelectorRepository(datastore));
+                    var requestResults = await CrossPermissions.Current.RequestPermissionsAsync(Plugin.Permissions.Abstractions.Permission.Storage);
+                    status = requestResults.GetValueOrDefault(Plugin.Permissions.Abstractions.Permission.Storage);
+                }
 
-                //var test = Container.Resolve<ICuttingUnitDatastore>();
+                if(status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+                {
+                    try
+                    {
+                        var datastore = new CuttingUnitDatastore(path);
 
-                Properties.SetValue("cruise_path", path);
-                CuttingUnitDatastoresProvider.Cruise_Path = path;
-                NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
+                        CuttingUnitDatastoresProvider.CuttingUnitDatastore = datastore;
+                        CuttingUnitDatastoresProvider.SampleSelectorDataService = new SampleSelectorRepository(datastore);
 
-                MessagingCenter.Send<object, string>(this, Messages.CRUISE_FILE_OPENED, path);
+                        //((IContainerRegistry)Container).RegisterInstance<ICuttingUnitDatastore>(datastore);
+                        //((IContainerRegistry)Container).RegisterInstance<ISampleSelectorDataService>(new SampleSelectorRepository(datastore));
+
+                        //var test = Container.Resolve<ICuttingUnitDatastore>();
+
+                        Properties.SetValue("cruise_path", path);
+                        CuttingUnitDatastoresProvider.Cruise_Path = path;
+                        await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
+
+                        MessagingCenter.Send<object, string>(this, Messages.CRUISE_FILE_OPENED, path);
+                    }
+                    catch (FileNotFoundException ex)
+                    {
+                        var task = LogAndShowExceptionAsync("File Error", "File Not Found", ex, new Dictionary<string, string> { { "FilePath", path } });
+                    }
+                    catch (Exception ex)
+                    {
+                        var task = LogAndShowExceptionAsync("File Error", "File Could Not Be Opended", ex, new Dictionary<string, string> { { "FilePath", path } });
+                    }
+                }
             }
-            catch (FileNotFoundException ex)
+            catch(Exception ex)
             {
-                Debug.WriteLine($"Error:::{ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
-                Crashes.TrackError(ex, new Dictionary<string, string> { { "FilePath", path } });
+                LogException("permissions", "request permissions error in method LoadCruiseFileAsync", ex);
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error:::{ex.Message}");
-                Debug.WriteLine(ex.StackTrace);
-                Crashes.TrackError(ex, new Dictionary<string, string> { { "FilePath", path } });
 
-                var dialogSerive = Container.Resolve<IDialogService>();
-
-                dialogSerive?.ShowMessageAsync(ex.ToString(), "File Could Not Be Opended").ConfigureAwait(false);
-            }
+            
         }
 
-        protected void ReloadNavigation()
-        {
-            var navPath = Properties.GetValueOrDefault(CURRENT_NAV_PATH) as string;
+        //protected void ReloadNavigation()
+        //{
+        //    var navPath = Properties.GetValueOrDefault(CURRENT_NAV_PATH) as string;
 
-            if(navPath != null && !navPath.EndsWith("CuttingUnits"))
-            {
-                var navParams = Properties.GetValueOrDefault(CURRENT_NAV_PARAMS) as string;
+        //    if(navPath != null && !navPath.EndsWith("CuttingUnits"))
+        //    {
+        //        var navParams = Properties.GetValueOrDefault(CURRENT_NAV_PARAMS) as string;
 
-                NavigationService.NavigateAsync(navPath, new NavigationParameters(navParams));
-            }
-        }
+        //        NavigationService.NavigateAsync(navPath, new NavigationParameters(navParams));
+        //    }
+        //}
 
-        protected override void OnStart()
+        protected override async void OnStart()
         {
             // Handle when your app starts
 
@@ -133,7 +157,7 @@ namespace FScruiser.XF
 
             if (!string.IsNullOrEmpty(cruise_path))
             {
-                LoadCruiseFile(cruise_path);
+                await LoadCruiseFileAsync(cruise_path);
             }
         }
 
@@ -165,6 +189,30 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.PlotTallyPage, ViewModels.PlotTallyViewModel>("PlotTally");
             containerRegistry.RegisterForNavigation<Pages.PlotEditPage, ViewModels.PlotEditViewModel>("PlotEdit");
             containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManagerCruisersViewModel>("Cruisers");
+        }
+
+        public void LogException(string catigory, string message, Exception ex, IDictionary<string, string> data = null)
+        {
+            Debug.WriteLine($"Error:::{catigory}::::{message}::::{ex.Message}::::");
+            Debug.WriteLine(ex.StackTrace);
+
+            if (data == null) { data = new Dictionary<string, string>(); }
+
+            data.SetValue("error_catigory", catigory);
+            data.SetValue("error_message", message);
+
+            Crashes.TrackError(ex, data);
+        }
+
+        public async Task LogAndShowExceptionAsync(string catigory, string message, Exception ex, IDictionary<string, string> data = null)
+        {
+            LogException(catigory, message, ex, data);
+
+            var result = await  DialogService.DisplayAlertAsync(catigory, message, "Details", "OK");
+            if(result == true)//user clicked Details
+            {
+                await DialogService.DisplayAlertAsync(catigory, ex.ToString(), "Close");
+            }
         }
     }
 }
