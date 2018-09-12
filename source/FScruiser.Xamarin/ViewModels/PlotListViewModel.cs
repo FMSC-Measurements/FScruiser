@@ -30,7 +30,7 @@ namespace FScruiser.XF.ViewModels
             Datastore = datastoreProvider.CuttingUnitDatastore;
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        public override void OnNavigatedTo(INavigationParameters parameters)
         {
             if (UnitCode == null) //don't reload param if navigating backwards
             {

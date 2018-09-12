@@ -44,7 +44,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        public override void OnNavigatedTo(INavigationParameters parameters)
         {
             LoadData();
 

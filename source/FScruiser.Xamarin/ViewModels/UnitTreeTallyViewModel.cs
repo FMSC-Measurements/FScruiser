@@ -115,7 +115,7 @@ namespace FScruiser.XF.ViewModels
             SoundService = soundService;
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        public override void OnNavigatedTo(INavigationParameters parameters)
         {
             LoadData(parameters);
 
@@ -125,7 +125,7 @@ namespace FScruiser.XF.ViewModels
             MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, (sender, tallyEntry) => Untally(tallyEntry));
         }
 
-        public override void OnNavigatedFrom(NavigationParameters parameters)
+        public override void OnNavigatedFrom(INavigationParameters parameters)
         {
             base.OnNavigatedFrom(parameters);
 
@@ -133,7 +133,7 @@ namespace FScruiser.XF.ViewModels
             MessagingCenter.Unsubscribe<object>(this, Messages.UNTALLY_CLICKED);
         }
 
-        private void LoadData(NavigationParameters parameters)
+        private void LoadData(INavigationParameters parameters)
         {
             
             if (UnitCode == null) //don't reload param if navigating backwards

@@ -88,13 +88,13 @@ namespace FScruiser.XF.ViewModels
         }
 
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        public override void OnNavigatedTo(INavigationParameters parameters)
         {
             LoadData(parameters);
             base.OnNavigatedTo(parameters);
         }
 
-        private void LoadData(NavigationParameters parameters)
+        private void LoadData(INavigationParameters parameters)
         {
             var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
             var plotNumber = parameters.GetValueOrDefault<int>("PlotNumber");

@@ -39,12 +39,12 @@ namespace FScruiser.XF.ViewModels
             if (propName != null) { RaisePropertyChanged(propName); }
         }
 
-        public virtual void OnNavigatedFrom(NavigationParameters parameters)
+        public virtual void OnNavigatedFrom(INavigationParameters parameters)
         {
             
         }
 
-        public virtual void OnNavigatedTo(NavigationParameters parameters)
+        public virtual void OnNavigatedTo(INavigationParameters parameters)
         {
             //MessagingCenter.Send<object, string>(this, Messages.PAGE_NAVIGATED_TO, parameters.ToString());
         }

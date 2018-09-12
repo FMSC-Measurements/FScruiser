@@ -113,13 +113,13 @@ namespace FScruiser.XF.ViewModels
             TreeAdded?.Invoke(this, null);
         }
 
-        public override void OnNavigatedFrom(NavigationParameters parameters)
+        public override void OnNavigatedFrom(INavigationParameters parameters)
         {
             MessagingCenter.Unsubscribe<object>(this, Messages.EDIT_TREE_CLICKED);
             MessagingCenter.Unsubscribe<object>(this, Messages.DELETE_TREE_CLICKED);
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        public override void OnNavigatedTo(INavigationParameters parameters)
         {
             LoadData(parameters);
 
@@ -129,7 +129,7 @@ namespace FScruiser.XF.ViewModels
             MessagingCenter.Subscribe<object, string>(this, Messages.DELETE_TREE_CLICKED, (sender, tree_guid) => DeleteTree(tree_guid));
         }
 
-        private void LoadData(NavigationParameters parameters)
+        private void LoadData(INavigationParameters parameters)
         {
             if (UnitCode == null) //don't reload param if navigating backwards
             {
