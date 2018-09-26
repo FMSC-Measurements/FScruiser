@@ -11,7 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CruiseDAL" Version="2.2.1.6" />
+    <None Remove="Util\DatabaseUpdater.cs~" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CruiseDAL" Version="2.4.0.2" />
     <PackageReference Include="FMSC.Sampling" Version="1.1.3" />
   </ItemGroup>
 
