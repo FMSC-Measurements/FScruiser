@@ -193,5 +193,10 @@ namespace FScruiser.XF.ViewModels
                 RaisePropertyChanged(nameof(NavigationListItems));
             });
         }
+
+        protected override void Refresh(INavigationParameters parameters)
+        {
+            //do nothing
+        }
     }
 }

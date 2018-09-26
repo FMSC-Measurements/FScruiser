@@ -87,14 +87,7 @@ namespace FScruiser.XF.ViewModels
             DialogService = dialogService;
         }
 
-
-        public override void OnNavigatedTo(INavigationParameters parameters)
-        {
-            LoadData(parameters);
-            base.OnNavigatedTo(parameters);
-        }
-
-        private void LoadData(INavigationParameters parameters)
+        protected override void Refresh(INavigationParameters parameters)
         {
             var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
             var plotNumber = parameters.GetValueOrDefault<int>("PlotNumber");
@@ -153,5 +146,7 @@ namespace FScruiser.XF.ViewModels
         {
             NavigationService.NavigateAsync("LimitingDistance", new NavigationParameters($"UnitCode={UnitCode}&PlotNumber={stratumPlot.PlotNumber}&StratumCode={stratumPlot.StratumCode}"));
         }
+
+        
     }
 }
