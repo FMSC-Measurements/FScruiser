@@ -50,8 +50,9 @@
                                         <Switch IsToggled="{Binding IsEmpty}" />
                                     </StackLayout>
                                     <Label Text="Remarks" VerticalTextAlignment="End" Margin="10,0,30,0"/>
-                                    <Entry 
+                                    <Editor 
                                         Text="{Binding StratumPlot.Remarks}" 
+                                        IsSpellCheckEnabled="False"
                                         HorizontalOptions="FillAndExpand" HeightRequest="200"  />
                                     <Button Text="Calculate Limiting Distances" 
                                         VerticalOptions="FillAndExpand" 

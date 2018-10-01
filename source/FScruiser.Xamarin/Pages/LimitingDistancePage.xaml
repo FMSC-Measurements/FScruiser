@@ -27,7 +27,7 @@
                     </StackLayout>
                     <StackLayout Orientation="Horizontal">
                         <Label>BAF/FPS</Label>
-                        <Entry x:Name="_bafOrFpsEntry" Text="{Binding BafOrFps}">
+                        <Entry x:Name="_bafOrFpsEntry" Text="{Binding BafOrFps}" Keyboard="Numeric">
                             <Entry.Effects>
                                 <tk_effects:EntrySelectAllText />
                             </Entry.Effects>
@@ -41,7 +41,7 @@
                         <StackLayout>
                             <StackLayout Orientation="Horizontal">
                                 <Label>Slope Distance</Label>
-                                <Entry x:Name="_slopeDistanceEntry" Text="{Binding SlopeDistance}">
+                                <Entry x:Name="_slopeDistanceEntry" Text="{Binding SlopeDistance}" Keyboard="Numeric">
                                     <Entry.Effects>
                                         <tk_effects:EntrySelectAllText />
                                     </Entry.Effects>
@@ -56,7 +56,7 @@
                     <Frame BackgroundColor="Yellow">
                         <StackLayout Orientation="Horizontal">
                             <Label >DBH</Label>
-                            <Entry x:Name="_dbhEntry" Text="{Binding DBH}">
+                            <Entry x:Name="_dbhEntry" Text="{Binding DBH}" Keyboard="Numeric">
                                 <Entry.Effects>
                                     <tk_effects:EntrySelectAllText />
                                 </Entry.Effects>
@@ -66,7 +66,7 @@
                     <Frame BackgroundColor="Yellow">
                         <StackLayout Orientation="Horizontal">
                             <Label>Slope (%)</Label>
-                            <Entry x:Name="_slopePctEntry" Text="{Binding SlopePCT}">
+                            <Entry x:Name="_slopePctEntry" Text="{Binding SlopePCT}" Keyboard="Numeric">
                                 <Entry.Effects>
                                     <tk_effects:EntrySelectAllText />
                                 </Entry.Effects>
@@ -80,7 +80,7 @@
                     <Frame BackgroundColor="Yellow">
                         <StackLayout Orientation="Horizontal">
                             <Label>Azimuth</Label>
-                            <Entry x:Name="_azimuthEntry" Text="{Binding Azimuth}">
+                            <Entry x:Name="_azimuthEntry" Text="{Binding Azimuth}" Keyboard="Numeric">
                                 <Entry.Effects>
                                     <tk_effects:EntrySelectAllText />
                                 </Entry.Effects>
