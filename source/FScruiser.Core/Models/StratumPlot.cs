@@ -1,6 +1,5 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
 using FScruiser.Util;
-using System;
 
 namespace FScruiser.Models
 {
@@ -16,18 +15,19 @@ namespace FScruiser.Models
         private string _remarks;
 
         [Field("Plot_GUID")]
-        public string Plot_GUID
-        {
-            get { return _plot_guid; }
-            set { SetValue(ref _plot_guid, value); }
-        }
+        public string Plot_GUID { get; set; }
 
         [Field(Alias = "StratumCode", SQLExpression = "Stratum.Code", PersistanceFlags = PersistanceFlags.Never)]
-        public string StratumCode
-        {
-            get { return _stratumCode; }
-            set { SetValue(ref _stratumCode, value); }
-        }
+        public string StratumCode { get; set; }
+
+        [Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method", PersistanceFlags = PersistanceFlags.Never)]
+        public string CruiseMethod { get; set; }
+
+        [Field(Alias = "BAF", SQLExpression = "Stratum.BasalAreaFactor", PersistanceFlags = PersistanceFlags.Never)]
+        public double BAF { get; set; }
+
+        [Field(Alias = "FPS", SQLExpression = "Stratum.FixedPlotSize", PersistanceFlags = PersistanceFlags.Never)]
+        public double FPS { get; set; }
 
         [Field("PlotNumber")]
         public int PlotNumber
@@ -66,5 +66,13 @@ namespace FScruiser.Models
             get { return _remarks; }
             set { SetValue(ref _remarks, value); }
         }
+
+        [Field("Slope")]
+        public double Slope
+        { get; set; }
+
+        [Field("Aspect")]
+        public double Aspect
+        { get; set; }
     }
 }

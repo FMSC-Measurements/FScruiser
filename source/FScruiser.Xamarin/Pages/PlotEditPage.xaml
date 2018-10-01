@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tkConv="clr-namespace:Xamarin.Toolkit.Converters;assembly=Xamarin.Toolkit.Converters"
              xmlns:tkBehv="clr-namespace:Xamarin.Toolkit.Behaviors;assembly=Xamarin.Toolkit.Behaviors"
-             x:Class="FScruiser.XF.Pages.PlotEditPage">
+             x:Class="FScruiser.XF.Pages.PlotEditPage"
+             x:Name="_page">
     <StackLayout Orientation="Vertical">
         <Grid>
             <Grid.RowDefinitions>
@@ -50,10 +51,12 @@
                                     </StackLayout>
                                     <Label Text="Remarks" VerticalTextAlignment="End" Margin="10,0,30,0"/>
                                     <Entry 
-                                        Text="{Binding Remarks}" 
+                                        Text="{Binding StratumPlot.Remarks}" 
                                         HorizontalOptions="FillAndExpand" HeightRequest="200"  />
                                     <Button Text="Calculate Limiting Distances" 
-                                        VerticalOptions="FillAndExpand" />
+                                        VerticalOptions="FillAndExpand" 
+                                        Command="{Binding BindingContext.ShowLimitingDistanceCommand, Source={Reference _page }}"
+                                        CommandParameter="{Binding StratumPlot}"/>
                                 </StackLayout>
                             </StackLayout>
                         </Frame>

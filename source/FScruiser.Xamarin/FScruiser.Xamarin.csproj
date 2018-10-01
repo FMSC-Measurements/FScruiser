@@ -16,8 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="ViewModels\TallyEntryViewModel.cs~" />
+    <None Remove="**\*~" />
   </ItemGroup>
+  
 
   <ItemGroup>
     <PackageReference Include="DLToolkit.Forms.Controls.FlowListView" Version="2.0.10" />
@@ -71,6 +72,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\FeedbackPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\LimitingDistancePage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\ManageCruisersPage.xaml">

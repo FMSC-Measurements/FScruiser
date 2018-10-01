@@ -189,10 +189,11 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.PlotTallyPage, ViewModels.PlotTallyViewModel>("PlotTally");
             containerRegistry.RegisterForNavigation<Pages.PlotEditPage, ViewModels.PlotEditViewModel>("PlotEdit");
             containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManagerCruisersViewModel>("Cruisers");
+            containerRegistry.RegisterForNavigation<Pages.LimitingDistancePage, ViewModels.LimitingDistanceViewModel>("LimitingDistance");
             containerRegistry.RegisterForNavigation<Pages.FeedbackPage>("Feedback");
         }
 
-        public void LogException(string catigory, string message, Exception ex, IDictionary<string, string> data = null)
+        public static void LogException(string catigory, string message, Exception ex, IDictionary<string, string> data = null)
         {
             Debug.WriteLine($"Error:::{catigory}::::{message}::::{ex.Message}::::");
             Debug.WriteLine(ex.StackTrace);
