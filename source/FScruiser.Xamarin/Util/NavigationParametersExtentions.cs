@@ -4,7 +4,7 @@ namespace FScruiser.XF.Util
 {
     public static class NavigationParametersExtentions
     {
-        public static T GetValueOrDefault<T>(this NavigationParameters @this, string key)
+        public static T GetValueOrDefault<T>(this INavigationParameters @this, string key)
         {
             if (@this.TryGetValue<T>(key, out var value))
             {
@@ -16,7 +16,7 @@ namespace FScruiser.XF.Util
             }
         }
 
-        public static T GetValueOrDefault<T>(this NavigationParameters @this, string key, T defaultValue)
+        public static T GetValueOrDefault<T>(this INavigationParameters @this, string key, T defaultValue)
         {
             if (@this.TryGetValue<T>(key, out var value))
             {

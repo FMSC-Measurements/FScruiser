@@ -5,7 +5,7 @@
     <!--<PackageTargetFallback>$(PackageTargetFallback);portable-win+net45+wp8+win81+wpa8</PackageTargetFallback>-->
     <RootNamespace>FScruiser.XF</RootNamespace>
     <AssemblyName>FScruiser.XF</AssemblyName>
-    <Version>0.2</Version>
+    <Version>0.3</Version>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
@@ -16,15 +16,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="ViewModels\TallyEntryViewModel.cs~" />
+    <None Remove="**\*~" />
   </ItemGroup>
+  
 
   <ItemGroup>
     <PackageReference Include="DLToolkit.Forms.Controls.FlowListView" Version="2.0.10" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.8.0" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.8.0" />
-    <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.8.0" />
-    <PackageReference Include="Prism.Autofac.Forms" Version="7.0.0.396" />
+    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.9.0" />
+    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.9.0" />
+    <PackageReference Include="Microsoft.AppCenter.Distribute" Version="1.9.0" />
+    <PackageReference Include="Plugin.Permissions" Version="3.0.0.12" />
+    <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.172-pre" />
     <PackageReference Include="pt.Xamarin.Plugin.FilePicker" Version="2.0.0-beta" />
     <PackageReference Include="Scripty.MsBuild" Version="0.7.4" />
     <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
@@ -67,6 +69,12 @@
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\AskKpiPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\FeedbackPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\LimitingDistancePage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\ManageCruisersPage.xaml">

@@ -113,29 +113,24 @@ namespace FScruiser.XF.ViewModels
             TreeAdded?.Invoke(this, null);
         }
 
-        public override void OnNavigatedFrom(NavigationParameters parameters)
+        public override void OnNavigatedFrom(INavigationParameters parameters)
         {
             MessagingCenter.Unsubscribe<object>(this, Messages.EDIT_TREE_CLICKED);
             MessagingCenter.Unsubscribe<object>(this, Messages.DELETE_TREE_CLICKED);
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        public override void OnNavigatedTo(INavigationParameters parameters)
         {
-            LoadData(parameters);
-
             base.OnNavigatedTo(parameters);
 
             MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, (sender, tree_guid) => ShowEditTree(tree_guid));
             MessagingCenter.Subscribe<object, string>(this, Messages.DELETE_TREE_CLICKED, (sender, tree_guid) => DeleteTree(tree_guid));
         }
 
-        private void LoadData(NavigationParameters parameters)
+        protected override void Refresh(INavigationParameters parameters)
         {
-            if (UnitCode == null) //don't reload param if navigating backwards
-            {
-                UnitCode = parameters.GetValue<string>("UnitCode");
-                PlotNumber = parameters.GetValue<int>("PlotNumber");
-            }
+            var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
+            var plotNumver = PlotNumber = parameters.GetValue<int>("PlotNumber");
 
             var salePurpose = Datastore.GetCruisePurpose();
             IsRecon = salePurpose.ToLower() == "recon";
@@ -144,6 +139,7 @@ namespace FScruiser.XF.ViewModels
             Strata = Datastore.GetPlotStrataProxies(UnitCode).ToArray();
             Trees = Datastore.GetPlotTreeProxies(UnitCode, PlotNumber).ToObservableCollection();
         }
+
 
         public async Task TallyAsync(TallyPopulation_Plot pop)
         {
@@ -221,5 +217,7 @@ namespace FScruiser.XF.ViewModels
             Datastore.DeleteTree(tree.Tree_GUID);
             Trees.Remove(tree);
         }
+
+        
     }
 }

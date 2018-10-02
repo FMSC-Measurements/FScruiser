@@ -63,7 +63,7 @@ namespace FScruiser.Services
             var database = Database;
             if (database == null) { return; }
 
-            DatabaseUpdater.Update(database);
+            //DatabaseUpdater.Update(database);
         }
 
 
@@ -104,15 +104,15 @@ namespace FScruiser.Services
                 , new object[] { unit });
         }
 
-        public Plot GetPlot(string unitCode, int plotNumber)
-        {
-            return Database.Query<Plot>("SELECT PlotNumber, CuttingUnit_CN  FROM Plot " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "WHERE CuttingUnit.Code = @p1 " +
-                "AND PlotNumber = @p2 " +
-                "GROUP BY PlotNumber, CuttingUnit_CN;"
-                , new object[] { unitCode, plotNumber }).FirstOrDefault();
-        }
+        //public Plot GetPlot(string unitCode, int plotNumber)
+        //{
+        //    return Database.Query<Plot>("SELECT PlotNumber, CuttingUnit_CN  FROM Plot " +
+        //        "JOIN CuttingUnit USING (CuttingUnit_CN) " +
+        //        "WHERE CuttingUnit.Code = @p1 " +
+        //        "AND PlotNumber = @p2 " +
+        //        "GROUP BY PlotNumber, CuttingUnit_CN;"
+        //        , new object[] { unitCode, plotNumber }).FirstOrDefault();
+        //}
 
         public StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber, bool insertIfNotExists = false)
         {

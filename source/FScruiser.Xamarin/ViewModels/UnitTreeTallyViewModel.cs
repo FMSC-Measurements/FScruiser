@@ -115,17 +115,15 @@ namespace FScruiser.XF.ViewModels
             SoundService = soundService;
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        public override void OnNavigatedTo(INavigationParameters parameters)
         {
-            LoadData(parameters);
-
             base.OnNavigatedTo(parameters);
 
             MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, (sender, tree_guid) => EditTree(tree_guid));
             MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, (sender, tallyEntry) => Untally(tallyEntry));
         }
 
-        public override void OnNavigatedFrom(NavigationParameters parameters)
+        public override void OnNavigatedFrom(INavigationParameters parameters)
         {
             base.OnNavigatedFrom(parameters);
 
@@ -133,13 +131,9 @@ namespace FScruiser.XF.ViewModels
             MessagingCenter.Unsubscribe<object>(this, Messages.UNTALLY_CLICKED);
         }
 
-        private void LoadData(NavigationParameters parameters)
+        protected override void Refresh(INavigationParameters parameters)
         {
-            
-            if (UnitCode == null) //don't reload param if navigating backwards
-            {
-                UnitCode = parameters.GetValue<string>("UnitCode");
-            }
+            var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
 
             var datastore = Datastore;
 
@@ -156,11 +150,11 @@ namespace FScruiser.XF.ViewModels
             TallyEntryAdded?.Invoke(this, null);
         }
 
-        private async Task TallyAsync(TallyPopulation pop)
+        public async Task TallyAsync(TallyPopulation pop)
         {
             var entry = await TreeBasedTallyLogic.TallyAsync(UnitCode, pop, Datastore, SampleSelectorService, DialogService);//TODO async
 
-            if(entry == null) { return; }
+            if (entry == null) { return; }
             Datastore.InsertTallyEntry(entry);
 
             TallyFeed.Add(entry);
@@ -211,7 +205,6 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-
         public void Untally(TallyEntry tallyEntry)
         {
             Datastore.DeleteTally(tallyEntry);
@@ -222,5 +215,7 @@ namespace FScruiser.XF.ViewModels
         {
             SelectedStratumCode = code ?? STRATUM_FILTER_ALL;
         }
+
+        
     }
 }

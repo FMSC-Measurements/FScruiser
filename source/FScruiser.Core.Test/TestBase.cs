@@ -7,7 +7,7 @@ namespace Xunit
 {
     public class TestBase
     {
-        protected ITestOutputHelper Output { get; private set; }
+        protected ITestOutputHelper Output { get; }
         protected DbProviderFactory DbProvider { get; private set; }
         protected Stopwatch _stopwatch;
         private string _testTempPath;
@@ -42,6 +42,17 @@ namespace Xunit
         {
             _stopwatch.Stop();
             Output.WriteLine("Stopwatch Ended:" + _stopwatch.ElapsedMilliseconds.ToString() + "ms");
+        }
+
+        public void DumpDatabaseInfo(CruiseDAL.DAL ds, params string[] tables)
+        {
+            Output.WriteLine($"DAL Version: {ds.DatabaseVersion}");
+
+            foreach (var table in tables)
+            {
+                var tableSql = ds.GetTableSQL(table);
+                Output.WriteLine(tableSql);
+            }
         }
     }
 }

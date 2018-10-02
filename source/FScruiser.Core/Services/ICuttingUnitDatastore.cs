@@ -19,7 +19,7 @@ namespace FScruiser.Services
 
         IEnumerable<Plot> GetPlotsByUnitCode(string unitCode);
 
-        Plot GetPlot(string unitCode, int plotNumber);
+        //Plot GetPlot(string unitCode, int plotNumber);
 
         //void UpsertStratumPlot(string unit, StratumPlot stratumPlot);
 

@@ -322,19 +322,13 @@ namespace FScruiser.XF.ViewModels
             DialogService = dialogService;
         }
 
-        public override void OnNavigatedFrom(NavigationParameters parameters)
+        public override void OnNavigatedFrom(INavigationParameters parameters)
         {
             base.OnNavigatedFrom(parameters);
             Tree = null;//unwire tree
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
-        {
-            LoadData(parameters);
-            base.OnNavigatedTo(parameters);
-        }
-
-        private void LoadData(NavigationParameters parameters)
+        protected override void Refresh(INavigationParameters parameters)
         {
             var tree_guid = parameters.GetValue<string>("Tree_Guid");
 
@@ -431,6 +425,8 @@ namespace FScruiser.XF.ViewModels
                 Datastore.UpdateTreeErrors(tree.Tree_GUID, ErrorsAndWarnings);
             }
         }
+
+        
 
         //public static void SetTreeTDV(Tree tree, TreeDefaultValueDO tdv)
         //{

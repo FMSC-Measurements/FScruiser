@@ -230,7 +230,6 @@ namespace FScruiser.Core.Test.Services
         {
             using (var database = CreateDatabase())
             {
-                
 
                 var datastore = new CuttingUnitDatastore(database);
 
@@ -691,6 +690,7 @@ namespace FScruiser.Core.Test.Services
 
             using (var database = CreateDatabase())
             {
+
                 var datastore = new CuttingUnitDatastore(database);
 
                 var pop = datastore.GetTallyPopulationsByUnitCode(unitCode)

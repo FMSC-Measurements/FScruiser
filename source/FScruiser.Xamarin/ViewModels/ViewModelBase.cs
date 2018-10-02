@@ -9,9 +9,13 @@ namespace FScruiser.XF.ViewModels
 {
     public abstract class ViewModelBase : INotifyPropertyChanged, INavigatedAware
     {
+        private bool _isFirstNavigatedTo = true;
+
         protected INavigationService NavigationService { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public INavigationParameters Parameters { get; private set; }
 
         //public abstract Task InitAsync();
 
@@ -39,14 +43,29 @@ namespace FScruiser.XF.ViewModels
             if (propName != null) { RaisePropertyChanged(propName); }
         }
 
-        public virtual void OnNavigatedFrom(NavigationParameters parameters)
+        public virtual void OnNavigatedFrom(INavigationParameters parameters)
         {
             
         }
 
-        public virtual void OnNavigatedTo(NavigationParameters parameters)
+        public virtual void OnNavigatedTo(INavigationParameters parameters)
         {
-            MessagingCenter.Send<object, string>(this, Messages.PAGE_NAVIGATED_TO, parameters.ToString());
+            if (_isFirstNavigatedTo)
+            {
+                Parameters = parameters;
+                _isFirstNavigatedTo = false;
+            }
+
+            Refresh();
+
+            //MessagingCenter.Send<object, string>(this, Messages.PAGE_NAVIGATED_TO, parameters.ToString());
         }
+
+        protected void Refresh()
+        {
+            Refresh(Parameters);
+        }
+
+        protected abstract void Refresh(INavigationParameters parameters);
     }
 }

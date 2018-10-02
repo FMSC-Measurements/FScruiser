@@ -167,7 +167,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public override void OnNavigatedFrom(NavigationParameters parameters)
+        public override void OnNavigatedFrom(INavigationParameters parameters)
         {
             base.OnNavigatedFrom(parameters);
 
@@ -175,7 +175,7 @@ namespace FScruiser.XF.ViewModels
             MessagingCenter.Unsubscribe<Object>(this, Messages.CRUISE_FILE_SELECTED);
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        public override void OnNavigatedTo(INavigationParameters parameters)
         {
             base.OnNavigatedTo(parameters);
 
@@ -192,6 +192,11 @@ namespace FScruiser.XF.ViewModels
 
                 RaisePropertyChanged(nameof(NavigationListItems));
             });
+        }
+
+        protected override void Refresh(INavigationParameters parameters)
+        {
+            //do nothing
         }
     }
 }

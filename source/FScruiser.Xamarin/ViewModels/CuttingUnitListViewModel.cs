@@ -30,25 +30,8 @@ namespace FScruiser.XF.ViewModels
 
             MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_OPENED, (sender, path) =>
             {
-                LoadData();
+                Refresh();
             });
-        }
-
-        private void LoadData()
-        {
-            var datastore = CuttingUnitDatastoreProvider.CuttingUnitDatastore;
-            if (datastore != null)
-            {
-                Units = datastore.GetUnits();
-                base.RaisePropertyChanged(nameof(IsFileNotOpen));
-            }
-        }
-
-        public override void OnNavigatedTo(NavigationParameters parameters)
-        {
-            LoadData();
-
-            base.OnNavigatedTo(parameters);
         }
 
         public void SelectUnit(CuttingUnit unit)
@@ -56,6 +39,16 @@ namespace FScruiser.XF.ViewModels
             if (unit == null) { throw new ArgumentNullException(nameof(unit)); }
 
             MessagingCenter.Send<string>(unit.Code, Messages.CUTTING_UNIT_SELECTED);
+        }
+
+        protected override void Refresh(INavigationParameters parameters)
+        {
+            var datastore = CuttingUnitDatastoreProvider.CuttingUnitDatastore;
+            if (datastore != null)
+            {
+                Units = datastore.GetUnits();
+                base.RaisePropertyChanged(nameof(IsFileNotOpen));
+            }
         }
     }
 }

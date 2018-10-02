@@ -29,6 +29,8 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
+        public string[] StratumCodes { get; set; }
+
         public ICommand AddTreeCommand => _addTreeCommand ?? (_addTreeCommand = new Command(AddTreeAsync));
 
         public ICommand DeleteTreeCommand => _deleteTreeCommand ?? (_deleteTreeCommand = new Command<TreeStub>(DeleteTree));
@@ -51,25 +53,20 @@ namespace FScruiser.XF.ViewModels
             Datastore = datastoreProvider.CuttingUnitDatastore;
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        protected override void Refresh(INavigationParameters parameters)
         {
-            if(UnitCode == null) //don't reload param if navigating backwards
-            {
-                UnitCode = parameters.GetValue<string>("UnitCode");
-            }
+            var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
 
-            Trees = Datastore.GetTreeStubsByUnitCode(UnitCode).ToObservableCollection();
+            Trees = Datastore.GetTreeStubsByUnitCode(unitCode).ToObservableCollection();
 
-            base.OnNavigatedTo(parameters);
+            StratumCodes = Datastore.GetStrataProxiesByUnitCode(UnitCode).Select(x => x.Code).ToArray();
         }
 
         public async void AddTreeAsync()
         {
             var datastore = Datastore;
 
-            var stratumCodes = datastore.GetStrataProxiesByUnitCode(UnitCode).Select(x => x.Code).ToArray();
-
-            var stratumCode = await DialogService.AskValueAsync("Select Stratum", stratumCodes);
+            var stratumCode = await DialogService.AskValueAsync("Select Stratum", StratumCodes);
             if (stratumCode != null)
             {
                 var tree_guid = datastore.CreateTree(UnitCode, stratumCode);
@@ -103,5 +100,7 @@ namespace FScruiser.XF.ViewModels
 
             Datastore.DeleteTree(tree.Tree_GUID);
         }
+
+        
     }
 }

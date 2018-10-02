@@ -5,11 +5,13 @@
                   xmlns:pages="clr-namespace:FScruiser.XF.Pages"
                   xmlns:local="clr-namespace:FScruiser;assembly=FScruiser.Core"
                   xmlns:local_converters="clr-namespace:FScruiser.XF.Converters"
+                  xmlns:prism="clr-namespace:Prism.Navigation.Xaml;assembly=Prism.Forms"
                   IsPresented="True">
     <MasterDetailPage.Master>
         <ContentPage x:Name="MasterPage" Title="Master" Icon="ic_menu_white_18dp.png"
                      BackgroundColor="{StaticResource fs_brown}">
             <StackLayout>
+                <!--file select button-->
                 <Frame BackgroundColor="White" Padding="2" Margin="10" CornerRadius="0">
                     <Frame.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding SelectFileCommand}" Tapped="_selectFile_Tapped" />
@@ -28,7 +30,7 @@
                                VerticalTextAlignment="Center"/>
                     </StackLayout>
                 </Frame>
-
+                <!--navigation list view-->
                 <ListView x:Name="MenuItemsListView"
                           SeparatorVisibility="None"
                           HasUnevenRows="true"
@@ -47,6 +49,9 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+
+                <Button BackgroundColor="Transparent" Image="ic_feedback_white_24dp.png" VerticalOptions="End" 
+                        Command="{prism:NavigateTo 'Feedback'}"/>
             </StackLayout>
         </ContentPage>
     </MasterDetailPage.Master>

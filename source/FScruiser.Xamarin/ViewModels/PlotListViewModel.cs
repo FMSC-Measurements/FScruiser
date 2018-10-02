@@ -30,18 +30,14 @@ namespace FScruiser.XF.ViewModels
             Datastore = datastoreProvider.CuttingUnitDatastore;
         }
 
-        public override void OnNavigatedTo(NavigationParameters parameters)
+        protected override void Refresh(INavigationParameters parameters)
         {
-            if (UnitCode == null) //don't reload param if navigating backwards
-            {
-                UnitCode = parameters.GetValue<string>("UnitCode");
-            }
+            var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
 
             Plots = Datastore.GetPlotsByUnitCode(UnitCode).ToArray();
             RaisePropertyChanged(nameof(Plots));
-
-            base.OnNavigatedTo(parameters);
         }
+
 
         public void AddPlot(object obj)
         {
@@ -57,5 +53,7 @@ namespace FScruiser.XF.ViewModels
         {
             NavigationService.NavigateAsync($"PlotTally?UnitCode={UnitCode}&PlotNumber={plot.PlotNumber}");
         }
+
+        
     }
 }

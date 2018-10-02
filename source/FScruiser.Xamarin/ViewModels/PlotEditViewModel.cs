@@ -5,7 +5,9 @@ using FScruiser.XF.Util;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -18,7 +20,7 @@ namespace FScruiser.XF.ViewModels
         private IEnumerable<StratumPlotViewModel> _stratumPlots;
         private Command<StratumPlot> _showLimitingDistanceCommand;
 
-        public ICommand ShowLimitingDistanceCommand => _showLimitingDistanceCommand ?? (_showLimitingDistanceCommand = new Command<StratumPlot>(ShowLimitingDistanceCalculator));
+        public ICommand ShowLimitingDistanceCommand => _showLimitingDistanceCommand ?? (_showLimitingDistanceCommand = new Command<StratumPlot>(async x => await ShowLimitingDistanceCalculatorAsync(x)));
 
         #region PlotNumber
 
@@ -63,6 +65,8 @@ namespace FScruiser.XF.ViewModels
 
         #endregion PlotNumber
 
+         
+
         public string UnitCode { get; set; }
 
         public IEnumerable<StratumProxy> Strata { get; set; }
@@ -87,14 +91,7 @@ namespace FScruiser.XF.ViewModels
             DialogService = dialogService;
         }
 
-
-        public override void OnNavigatedTo(NavigationParameters parameters)
-        {
-            LoadData(parameters);
-            base.OnNavigatedTo(parameters);
-        }
-
-        private void LoadData(NavigationParameters parameters)
+        protected override void Refresh(INavigationParameters parameters)
         {
             var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
             var plotNumber = parameters.GetValueOrDefault<int>("PlotNumber");
@@ -104,8 +101,13 @@ namespace FScruiser.XF.ViewModels
             {
                 plotNumber = Datastore.GetNextPlotNumber(unitCode);
             }
+            else
+            {
 
-            PlotNumber = plotNumber;
+            }
+
+            _plotNumber = plotNumber;
+            RaisePropertyChanged(nameof(PlotNumber));
 
             var strata = Strata = Datastore.GetPlotStrataProxies(UnitCode).ToArray();
             var stratumPlots = new List<StratumPlotViewModel>();
@@ -149,9 +151,25 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public void ShowLimitingDistanceCalculator(StratumPlot stratumPlot)
+        public async Task ShowLimitingDistanceCalculatorAsync(StratumPlot stratumPlot)
         {
-            NavigationService.NavigateAsync("LimitingDistance", new NavigationParameters($"UnitCode={UnitCode}&PlotNumber={stratumPlot.PlotNumber}&StratumCode={stratumPlot.StratumCode}"));
+            try
+            {
+                var navResult = await NavigationService.NavigateAsync("LimitingDistance", new NavigationParameters($"UnitCode={UnitCode}&PlotNumber={stratumPlot.PlotNumber}&StratumCode={stratumPlot.StratumCode}"));
+
+                if(navResult != null)
+                {
+                    Debug.WriteLine(navResult.Success);
+                    if(navResult.Exception != null)
+                    {
+                        Debug.WriteLine(navResult.Exception);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                App.LogException("Navigation", $"Navigating to LimitingDistance", e);
+            }
         }
     }
 }
