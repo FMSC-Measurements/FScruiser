@@ -19,6 +19,7 @@ namespace FScruiser.XF.ViewModels
         private Command<TreeStub> _editTreeCommand;
         private ICollection<TreeStub> _trees;
         private Command _addTreeCommand;
+        private Command<TreeStub> _showLogsCommand;
 
         public ICollection<TreeStub> Trees
         {
@@ -36,6 +37,8 @@ namespace FScruiser.XF.ViewModels
         public ICommand DeleteTreeCommand => _deleteTreeCommand ?? (_deleteTreeCommand = new Command<TreeStub>(DeleteTree));
 
         public ICommand EditTreeCommand => _editTreeCommand ?? (_editTreeCommand = new Command<TreeStub>(ShowEditTree));
+
+        public ICommand ShowLogsCommand => _showLogsCommand ?? (_showLogsCommand = new Command<TreeStub>(async (x) => await ShowLogsAsync(x)));
 
         public string UnitCode { get; set; }
 
@@ -81,11 +84,11 @@ namespace FScruiser.XF.ViewModels
             TreeAdded?.Invoke(this, e);
         }
 
-        public void ShowEditTree(TreeStub obj)
+        public void ShowEditTree(TreeStub tree)
         {
             try
             {
-                NavigationService.NavigateAsync("Tree", new NavigationParameters() { { "Tree_Guid", obj.Tree_GUID }, }, useModalNavigation: true);
+                NavigationService.NavigateAsync("Tree", new NavigationParameters($"Tree_Guid={tree.Tree_GUID}"));
             }
             catch (Exception ex)
             {
@@ -101,6 +104,23 @@ namespace FScruiser.XF.ViewModels
             Datastore.DeleteTree(tree.Tree_GUID);
         }
 
-        
+        public async System.Threading.Tasks.Task ShowLogsAsync(TreeStub tree)
+        {
+            try
+            {
+                var result = await NavigationService.NavigateAsync("Logs", new NavigationParameters($"Tree_Guid={tree.Tree_GUID}"));
+
+                if(result?.Exception != null)
+                {
+                    Debug.WriteLine("ERROR::::" + result?.Exception);
+                    Crashes.TrackError(result?.Exception, new Dictionary<string, string>() { { "nav_path", "/Main/Navigation/CuttingUnits" } });
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ERROR::::" + ex);
+                Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", "/Main/Navigation/CuttingUnits" } });
+            }
+        }
     }
 }

@@ -68,6 +68,10 @@
                                       Text="Delete"
                                       Command="{Binding Path=BindingContext.DeleteTreeCommand, Source={x:Reference Page}}"
                                       CommandParameter="{Binding .}" />
+                            <MenuItem x:Name="_showLogsMenuItem"
+                                      Text="Logs"
+                                      Command="{Binding BindingContext.ShowLogsCommand, Source={x:Reference Page}}"
+                                      CommandParameter="{Binding .}" />
                         </ViewCell.ContextActions>
                     </ViewCell>
 
