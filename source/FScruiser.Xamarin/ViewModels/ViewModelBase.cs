@@ -1,6 +1,10 @@
 ﻿using FScruiser.Services;
+using Microsoft.AppCenter.Crashes;
 using Prism.Navigation;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xamarin.Forms;
@@ -56,7 +60,20 @@ namespace FScruiser.XF.ViewModels
                 _isFirstNavigatedTo = false;
             }
 
-            Refresh();
+            try
+            {
+                var stopwatch = Stopwatch.StartNew();
+
+                Refresh();
+
+                stopwatch.Stop();
+                Microsoft.AppCenter.Analytics.Analytics.TrackEvent("view_model_refresh", new Dictionary<string, string> { { "time_ms", stopwatch.ElapsedMilliseconds.ToString() } });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("ERROR::::" + ex);
+                Crashes.TrackError(ex, new Dictionary<string, string>() { { "view_model_type", this.GetType().Name } });
+            }
 
             //MessagingCenter.Send<object, string>(this, Messages.PAGE_NAVIGATED_TO, parameters.ToString());
         }
