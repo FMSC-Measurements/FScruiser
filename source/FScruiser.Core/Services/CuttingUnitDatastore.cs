@@ -875,6 +875,38 @@ namespace FScruiser.Services
 
         #endregion Tree
 
+        #region Tree Audits and ErrorLog
+        public IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead)
+        {
+            return Database.Query<TreeAuditRule>("SELECT * FROM TreeAuditValue " +
+                "JOIN TreeDefaultValueTreeAuditValue USING (TreeAuditValue_CN) " +
+                "JOIN TreeDefaultValue AS TDV USING (TreeDefaultValue_CN) " +
+                "JOIN SampleGroup ON TDV.PrimaryProduct = SampleGroup.PrimaryProduct " +
+                "JOIN Stratum USING (Stratum_CN) " +
+                "WHERE Stratum.Code = @p1 " +
+                "AND SampleGroup.Code = @p2 " +
+                "AND TDV.Species = @p3 " +
+                "AND TDV.LiveDead = @p4;", new object[] { stratum, sampleGroup, species, livedead });
+        }
+
+        public void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors)
+        {
+            Database.Execute("DELETE FROM ErrorLog WHERE TableName = 'Tree' " +
+                "AND CN_Number = (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1) " +
+                "AND Suppress = 0;", tree_GUID);
+
+            foreach (var error in errors)
+            {
+                Database.Execute("INSERT OR IGNORE INTO ErrorLog (TableName, CN_Number, ColumnName, Level, Message, Program) " +
+                    "VALUES ('Tree', (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1), @p2, @p3, @p4, 'FScruiser');",
+                    tree_GUID,
+                    error.Property,
+                    error.Level.ToString(),
+                    error.Message);
+            }
+        }
+        #endregion
+
         #region Tally Entry
 
         public IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode)
@@ -1016,35 +1048,158 @@ namespace FScruiser.Services
 
         #endregion Tally Entry
 
-        public IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead)
+        #region Log
+
+        public IEnumerable<Log> GetLogs(string tree_guid)
         {
-            return Database.Query<TreeAuditRule>("SELECT * FROM TreeAuditValue " +
-                "JOIN TreeDefaultValueTreeAuditValue USING (TreeAuditValue_CN) " +
-                "JOIN TreeDefaultValue AS TDV USING (TreeDefaultValue_CN) " +
-                "JOIN SampleGroup ON TDV.PrimaryProduct = SampleGroup.PrimaryProduct " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "WHERE Stratum.Code = @p1 " +
-                "AND SampleGroup.Code = @p2 " +
-                "AND TDV.Species = @p3 " +
-                "AND TDV.LiveDead = @p4;", new object[] { stratum, sampleGroup, species, livedead });
+            return Database.From<Log>()
+                .Join("Tree", "USING (Tree_CN)")
+                .Where("Tree.Tree_GUID = @p1")
+                .Query(tree_guid).ToArray();
         }
 
-        public void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors)
+        public Log GetLog(string log_guid)
         {
-            Database.Execute("DELETE FROM ErrorLog WHERE TableName = 'Tree' " +
-                "AND CN_Number = (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1) " +
-                "AND Suppress = 0;", tree_GUID);
+            return Database.From<Log>()
+                .Join("Tree", "USING (Tree_CN)")
+                .Where("Log_GUID = @p1")
+                .Query(log_guid).FirstOrDefault();
+        }
 
-            foreach (var error in errors)
+        public Log GetLog(string tree_guid, int logNumber)
+        {
+            return Database.From<Log>()
+                .Join("Tree", "USING (Tree_CN)")
+                .Where("Tree.Tree_GUID = @p1 AND LogNumber = @p2")
+                .Query(tree_guid, logNumber).FirstOrDefault();
+        }
+
+        public void InsertLog(Log log)
+        {
+            var log_guid = Guid.NewGuid().ToString();
+            var createdBy = log.CreatedBy ?? "Android Device";
+
+            var tree_cn = Database.ExecuteScalar<long>("SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1", log.Tree_GUID);
+            var logNumber = Database.ExecuteScalar<int>("SELECT ifnull(max(LogNumber), 0) + 1 FROM Log WHERE Tree_CN = @p1", tree_cn);
+
+            Database.Execute("INSERT INTO Log " +
+                "(Log_GUID, " +
+                "Tree_CN, " +
+                "LogNumber, " + //
+                "Grade, " +
+                "SeenDefect, " +
+                "PercentRecoverable, " + //
+                "Length, " +
+                "ExportGrade, " +
+                "SmallEndDiameter, " + //
+                "LargeEndDiameter, " +
+                "GrossBoardFoot, " +
+                "NetBoardFoot, " + //
+                "GrossCubicFoot, " +
+                "NetCubicFoot, " +
+                "BoardFootRemoved, " + //
+                "CubicFootRemoved, " +
+                "DIBClass, " +
+                "BarkThickness, " + //
+                "CreatedBy) " +
+                "VALUES " +
+                "(@p1, @p2, @p3," +
+                "@p4, @p5, @p6, " +
+                "@p7, @p8, @p9, " +
+                "@p10, @p11, @p12, " +
+                "@p13, @p14, @p15, " +
+                "@p16, @p17, @p18, @p19);",
+                log_guid, tree_cn, logNumber, 
+                log.Grade, log.SeenDefect, log.PercentRecoverable, 
+                log.Length, log.ExportGrade, log.SmallEndDiameter, 
+                log.LargeEndDiameter, log.GrossBoardFoot, log.NetBoardFoot, 
+                log.GrossCubicFoot, log.NetCubicFoot, log.BoardFootRemoved, 
+                log.CubicFootRemoved, log.DIBClass, log.BarkThickness, 
+                createdBy);
+
+            log.LogNumber = logNumber;
+            log.CreatedBy = createdBy;
+            log.Log_GUID = log_guid;
+        }
+
+        public void UpdateLog(Log log)
+        {
+            Database.Execute("UPDATE Log SET " +
+                "LogNumber = @p1, " +
+                "Grade = @p2, " +
+                "SeenDefect = @p3, " +
+                "PercentRecoverable = @p4, " +
+                "Length = @p5, " +
+                "ExportGrade = @p6, " +
+                "SmallEndDiameter = @p7, " +
+                "LargeEndDiameter = @p8, " +
+                "GrossBoardFoot = @p9, " +
+                "NetBoardFoot = @p10, " +
+                "GrossCubicFoot = @p11, " +
+                "NetCubicFoot = @p12, " +
+                "BoardFootRemoved = @p13, " +
+                "CubicFootRemoved = @p14, " +
+                "DIBClass = @p15, " +
+                "BarkThickness = @p16, " +
+                "ModifiedBy = @p17 " +
+                "WHERE Log_GUID = @p18;",
+                log.LogNumber,
+                log.Grade,
+                log.SeenDefect,
+                log.PercentRecoverable,
+                log.Length,
+                log.ExportGrade,
+                log.SmallEndDiameter,
+                log.LargeEndDiameter,
+                log.GrossBoardFoot,
+                log.NetBoardFoot,
+                log.GrossCubicFoot,
+                log.NetCubicFoot,
+                log.BoardFootRemoved,
+                log.CubicFootRemoved,
+                log.DIBClass,
+                log.BarkThickness,
+                log.ModifiedBy,
+                log.Log_GUID);
+        }
+
+        public void DeleteLog(string log_guid)
+        {
+            Database.Execute("DELETE FROM Log WHERE Log_GUID = @p1;", log_guid);
+        }
+
+        private static readonly LogFieldSetup[] DEFAULT_LOG_FIELDS = new LogFieldSetup[]{
+            new LogFieldSetup(){
+                Field = CruiseDAL.Schema.LOG.LOGNUMBER, Heading = "LogNum"},
+            new LogFieldSetup(){
+                Field = CruiseDAL.Schema.LOG.GRADE, Heading = "Grade"},
+            new LogFieldSetup() {
+                Field = CruiseDAL.Schema.LOG.SEENDEFECT, Heading = "PctSeenDef"}
+        };
+
+        public IEnumerable<LogFieldSetup> GetLogFields(string tree_guid)
+        {
+            var tree_stratum_CN = Database.ExecuteScalar<int>("SELECT Stratum_CN FROM Tree WHERE Tree_GUID = @p1;", tree_guid);
+
+            var fields = Database.From<LogFieldSetup>()
+                .Join("Stratum", "USING (Stratum_CN)")
+                .Where("Stratum_CN = @p1")
+                .OrderBy("FieldOrder")
+                .Query(tree_stratum_CN).ToArray();
+
+            if(fields.Length == 0)
             {
-                Database.Execute("INSERT OR IGNORE INTO ErrorLog (TableName, CN_Number, ColumnName, Level, Message, Program) " +
-                    "VALUES ('Tree', (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1), @p2, @p3, @p4, 'FScruiser');",
-                    tree_GUID,
-                    error.Property,
-                    error.Level.ToString(),
-                    error.Message);
+                return DEFAULT_LOG_FIELDS;
+            }
+            else
+            {
+                return fields;
             }
         }
+
+        #endregion
+
+
 
         public void LogMessage(string message, string level)
         {
