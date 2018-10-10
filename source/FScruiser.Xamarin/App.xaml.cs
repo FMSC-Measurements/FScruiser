@@ -191,6 +191,7 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManagerCruisersViewModel>("Cruisers");
             containerRegistry.RegisterForNavigation<Pages.LimitingDistancePage, ViewModels.LimitingDistanceViewModel>("LimitingDistance");
             containerRegistry.RegisterForNavigation<Pages.LogsListPage, ViewModels.LogsListViewModel>("Logs");
+            containerRegistry.RegisterForNavigation<Pages.LogEditPage, ViewModels.LogEditViewModel>("Log");
             containerRegistry.RegisterForNavigation<Pages.FeedbackPage>("Feedback");
         }
 

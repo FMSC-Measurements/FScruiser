@@ -1,4 +1,5 @@
 ﻿using FScruiser.Models;
+using FScruiser.XF.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -69,7 +70,12 @@ namespace FScruiser.XF.Pages
                 grid.Children.Add(frame, column, row);
             }
 
-            return new ViewCell { View = grid };
+            var viewCell = new ViewCell
+            {
+                View = grid
+            };
+
+            return viewCell;
         }
 
         /// <summary>
@@ -94,7 +100,20 @@ namespace FScruiser.XF.Pages
 
             this.SetBinding(logFieldsProperty, "LogFields");
 
+            _logListView.ItemTapped += _logListView_ItemTapped;
+
             
+        }
+
+        private void _logListView_ItemTapped(object sender, ItemTappedEventArgs e)
+        {
+            if (BindingContext is LogsListViewModel vm
+                && e.Item is Log log && log != null)
+            {
+                vm.ShowEditLogPage(log);
+            }
+
+            _logListView.SelectedItem = null; //deselect selected item
         }
     }
 }

@@ -72,9 +72,9 @@ namespace FScruiser.XF.ViewModels
             _logs.Add(newLog);
         }
 
-        private void ShowEditLogPage(Log log)
+        public void ShowEditLogPage(Log log)
         {
-            NavigationService.NavigateAsync("Log", new NavigationParameters($"CreateNew=false&Tree_Guid={Tree_GUID}&LogNumber={log.LogNumber}"));
+            NavigationService.NavigateAsync("Log", new NavigationParameters($"CreateNew=false&Log_Guid={log.Log_GUID}"));
         }
     }
 }
