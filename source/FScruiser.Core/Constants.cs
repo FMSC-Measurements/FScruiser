@@ -5,6 +5,8 @@ namespace FScruiser
 {
     public class Constants
     {
+        public static readonly string[] LOG_GRADES = new string[] { "01", "02", "03", "04", "05", "06" };
+
         public static readonly TreeFieldSetupDO[] DEFAULT_TREE_FIELDS = new TreeFieldSetupDO[]{
             new TreeFieldSetupDO(){
                 Field = nameof(Tree.TreeNumber), Heading = "Tree", FieldOrder = 1, ColumnType = "Text" },
