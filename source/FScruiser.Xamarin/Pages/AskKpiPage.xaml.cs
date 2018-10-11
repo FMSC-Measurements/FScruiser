@@ -115,40 +115,54 @@ namespace FScruiser.XF.Pages
             }
             else
             {
-                if(String.IsNullOrWhiteSpace(DisplayValue))
+                var result = CheckInput(DisplayValue, MinKPI, MaxKPI, out var errorMessage);
+                if(result != null)
                 {
-                    DisplayAlert("", "No Value Entered", "OK");
-                    return;
-                }
-                else if(DisplayValue == "STM")
-                {
-                    HandleClosed?.Invoke(this, new AskKPIResult { IsSTM = true, DialogResult = Pages.DialogResult.OK });
-                }
-                else if( int.TryParse(DisplayValue, out int i_value))
-                {
-                    if(MinKPI != null && i_value < MinKPI.Value)
-                    {
-                        DisplayAlert("", $"Value Must be Greater or Equal to {MinKPI}", "OK");
-                        return;
-                    }
-                    else if(MaxKPI != null && i_value > MaxKPI.Value)
-                    {
-                        DisplayAlert("", $"Value Must be Less Than or Equal to {MaxKPI}", "OK");
-                        return;
-                    }
-                    else
-                    {
-                        HandleClosed?.Invoke(this, new AskKPIResult { KPI = i_value, DialogResult = Pages.DialogResult.OK });
-                    }
+                    HandleClosed?.Invoke(this, result);
                 }
                 else
                 {
-                    DisplayAlert("", "Invalid Value", "OK");
-                    return;
+                    DisplayAlert("", errorMessage, "OK");
                 }
             }
             Navigation.PopModalAsync();
-            
+        }
+
+        public static AskKPIResult CheckInput(string displayValue, int? minKPI, int? maxKPI, out string errorMessage)
+        {
+            if (String.IsNullOrWhiteSpace(displayValue))
+            {
+                errorMessage = "No Value Entered";
+                return null;
+            }
+            else if (displayValue == "STM")
+            {
+                errorMessage = null;
+                return new AskKPIResult { IsSTM = true, DialogResult = Pages.DialogResult.OK };
+            }
+            else if (int.TryParse(displayValue, out int i_value))
+            {
+                if (minKPI != null && i_value < minKPI.Value && minKPI.Value > 0)
+                {
+                    errorMessage = $"Value Must be Greater or Equal to {minKPI}";
+                    return null;
+                }
+                else if (maxKPI != null && maxKPI > 0 && (maxKPI.Value > (minKPI ?? 0)) && i_value > maxKPI.Value)
+                {
+                    errorMessage = $"Value Must be Less Than or Equal to {maxKPI}";
+                    return null;
+                }
+                else
+                {
+                    errorMessage = null;
+                    return new AskKPIResult { KPI = i_value, DialogResult = Pages.DialogResult.OK };
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid Value";
+                return null;
+            }
         }
     }
 }
