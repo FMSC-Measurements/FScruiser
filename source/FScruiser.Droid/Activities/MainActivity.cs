@@ -13,6 +13,8 @@ namespace FScruiser.Droid
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            SetTheme(Resource.Style.MyTheme);//set theme to main theme, because it should be set at launch to the splash theme
+
             base.OnCreate(savedInstanceState);
 
             Xamarin.Forms.Forms.Init(this, savedInstanceState);

@@ -3,7 +3,7 @@ using Android.OS;
 
 namespace FScruiser.Droid.Activities
 {
-    [Activity(Theme = "@style/MyTheme.Splash", Label = "FScruiser", MainLauncher = true, NoHistory = true)]
+    [Activity(Theme = "@style/MyTheme.Splash", Label = "FScruiser", Icon = "@drawable/fscruiser_32dp", MainLauncher = true, NoHistory = true)]
     public class SplashActivity : Activity
     {
         protected override void OnCreate(Bundle savedInstanceState)
