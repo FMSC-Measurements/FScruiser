@@ -5,11 +5,12 @@ using FScruiser.Services;
 using FScruiser.Util;
 using FScruiser.Validation;
 using FScruiser.XF.Services;
-using Microsoft.AppCenter.Crashes;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
@@ -253,6 +254,7 @@ namespace FScruiser.XF.ViewModels
             set
             {
                 var tree = Tree;
+                if(tree == null) { return; }
                 var existingTreeDefault = FindTreeDefault(tree);
                 if (value == existingTreeDefault) { return; }
 
@@ -315,8 +317,11 @@ namespace FScruiser.XF.ViewModels
 
         #endregion tree property
 
+        private Command _showLogsCommand;
+        public ICommand ShowLogsCommand => _showLogsCommand ?? (_showLogsCommand = new Command(ShowLogs));
+
         public TreeEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
-            , IDialogService dialogService)
+            , IDialogService dialogService, INavigationService navigationService) : base(navigationService)
         {
             Datastore = datastoreProvider.CuttingUnitDatastore;
             DialogService = dialogService;
@@ -411,6 +416,11 @@ namespace FScruiser.XF.ViewModels
             RaisePropertyChanged(nameof(ErrorsAndWarnings));
         }
 
+        public void ShowLogs()
+        {
+            NavigationService.NavigateAsync("Logs", new NavigationParameters($"Tree_Guid={Tree.Tree_GUID}"));
+        }
+
         public void SaveTree()
         {
             SaveTree(Tree);
@@ -425,8 +435,6 @@ namespace FScruiser.XF.ViewModels
                 Datastore.UpdateTreeErrors(tree.Tree_GUID, ErrorsAndWarnings);
             }
         }
-
-        
 
         //public static void SetTreeTDV(Tree tree, TreeDefaultValueDO tdv)
         //{
