@@ -4,8 +4,9 @@
 
   </style>
 
-  <!--<style name="MyTheme.Splash" parent ="Theme.AppCompat.Light">
-    <item name="android:windowBackground">@drawable/splash</item>
+  <style name="MyTheme.Splash" parent ="MyTheme">
+    <!--<item name="android:background">@drawable/fscruiser_24dp</item>-->
+    <item name="android:windowBackground">@drawable/splash_icon</item>
     <item name="android:windowNoTitle">true</item>
-  </style>-->
+  </style>
 </resources>
