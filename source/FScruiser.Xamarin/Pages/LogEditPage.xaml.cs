@@ -71,7 +71,7 @@ namespace FScruiser.XF.Pages
             if (logFields == null) { throw new ArgumentNullException(nameof(logFields)); }
 
             var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 50 });
+            grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 100 });
             grid.ColumnDefinitions.Add(new ColumnDefinition() { Width = 100 });
             //containerView.SetBinding(BindingContextProperty, nameof(TreeEditViewModel.Tree));
             var index = 0;
