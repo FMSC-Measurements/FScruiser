@@ -1,4 +1,5 @@
-﻿using CruiseDAL;
+﻿using Bogus;
+using CruiseDAL;
 using CruiseDAL.DataObjects;
 using FluentAssertions;
 using FScruiser.Models;
@@ -33,7 +34,6 @@ namespace FScruiser.Core.Test.Services
                 Area = 0,
             });
 
-
             //Strata
             database.Insert(new StratumDO
             {
@@ -46,8 +46,6 @@ namespace FScruiser.Core.Test.Services
                 Code = "st2",
                 Method = "something",
             });
-
-
 
             //Unit - Strata
             database.Insert(new CuttingUnitStratumDO
@@ -68,8 +66,6 @@ namespace FScruiser.Core.Test.Services
                 Stratum_CN = 2,
             });
 
-
-
             //Sample Groups
             database.Insert(new SampleGroupDO
             {
@@ -88,8 +84,6 @@ namespace FScruiser.Core.Test.Services
                 UOM = "01",
                 PrimaryProduct = "01"
             });
-
-
 
             //TreeDefaults
 
@@ -133,8 +127,6 @@ namespace FScruiser.Core.Test.Services
                 TreeDefaultValue_CN = 3
             });
 
-
-
             database.Insert(new TallyDO { Hotkey = "A", Description = "something" });
 
             database.Insert(new CountTreeDO()
@@ -151,8 +143,6 @@ namespace FScruiser.Core.Test.Services
                 Tally_CN = 1,
                 TreeDefaultValue_CN = 1
             });
-
-
 
             return database;
         }
@@ -230,7 +220,6 @@ namespace FScruiser.Core.Test.Services
         {
             using (var database = CreateDatabase())
             {
-
                 var datastore = new CuttingUnitDatastore(database);
 
                 datastore.GetPlotStrataProxies("u1").Should().HaveCount(0);
@@ -241,7 +230,6 @@ namespace FScruiser.Core.Test.Services
                 var result = datastore.GetPlotStrataProxies("u1").ToArray();
 
                 result.Should().HaveCount(1);
-
             }
         }
 
@@ -273,7 +261,6 @@ namespace FScruiser.Core.Test.Services
                 var plot_guid = stratumPlot.Plot_GUID;
                 plot_guid.Should().NotBeNullOrEmpty();
 
-
                 datastore.IsPlotNumberAvalible(unitCode, plotNumber).Should().BeFalse("we just took that plot number");
 
                 var ourStratumPlot = datastore.GetStratumPlot(unitCode, stratumCode, plotNumber);
@@ -284,7 +271,6 @@ namespace FScruiser.Core.Test.Services
                 ourStratumPlot.KPI.Should().Be(kpi);
                 ourStratumPlot.IsEmpty.Should().Be(isEmpty);
                 ourStratumPlot.StratumCode.Should().Be(stratumCode);
-
             }
         }
 
@@ -309,7 +295,6 @@ namespace FScruiser.Core.Test.Services
                 var ourStratumPlot = datastore.GetStratumPlot("u1", "st1", 1);
 
                 ourStratumPlot.Remarks.Should().Be("hey");
-
             }
         }
 
@@ -332,7 +317,6 @@ namespace FScruiser.Core.Test.Services
                 echo.Should().NotBeNull("where's my echo");
 
                 datastore.DeleteStratumPlot(echo.Plot_GUID);
-
             }
         }
 
@@ -391,7 +375,7 @@ namespace FScruiser.Core.Test.Services
                 });
 
                 {
-                    //we are going to check that the tally population returned is vallid for a 
+                    //we are going to check that the tally population returned is vallid for a
                     //tally population with no count tree record associated
                     //it should return one tally pop per sample group in the unit, that is associated with a FIX or PNT stratum
                     var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
@@ -404,9 +388,6 @@ namespace FScruiser.Core.Test.Services
                     unit3tallyPop.SampleGroupCode.Should().Be("sg3");
                     unit3tallyPop.InCruise.Should().BeTrue();
                 }
-
-
-
             }
         }
 
@@ -419,9 +400,8 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-
                 //set up two cutting units one (u3) will be given a count tree record
-                //the other (u4) will not, 
+                //the other (u4) will not,
                 //so that we can test situations where count tree records are missing for a unit
                 database.Insert(new CuttingUnitDO
                 {
@@ -476,7 +456,7 @@ namespace FScruiser.Core.Test.Services
                     TreeDefaultValue_CN = 1
                 });
 
-                //tally population should 
+                //tally population should
                 var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
                 unit3tallyPops.Should().HaveCount(1);
                 var unit3tallyPop = unit3tallyPops.Single();
@@ -491,7 +471,6 @@ namespace FScruiser.Core.Test.Services
                 var unit4tallyPop = unit4tallyPops.Single();
                 unit4tallyPop.CountTree_CN.Should().BeNull();
                 unit4tallyPop.InCruise.Should().BeFalse();
-
             }
         }
 
@@ -674,7 +653,9 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
-        #endregion
+        #endregion tree
+
+        #region tally entry
 
         [Theory]
         [InlineData(null, null)]
@@ -690,7 +671,6 @@ namespace FScruiser.Core.Test.Services
 
             using (var database = CreateDatabase())
             {
-
                 var datastore = new CuttingUnitDatastore(database);
 
                 var pop = datastore.GetTallyPopulationsByUnitCode(unitCode)
@@ -803,5 +783,111 @@ namespace FScruiser.Core.Test.Services
                 database.ExecuteScalar<int>("SELECT count(*) FROM Tree WHERE Tree_GUID = @p1", tree_guid).Should().Be(0, "tree should be deleted");
             }
         }
+
+        #endregion tally entry
+
+        #region logs
+
+        [Fact]
+        public void InsertLog_test()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var tree_guid = datastore.CreateTree("u1", "st1");
+
+                var log = new Log() { Tree_GUID = tree_guid };
+
+                var randomizer = new Randomizer(8675309);
+
+                log.BarkThickness = randomizer.Double();
+                log.BoardFootRemoved = randomizer.Double();
+                log.CubicFootRemoved = randomizer.Double();
+                log.DIBClass = randomizer.Double();
+                log.ExportGrade = randomizer.String();
+                log.Grade = randomizer.String();
+                log.GrossBoardFoot = randomizer.Double();
+                log.GrossCubicFoot = randomizer.Double();
+                log.LargeEndDiameter = randomizer.Double();
+                log.Length = randomizer.Int();
+                log.LogNumber = randomizer.Int();
+                log.ModifiedBy = randomizer.String();
+                log.NetBoardFoot = randomizer.Double();
+                log.NetCubicFoot = randomizer.Double();
+                log.PercentRecoverable = randomizer.Double();
+                log.SeenDefect = randomizer.Double();
+                log.SmallEndDiameter = randomizer.Double();
+
+                datastore.InsertLog(log);
+
+                log.Log_GUID.Should().NotBeNullOrWhiteSpace();
+                Guid.TryParse(log.Log_GUID, out Guid log_guid).Should().BeTrue();
+                log_guid.Should().NotBe(Guid.Empty);
+            }
+        }
+
+        [Fact]
+        public void UpdateLog_test()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var tree_guid = datastore.CreateTree("u1", "st1");
+
+
+                var log = new Log() { Tree_GUID = tree_guid, LogNumber = 1 };
+                datastore.InsertLog(log);
+
+                var randomizer = new Randomizer(8675309);
+
+                log.BarkThickness = randomizer.Double();
+                log.BoardFootRemoved = randomizer.Double();
+                log.CubicFootRemoved = randomizer.Double();
+                log.DIBClass = randomizer.Double();
+                log.ExportGrade = randomizer.String();
+                log.Grade = randomizer.String();
+                log.GrossBoardFoot = randomizer.Double();
+                log.GrossCubicFoot = randomizer.Double();
+                log.LargeEndDiameter = randomizer.Double();
+                log.Length = randomizer.Int();
+                log.LogNumber = randomizer.Int();
+                log.ModifiedBy = randomizer.String(10);
+                log.NetBoardFoot = randomizer.Double();
+                log.NetCubicFoot = randomizer.Double();
+                log.PercentRecoverable = randomizer.Double();
+                log.SeenDefect = randomizer.Double();
+                log.SmallEndDiameter = randomizer.Double();
+
+                datastore.UpdateLog(log);
+
+                var logAgain = datastore.GetLog(log.Log_GUID);
+
+                logAgain.Should().BeEquivalentTo(log);
+            }
+        }
+
+        [Fact]
+        public void DeleteLog_test()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var tree_guid = datastore.CreateTree("u1", "st1");
+
+
+                var log = new Log() { Tree_GUID = tree_guid, LogNumber = 1 };
+                datastore.InsertLog(log);
+
+                datastore.DeleteLog(log.Log_GUID); 
+
+                var logAgain = datastore.GetLog(log.Log_GUID);
+                logAgain.Should().BeNull();
+            }
+        }
+
+        #endregion
     }
 }

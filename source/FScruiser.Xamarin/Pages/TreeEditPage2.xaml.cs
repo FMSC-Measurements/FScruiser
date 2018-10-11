@@ -38,24 +38,27 @@ namespace FScruiser.XF.Pages
         {
             _errorMessageContainer.Children.Clear();
 
-            foreach(var error in newValue)
+            if (newValue != null)
             {
-                //var newRow = new StackLayout
-                //{
-                //    Orientation = StackOrientation.Horizontal,
-                //    BackgroundColor = Color.Red
-                //};
-
-                var row = new Label { Text = error.Message };
-
-                switch (error.Level)
+                foreach (var error in newValue)
                 {
-                    case ValidationLevel.Error: { row.BackgroundColor = Color.OrangeRed; break; }
-                    case ValidationLevel.Warning: { row.BackgroundColor = Color.Gold; break; }
-                    case ValidationLevel.Info: { row.BackgroundColor = Color.DodgerBlue; break; }
-                }
+                    //var newRow = new StackLayout
+                    //{
+                    //    Orientation = StackOrientation.Horizontal,
+                    //    BackgroundColor = Color.Red
+                    //};
 
-                _errorMessageContainer.Children.Add(row);
+                    var row = new Label { Text = error.Message };
+
+                    switch (error.Level)
+                    {
+                        case ValidationLevel.Error: { row.BackgroundColor = Color.OrangeRed; break; }
+                        case ValidationLevel.Warning: { row.BackgroundColor = Color.Gold; break; }
+                        case ValidationLevel.Info: { row.BackgroundColor = Color.DodgerBlue; break; }
+                    }
+
+                    _errorMessageContainer.Children.Add(row);
+                }
             }
         }
 

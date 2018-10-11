@@ -115,6 +115,25 @@ namespace FScruiser.Services
 
         #endregion plot tree
 
+        #region logs
+
+        IEnumerable<Log> GetLogs(string tree_guid);
+
+        Log GetLog(string log_guid);
+
+        Log GetLog(string tree_guid, int logNumber);
+
+        void InsertLog(Log log);
+
+        void UpdateLog(Log log);
+
+        void DeleteLog(string log_guid);
+
+        IEnumerable<LogFieldSetup> GetLogFields(string tree_guid);
+
+
+        #endregion
+
         IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
 
         IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber);
