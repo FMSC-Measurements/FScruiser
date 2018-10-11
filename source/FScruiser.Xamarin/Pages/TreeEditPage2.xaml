@@ -5,6 +5,9 @@
              xmlns:validation="clr-namespace:FScruiser.Validation;assembly=FScruiser.Core"
              BackgroundColor="White"
              ErrorsAndWarnings="{Binding ErrorsAndWarnings}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Logs" Command="{Binding ShowLogsCommand}"/>
+    </ContentPage.ToolbarItems>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>

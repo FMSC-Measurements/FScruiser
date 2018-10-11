@@ -47,7 +47,7 @@ namespace FScruiser.XF.Pages
             if (BindingContext is TreeListViewModel vm
                 && e.SelectedItem is TreeStub tree && tree != null)
             {
-                vm.ShowEditTree(tree);
+                vm.ShowEditTreeAsync(tree);
             }
 
             _treeListView.SelectedItem = null; //deselect selected item

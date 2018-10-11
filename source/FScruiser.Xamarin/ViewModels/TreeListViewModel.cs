@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -36,7 +37,7 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand DeleteTreeCommand => _deleteTreeCommand ?? (_deleteTreeCommand = new Command<TreeStub>(DeleteTree));
 
-        public ICommand EditTreeCommand => _editTreeCommand ?? (_editTreeCommand = new Command<TreeStub>(ShowEditTree));
+        public ICommand EditTreeCommand => _editTreeCommand ?? (_editTreeCommand = new Command<TreeStub>(async (x) => await ShowEditTreeAsync(x)));
 
         public ICommand ShowLogsCommand => _showLogsCommand ?? (_showLogsCommand = new Command<TreeStub>(async (x) => await ShowLogsAsync(x)));
 
@@ -84,11 +85,17 @@ namespace FScruiser.XF.ViewModels
             TreeAdded?.Invoke(this, e);
         }
 
-        public void ShowEditTree(TreeStub tree)
+        public async Task ShowEditTreeAsync(TreeStub tree)
         {
             try
             {
-                NavigationService.NavigateAsync("Tree", new NavigationParameters($"Tree_Guid={tree.Tree_GUID}"));
+                var result = await NavigationService.NavigateAsync("Tree", new NavigationParameters($"Tree_Guid={tree.Tree_GUID}"));
+                var ex = result.Exception;
+                if(ex != null)
+                {
+                    Debug.WriteLine("ERROR::::" + ex);
+                    Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", "/Main/Navigation/CuttingUnits" } });
+                }
             }
             catch (Exception ex)
             {
