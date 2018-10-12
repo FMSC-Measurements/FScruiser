@@ -1,4 +1,5 @@
-﻿using FScruiser.Services;
+﻿using FScruiser.Models;
+using FScruiser.Services;
 using FScruiser.XF.Services;
 using Microsoft.AppCenter.Crashes;
 using Plugin.FilePicker;
@@ -40,20 +41,16 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand NavigateCommand => _navigateCommand ?? (_navigateCommand = new Command<NavigationListItem>(async (x) => await NavigateToAsync(x)));
 
-        public bool CanShowCuttingUnits => !string.IsNullOrWhiteSpace(SelectedUnitCode);
-
-        public bool CanShowTallies => !string.IsNullOrWhiteSpace(SelectedUnitCode);
-
-        public bool CanShowTrees => !string.IsNullOrWhiteSpace(SelectedUnitCode);
-
         public IEnumerable<NavigationListItem> NavigationListItems { get; set; }
+
+        public CuttingUnit SelectedCuttingUnit { get; protected set; }
 
         public string CurrentFilePath
         {
             get
             {
                 var filePath = DatastoreProvider.Cruise_Path;
-                if(string.IsNullOrWhiteSpace(filePath))
+                if (string.IsNullOrWhiteSpace(filePath))
                 {
                     return "Open File";
                 }
@@ -61,14 +58,11 @@ namespace FScruiser.XF.ViewModels
                 {
                     return Path.GetFileName(filePath);
                 }
-
             }
         }
 
         public ICuttingUnitDatastoreProvider DatastoreProvider { get; }
         protected IDialogService DialogService { get; set; }
-
-        public string SelectedUnitCode { get; protected set; }
 
         public MainViewModel(INavigationService navigationService
             , IDialogService dialogService
@@ -77,53 +71,60 @@ namespace FScruiser.XF.ViewModels
             DialogService = dialogService;
             DatastoreProvider = datastoreProvider;
 
-            RefreshNavigation();
+            RefreshNavigation(null);
         }
 
-        public void RefreshNavigation()
+        public void RefreshNavigation(CuttingUnit_Ex cuttingUnit)
         {
             var datastore = DatastoreProvider.CuttingUnitDatastore;
 
-            if (datastore != null && SelectedUnitCode != null)
+            var navigationItems = new List<NavigationListItem>();
+
+            if (datastore != null)
             {
+                navigationItems.Add(new NavigationListItem
+                {
+                    Title = "Cutting Units",
+                    NavigationPath = "Navigation/CuttingUnits"
+                });
 
-                NavigationListItems = new NavigationListItem[]
+                if (cuttingUnit != null)
+                {
+                    if (cuttingUnit.HasTreeStrata)
                     {
-                        new NavigationListItem {Title = "Cutting Units"
-                        , NavigationPath = "Navigation/CuttingUnits"
-                        , CanShowAction = () => CanShowCuttingUnits},
+                        navigationItems.Add(new NavigationListItem
+                        {
+                            Title = "Tally",
+                            NavigationPath = "Navigation/Tally",
+                            GetParamaters = () => new NavigationParameters($"UnitCode={cuttingUnit.Code}")
+                        });
 
-                        new NavigationListItem {Title = "Tally"
-                        , NavigationPath = "Navigation/Tally"
-                        , GetParamaters = () => new NavigationParameters($"UnitCode={SelectedUnitCode}")
-                        , CanShowAction = () => CanShowTallies },
-
-                        new NavigationListItem {Title="Trees"
-                        , NavigationPath = "Navigation/Trees"
-                        , GetParamaters = () => new NavigationParameters($"UnitCode={SelectedUnitCode}")
-                        , CanShowAction = () => CanShowTrees },
-
-                        new NavigationListItem {Title="Plots"
-                        , NavigationPath = "Navigation/Plots"
-                        , GetParamaters = () => new NavigationParameters($"UnitCode={SelectedUnitCode}")},
-
-                        new NavigationListItem {Title="Cruisers"
-                        , NavigationPath = "Navigation/Cruisers"}
-                    };
+                        navigationItems.Add(new NavigationListItem
+                        {
+                            Title = "Trees",
+                            NavigationPath = "Navigation/Trees",
+                            GetParamaters = () => new NavigationParameters($"UnitCode={cuttingUnit.Code}")
+                        });
+                    }
+                    if (cuttingUnit.HasPlotStrata)
+                    {
+                        navigationItems.Add(new NavigationListItem
+                        {
+                            Title = "Plots",
+                            NavigationPath = "Navigation/Plots",
+                            GetParamaters = () => new NavigationParameters($"UnitCode={cuttingUnit.Code}")
+                        });
+                    }
+                }
             }
-            else
+
+            navigationItems.Add(new NavigationListItem
             {
-                NavigationListItems = new NavigationListItem[]
-                    {
-                        new NavigationListItem {Title = "Cutting Units"
-                        , NavigationPath = "Navigation/CuttingUnits"},
+                Title = "Cruisers",
+                NavigationPath = "Navigation/Cruisers"
+            });
 
-                        new NavigationListItem {Title="Cruisers"
-                        , NavigationPath = "Navigation/Cruisers"}
-                    };
-            }
-
-
+            NavigationListItems = navigationItems;
         }
 
         public async System.Threading.Tasks.Task NavigateToAsync(NavigationListItem obj)
@@ -134,7 +135,7 @@ namespace FScruiser.XF.ViewModels
             {
                 await NavigationService.NavigateAsync(obj.NavigationPath, navParams);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine("ERROR::::" + ex);
                 Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", obj.NavigationPath } });
@@ -179,19 +180,30 @@ namespace FScruiser.XF.ViewModels
         {
             base.OnNavigatedTo(parameters);
 
-            MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_OPENED, (sender, path) =>
-            {
-                SelectedUnitCode = null;
-                RaisePropertyChanged(nameof(this.CurrentFilePath));
-                RaisePropertyChanged(nameof(NavigationListItems));
-            });
-            MessagingCenter.Subscribe<string>(this, Messages.CUTTING_UNIT_SELECTED, (unit) =>
-            {
-                SelectedUnitCode = unit;
-                RefreshNavigation();
+            MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_OPENED,
+                MessagingCenter_CruiseFileOpened);
 
-                RaisePropertyChanged(nameof(NavigationListItems));
-            });
+            MessagingCenter.Subscribe<string>(this, Messages.CUTTING_UNIT_SELECTED,
+                MessagingCenter_CuttingUnitSelected);
+        }
+
+        private void MessagingCenter_CuttingUnitSelected(string unit)
+        {
+            var cuttingUnit = DatastoreProvider.CuttingUnitDatastore.GetUnit(unit);
+
+            RefreshNavigation(cuttingUnit);
+
+            RaisePropertyChanged(nameof(NavigationListItems));
+        }
+
+        private void MessagingCenter_CruiseFileOpened(object sender, string path)
+        {
+            SelectedCuttingUnit = null;
+
+            RefreshNavigation(null);
+
+            RaisePropertyChanged(nameof(this.CurrentFilePath));
+            RaisePropertyChanged(nameof(NavigationListItems));
         }
 
         protected override void Refresh(INavigationParameters parameters)
