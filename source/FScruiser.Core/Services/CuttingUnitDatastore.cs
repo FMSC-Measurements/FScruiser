@@ -18,6 +18,8 @@ namespace FScruiser.Services
     {
         private const int NUMBER_OF_TALLY_ENTRIES_PERPAGE = 20;
 
+        private readonly string PLOT_METHODS = String.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray());
+
         private const string CREATE_TREE_COMMAND = "INSERT INTO Tree " +
                 "(Tree_GUID, TreeNumber, CuttingUnit_CN, Stratum_CN, SampleGroup_CN, TreeDefaultValue_CN, Species, LiveDead, CountOrMeasure, TreeCount, KPI, STM) " +
                 "VALUES (@p1,\r\n " +
@@ -73,10 +75,31 @@ namespace FScruiser.Services
             return Database.ExecuteScalar<string>("SELECT Purpose FROM Sale LIMIT 1;");
         }
 
+        public CuttingUnit_Ex GetUnit(string code)
+        {
+            var unit = Database.From<CuttingUnit_Ex>()
+                .Where("Code = @p1")
+                .Query(code).FirstOrDefault();
+
+            unit.HasPlotStrata = Database.ExecuteScalar<int>("SELECT count(*) FROM CuttingUnitStratum AS [cust] " +
+                "JOIN Stratum USING (Stratum_CN) " +
+                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
+                "WHERE CuttingUnit.Code = @p1 " +
+                $"AND Stratum.Method IN ({PLOT_METHODS});", code) > 0;
+
+            unit.HasTreeStrata = Database.ExecuteScalar<int>("SELECT count(*) FROM CuttingUnitStratum AS [cust] " +
+                "JOIN Stratum USING (Stratum_CN) " +
+                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
+                "WHERE CuttingUnit.Code = @p1 " +
+                $"AND Stratum.Method NOT IN ({PLOT_METHODS});", code) > 0;
+
+            return unit;
+        }
+
         public IEnumerable<CuttingUnit> GetUnits()
         {
             return Database.From<CuttingUnit>()
-                .Query().ToList();
+                .Query().ToArray();
         }
 
         #region plot
@@ -238,35 +261,30 @@ namespace FScruiser.Services
 
         public IEnumerable<Stratum> GetStrataByUnitCode(string unitCode)
         {
-            var plotMethodsExpression = $"({ string.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray())})";
-
             return Database.From<Stratum>()
                 .Join("CuttingUnitStratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN {plotMethodsExpression}")
+                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
                 .Query(unitCode).ToArray();
         }
 
         public IEnumerable<StratumProxy> GetStrataProxiesByUnitCode(string unitCode)
         {
-            var plotMethodsExpression = $"({ string.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray())})";
-
             return Database.From<StratumProxy>()
                 .Join("CuttingUnitStratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN {plotMethodsExpression}")
+                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
                 .Query(unitCode);
         }
 
         public IEnumerable<StratumProxy> GetPlotStrataProxies(string unitCode)
         {
-            var plotMethodsExpression = $"({ string.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray())})";
 
             return Database.From<StratumProxy>()
                 .Join("CuttingUnitStratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
                 //.Where($"CuttingUnit.Code = @p1")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method IN {plotMethodsExpression}")
+                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method IN ({PLOT_METHODS})")
                 .Query(unitCode);
         }
 
@@ -320,7 +338,7 @@ namespace FScruiser.Services
                 .LeftJoin("TreeDefaultValue", "USING (TreeDefaultValue_CN)")
                 .Join("Stratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({string.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray())})")
+                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
                 .Query(unitCode).ToArray();
         }
 
@@ -338,15 +356,13 @@ namespace FScruiser.Services
 
         public IEnumerable<TallyPopulation_Plot> GetPlotTallyPopulationsByUnitCode(string unitCode, int plotNumber)
         {
-            var plotMethodsExpression = string.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray());
-
             //get all samplegroups in unit where stratum method is a plot based method
             var sampleGroups = Database.Query<SampleGroupStratumInfo>("SELECT SampleGroup.Code AS SgCode, Stratum.Code AS StCode, Stratum.Method AS Method " +
                 "FROM SampleGroup " +
                 "JOIN Stratum USING (Stratum_CN) " +
                 "JOIN CuttingUnitStratum USING (Stratum_CN) " +
                 "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "WHERE CuttingUnit.Code = @p1 AND Stratum.Method IN (" + plotMethodsExpression + ");", new object[] { unitCode });
+                $"WHERE CuttingUnit.Code = @p1 AND Stratum.Method IN ({PLOT_METHODS});", new object[] { unitCode });
 
             var tallyPopulations = new List<TallyPopulation_Plot>();
 
@@ -362,7 +378,7 @@ namespace FScruiser.Services
                     "JOIN SampleGroup USING (SampleGroup_CN) " +
                     "LEFT JOIN TreeDefaultValue AS TDV USING (TreeDefaultValue_CN) " +
                     "JOIN Stratum USING (Stratum_CN) " +
-                    "WHERE SampleGroup.Code = @p1 AND Stratum.Code = @p2 AND Stratum.Method IN (" + plotMethodsExpression + ") " +
+                    $"WHERE SampleGroup.Code = @p1 AND Stratum.Code = @p2 AND Stratum.Method IN ({PLOT_METHODS}) " +
                     "GROUP BY SampleGroup.Code, Stratum.Code;",
                     new object[]
                     {
@@ -474,7 +490,7 @@ namespace FScruiser.Services
                 .Join("CuttingUnitStratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
                 .Join("Stratum", "USING (Stratum_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({string.Join(",", CruiseMethods.PLOT_METHODS.Select(s => "'" + s + "'").ToArray())})")
+                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
                 .GroupBy("Field")
                 .OrderBy("FieldOrder")
                 .Query(unitCode).ToArray();
