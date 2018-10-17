@@ -1,5 +1,4 @@
 ﻿using FScruiser.Models;
-using FScruiser.Services;
 using FScruiser.Util;
 using FScruiser.XF.ViewModels;
 using System;
@@ -19,19 +18,6 @@ namespace FScruiser.XF.Pages
         public UnitTreeTallyPage()
         {
             InitializeComponent();
-
-            Appearing += async (sender, ea) =>
-            {
-                
-
-            };
-
-            Disappearing += (x, ea) =>
-            {
-                
-            };
-
-            
         }
 
         protected override void OnAppearing()
@@ -108,16 +94,15 @@ namespace FScruiser.XF.Pages
             //view.SelectedItem = null;//disable selection so that selection acts as a click
         }
 
-        void _tallyEntryViewCell_IsSelectedChanged(object sender, bool isSelected)
+        private void _tallyEntryViewCell_IsSelectedChanged(object sender, bool isSelected)
         {
             _treeCellIsSelected = isSelected;
 
-            if(isSelected && sender != null)
+            if (isSelected && sender != null)
             {
                 _tallyFeedListView.ScrollTo(sender, ScrollToPosition.MakeVisible, false);
             }
         }
-
 
         //void _tallyEntryViewCell_UntallyClicked(object sender, TallyEntry tallyEntry)
         //{
@@ -137,6 +122,4 @@ namespace FScruiser.XF.Pages
         //    }
         //}
     }
-
-    
 }
