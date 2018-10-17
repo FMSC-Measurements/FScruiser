@@ -1,11 +1,9 @@
 ﻿using CruiseDAL;
 using CruiseDAL.DataObjects;
 using CruiseDAL.Schema;
-using FMSC.ORM.Core;
 using FMSC.ORM.Core.SQL.QueryBuilder;
 using FMSC.ORM.EntityModel.Attributes;
 using FScruiser.Models;
-using FScruiser.Util;
 using FScruiser.Validation;
 using System;
 using System.Collections.Generic;
@@ -34,7 +32,6 @@ namespace FScruiser.Services
                 "@p8,\r\n  " + //treecount
                 "@p9,\r\n " + //kpi
                 "@p10);\r\n "; //stm
-
 
         private DAL _database;
 
@@ -67,8 +64,6 @@ namespace FScruiser.Services
 
             //DatabaseUpdater.Update(database);
         }
-
-
 
         public string GetCruisePurpose()
         {
@@ -137,6 +132,22 @@ namespace FScruiser.Services
         //        , new object[] { unitCode, plotNumber }).FirstOrDefault();
         //}
 
+        public IEnumerable<StratumPlot> GetStratumPlots(string unitCode, int plotNumber, bool insertIfNotExists = false)
+        {
+            var stratumPlots = new List<StratumPlot>();
+
+            var strata = GetPlotStrataProxies(unitCode).ToArray();
+
+            foreach (var stratum in strata)
+            {
+                var stratumPlot = GetStratumPlot(unitCode, stratum.Code, plotNumber, insertIfNotExists);
+
+                stratumPlots.Add(stratumPlot);
+            }
+
+            return stratumPlots.ToArray();
+        }
+
         public StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber, bool insertIfNotExists = false)
         {
             var stratumPlot = Database.Query<StratumPlot>("SELECT 1 AS InCruise, Stratum.Code AS StratumCode, Plot.* FROM Plot " +
@@ -146,7 +157,7 @@ namespace FScruiser.Services
                     "AND Stratum.Code = @p2 " +
                     "AND PlotNumber = @p3;", new object[] { unitCode, stratumCode, plotNumber }).FirstOrDefault();
 
-            if(stratumPlot == null)
+            if (stratumPlot == null)
             {
                 stratumPlot = new StratumPlot()
                 {
@@ -155,7 +166,7 @@ namespace FScruiser.Services
                     InCruise = false
                 };
 
-                if(insertIfNotExists)
+                if (insertIfNotExists)
                 {
                     InsertStratumPlot(unitCode, stratumPlot);
                     stratumPlot.InCruise = true;
@@ -208,6 +219,8 @@ namespace FScruiser.Services
                     "IsEmpty = @p3, " +
                     "KPI = @p4, " +
                     "Remarks = @p5 " +
+                    "Slope = @p6 " +
+                    "Aspect = @p7" +
                     "WHERE " +
                     "Plot_GUID = @p1;",
                     new object[] {
@@ -215,7 +228,9 @@ namespace FScruiser.Services
                         stratumPlot.PlotNumber,
                         stratumPlot.IsEmpty,
                         stratumPlot.KPI,
-                        stratumPlot.Remarks
+                        stratumPlot.Remarks,
+                        stratumPlot.Slope,
+                        stratumPlot.Aspect
                         });
         }
 
@@ -279,7 +294,6 @@ namespace FScruiser.Services
 
         public IEnumerable<StratumProxy> GetPlotStrataProxies(string unitCode)
         {
-
             return Database.From<StratumProxy>()
                 .Join("CuttingUnitStratum", "USING (Stratum_CN)")
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
@@ -369,7 +383,7 @@ namespace FScruiser.Services
             //for each sampleGroup get a list of tally populations, if there are none create a tally population if the cruis method is a single stage plot cruise method
             foreach (var sg in sampleGroups)
             {
-                //get tally populations by reading from the count tree table for all cutting units, allowing us to fill in gaps for units with missing count tree records. 
+                //get tally populations by reading from the count tree table for all cutting units, allowing us to fill in gaps for units with missing count tree records.
                 var sgTallyPops = Database.Query<TallyPopulation_Plot>("SELECT SampleGroup_CN, Tally.Description AS TallyDescription, Tally.HotKey AS TallyHotKey, Stratum.Code AS StratumCode, Stratum.Method AS StratumMethod, " +
                     "SampleGroup.Code AS SampleGroupCode, SampleGroup.SampleSelectorType AS sgSampleSelectorType, SampleGroup.MinKPI AS sgMinKPI, SampleGroup.MaxKPI AS sgMaxKPI, " +
                     "TDV.Species AS tdvSpecies, TDV.LiveDead AS tdvLiveDead " +
@@ -385,11 +399,11 @@ namespace FScruiser.Services
                         sg.SgCode, sg.StCode
                     }).ToArray();
 
-                //if there are tally populations then go through them and 
+                //if there are tally populations then go through them and
                 //check if they are in the cruise for this plot number
                 if (sgTallyPops.Any())
                 {
-                    foreach(var tallyPop in sgTallyPops)
+                    foreach (var tallyPop in sgTallyPops)
                     {
                         tallyPop.CountTree_CN = Database.ExecuteScalar<long?>("SELECT CountTree_CN FROM CountTree " +
                             "JOIN CuttingUnit USING (CuttingUnit_CN) " +
@@ -892,6 +906,7 @@ namespace FScruiser.Services
         #endregion Tree
 
         #region Tree Audits and ErrorLog
+
         public IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead)
         {
             return Database.Query<TreeAuditRule>("SELECT * FROM TreeAuditValue " +
@@ -921,7 +936,8 @@ namespace FScruiser.Services
                     error.Message);
             }
         }
-        #endregion
+
+        #endregion Tree Audits and ErrorLog
 
         #region Tally Entry
 
@@ -1125,12 +1141,12 @@ namespace FScruiser.Services
                 "@p10, @p11, @p12, " +
                 "@p13, @p14, @p15, " +
                 "@p16, @p17, @p18, @p19);",
-                log_guid, tree_cn, logNumber, 
-                log.Grade, log.SeenDefect, log.PercentRecoverable, 
-                log.Length, log.ExportGrade, log.SmallEndDiameter, 
-                log.LargeEndDiameter, log.GrossBoardFoot, log.NetBoardFoot, 
-                log.GrossCubicFoot, log.NetCubicFoot, log.BoardFootRemoved, 
-                log.CubicFootRemoved, log.DIBClass, log.BarkThickness, 
+                log_guid, tree_cn, logNumber,
+                log.Grade, log.SeenDefect, log.PercentRecoverable,
+                log.Length, log.ExportGrade, log.SmallEndDiameter,
+                log.LargeEndDiameter, log.GrossBoardFoot, log.NetBoardFoot,
+                log.GrossCubicFoot, log.NetCubicFoot, log.BoardFootRemoved,
+                log.CubicFootRemoved, log.DIBClass, log.BarkThickness,
                 createdBy);
 
             log.LogNumber = logNumber;
@@ -1203,7 +1219,7 @@ namespace FScruiser.Services
                 .OrderBy("FieldOrder")
                 .Query(tree_stratum_CN).ToArray();
 
-            if(fields.Length == 0)
+            if (fields.Length == 0)
             {
                 return DEFAULT_LOG_FIELDS;
             }
@@ -1213,9 +1229,7 @@ namespace FScruiser.Services
             }
         }
 
-        #endregion
-
-
+        #endregion Log
 
         public void LogMessage(string message, string level)
         {

@@ -15,6 +15,7 @@ namespace FScruiser.Services
         IEnumerable<CuttingUnit> GetUnits();
 
         #region plots
+
         int GetNextPlotNumber(string unitCode);
 
         bool IsPlotNumberAvalible(string unitCode, int plotNumber);
@@ -24,6 +25,8 @@ namespace FScruiser.Services
         //Plot GetPlot(string unitCode, int plotNumber);
 
         //void UpsertStratumPlot(string unit, StratumPlot stratumPlot);
+
+        IEnumerable<StratumPlot> GetStratumPlots(string unitCode, int plotNumber, bool insertIfNotExists = false);
 
         StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber, bool insertIfNotExists = false);
 
@@ -133,8 +136,7 @@ namespace FScruiser.Services
 
         IEnumerable<LogFieldSetup> GetLogFields(string tree_guid);
 
-
-        #endregion
+        #endregion logs
 
         IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
 
