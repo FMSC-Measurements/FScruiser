@@ -48,8 +48,8 @@
                         <Frame HasShadow="True" Margin="7" Padding="3,0,3,5" CornerRadius="0" BackgroundColor="{StaticResource accent}">
                             <StackLayout>
                                 <StackLayout Orientation="Horizontal">
-                                    <Label Text="{Binding StratumPlot.StratumCode, StringFormat='Stratum {0}'}" Margin="10,0,30,0" VerticalTextAlignment="Center" HorizontalOptions="StartAndExpand"/>
-                                    <Button Text="Add/Remove" Command="{Binding ToggleInCruiseCommand}" HorizontalOptions="End"/>
+                                    <Label Text="{Binding StratumCode, StringFormat='Stratum {0}'}" Margin="10,0,30,0" VerticalTextAlignment="Center" HorizontalOptions="StartAndExpand"/>
+                                    <Button Text="Add/Remove" Command="{Binding BindingContext.ToggleInCruiseCommand, Source={Reference _page }}" CommandParameter="{Binding .}" HorizontalOptions="End"/>
                                 </StackLayout>
 
                                 <StackLayout IsVisible="{Binding InCruise, Mode=OneWay}">
@@ -57,29 +57,29 @@
                                     <StackLayout Orientation="Horizontal">
                                         <StackLayout Orientation="Horizontal">
                                             <Label Text="Slope" VerticalTextAlignment="Center"/>
-                                            <Entry Text="{Binding StratumPlot.Slope}" WidthRequest="50" Keyboard="Numeric" />
+                                            <Entry Text="{Binding Slope}" WidthRequest="50" Keyboard="Numeric" />
                                         </StackLayout>
                                         <StackLayout Orientation="Horizontal">
                                             <Label Text="Aspect" VerticalTextAlignment="Center" />
-                                            <Entry Text="{Binding StratumPlot.Aspect}" WidthRequest="50" Keyboard="Numeric" />
+                                            <Entry Text="{Binding Aspect}" WidthRequest="50" Keyboard="Numeric" />
                                         </StackLayout>
                                         <StackLayout Orientation="Horizontal">
                                             <Label Text="Empty Plot" VerticalTextAlignment="Center" Margin="10,0,30,0"/>
-                                            <Switch IsToggled="{Binding IsEmpty}" />
+                                            <Switch IsToggled="{Binding IsEmptyBool}" />
                                         </StackLayout>
                                     </StackLayout>
 
                                     <BoxView HeightRequest="1" VerticalOptions="Fill" Margin="0" Color="{StaticResource black_70}"/>
                                     <Label Text="Remarks" VerticalTextAlignment="End" Margin="10,0,30,0"/>
                                     <Editor 
-                                            Text="{Binding StratumPlot.Remarks}" 
+                                            Text="{Binding Remarks}" 
                                             IsSpellCheckEnabled="False"
                                             HorizontalOptions="Fill" 
                                             AutoSize="TextChanges"/>
                                     <Button Text="Calculate Limiting Distances" 
                                         VerticalOptions="FillAndExpand" 
                                         Command="{Binding BindingContext.ShowLimitingDistanceCommand, Source={Reference _page }}"
-                                        CommandParameter="{Binding StratumPlot}"/>
+                                        CommandParameter="{Binding .}"/>
                                 </StackLayout>
                             </StackLayout>
                         </Frame>

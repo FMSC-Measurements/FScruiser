@@ -6,13 +6,27 @@ namespace FScruiser.Models
     [EntitySource("Plot")]
     public class StratumPlot : INPC_Base
     {
-        private string _plot_guid;
-        private string _stratumCode;
         private int _plotNumber;
         private bool _inCruise;
         private string _isEmpty;
         private int _kpi;
         private string _remarks;
+        private double _slope;
+        private double _aspect;
+
+        [IgnoreField]
+        public bool InCruise
+        {
+            get => _inCruise;
+            set => SetValue(ref _inCruise, value);
+        }
+
+        [IgnoreField]
+        public bool IsEmptyBool
+        {
+            get => this.IsEmpty == "True";
+            set => this.IsEmpty = (value) ? "True" : "False";
+        }
 
         [Field("Plot_GUID")]
         public string Plot_GUID { get; set; }
@@ -32,47 +46,43 @@ namespace FScruiser.Models
         [Field("PlotNumber")]
         public int PlotNumber
         {
-            get { return _plotNumber; }
-            set { SetValue(ref _plotNumber, value); }
-        }
-
-        [Field(Alias = "InCruise")]
-        public bool InCruise
-        {
-            get { return _inCruise; }
-            set
-            {
-                SetValue(ref _inCruise, value);
-            }
+            get => _plotNumber;
+            set => SetValue(ref _plotNumber, value);
         }
 
         [Field("IsEmpty")]
         public string IsEmpty
         {
-            get { return _isEmpty; }
-            set { SetValue(ref _isEmpty, value); }
+            get => _isEmpty;
+            set => SetValue(ref _isEmpty, value);
         }
 
         [Field("KPI")]
         public int KPI
         {
-            get { return _kpi; }
-            set { SetValue(ref _kpi, value); }
+            get => _kpi;
+            set => SetValue(ref _kpi, value);
         }
 
         [Field("Remarks")]
         public string Remarks
         {
-            get { return _remarks; }
-            set { SetValue(ref _remarks, value); }
+            get => _remarks;
+            set => SetValue(ref _remarks, value);
         }
 
         [Field("Slope")]
         public double Slope
-        { get; set; }
+        {
+            get => _slope;
+            set => SetValue(ref _slope, value);
+        }
 
         [Field("Aspect")]
         public double Aspect
-        { get; set; }
+        {
+            get => _aspect;
+            set => SetValue(ref _aspect, value);
+        }
     }
 }
