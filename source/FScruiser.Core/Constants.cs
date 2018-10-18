@@ -9,9 +9,9 @@ namespace FScruiser
             new TreeFieldSetupDO(){
                 Field = nameof(Tree.TreeNumber), Heading = "Tree", FieldOrder = 1, ColumnType = "Text" },
             new TreeFieldSetupDO() {
-                Field = "Stratum", Heading = "St", Format = "[Code]" , FieldOrder = 2, ColumnType = "Text"  },
+                Field = "Stratum", Heading = "St", FieldOrder = 2, ColumnType = "Text"  },
             new TreeFieldSetupDO() {
-                Field = "SampleGroup", Heading = "SG", Format = "[Code]" , FieldOrder = 3, ColumnType = "Text" },
+                Field = "SampleGroup", Heading = "SG", FieldOrder = 3, ColumnType = "Text" },
             new TreeFieldSetupDO() {
                 Field = nameof(Tree.Species), Heading = "Sp", FieldOrder = 4, ColumnType = "Combo" },
             new TreeFieldSetupDO() {
