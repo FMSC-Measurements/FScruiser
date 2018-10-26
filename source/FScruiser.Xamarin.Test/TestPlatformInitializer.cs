@@ -6,16 +6,22 @@ namespace FScruiser.XF
 {
     public class TestPlatformInitializer : Prism.IPlatformInitializer
     {
-        private ISoundService SoundService { get; }
+        //private ISoundService SoundService { get; }
 
-        public TestPlatformInitializer(ISoundService soundService)
-        {
-            SoundService = soundService ?? throw new ArgumentNullException(nameof(soundService));
-        }
+        public TestPlatformInitializer()
+        { }
+
+        //public TestPlatformInitializer(ISoundService soundService) : this()
+        //{
+        //    SoundService = soundService ?? throw new ArgumentNullException(nameof(soundService));
+        //}
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterInstance<ISoundService>(SoundService);
+            //if (SoundService != null)
+            //{
+            //    containerRegistry.RegisterInstance<ISoundService>(SoundService);
+            //}
         }
     }
 }
