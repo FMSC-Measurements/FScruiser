@@ -561,6 +561,28 @@ namespace FScruiser.Core.Test.Services
 
         #region tree
 
+        [Theory]
+        [InlineData("u1", "st1", null, "", "", null)]
+        [InlineData("u1", "st1", "sg1", "sp1", "L", "C")]
+        public void GetTreeStub(string unitCode, string stratumCode, string sgCode, string species, string liveDead, string countMeasure)
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var tree_GUID = datastore.CreateTree(unitCode, stratumCode, sgCode, species, liveDead, countMeasure);
+
+                var tree = datastore.GetTreeStub(tree_GUID);
+                tree.Should().NotBeNull();
+
+                tree.Tree_GUID.Should().Be(tree_GUID);
+                tree.StratumCode.Should().Be(stratumCode);
+                tree.SampleGroupCode.Should().Be(sgCode);
+                tree.Species.Should().Be(species);
+                tree.CountOrMeasure.Should().Be(countMeasure);
+            }
+        }
+
         [Fact]
         public void CreateTree()
         {

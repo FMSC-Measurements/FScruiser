@@ -218,9 +218,9 @@ namespace FScruiser.Services
                     "PlotNumber = @p2, " +
                     "IsEmpty = @p3, " +
                     "KPI = @p4, " +
-                    "Remarks = @p5 " +
-                    "Slope = @p6 " +
-                    "Aspect = @p7" +
+                    "Remarks = @p5, " +
+                    "Slope = @p6, " +
+                    "Aspect = @p7 " +
                     "WHERE " +
                     "Plot_GUID = @p1;",
                     new object[] {
@@ -583,7 +583,7 @@ namespace FScruiser.Services
         {
             return Database.From<TreeStub>()
                 .Join("Stratum", "USING (Stratum_CN)")
-                .Join("SampleGroup", "USING (SampleGroup_CN)");
+                .LeftJoin("SampleGroup", "USING (SampleGroup_CN)");
         }
 
         public IEnumerable<TreeStub> GetTreeStubsByUnitCode(string unitCode)
@@ -630,7 +630,7 @@ namespace FScruiser.Services
             return Database.From<Tree>()
                 .Join("CuttingUnit", "USING (CuttingUnit_CN)")
                .Join("Stratum", "USING (Stratum_CN)")
-               .Join("SampleGroup", "USING (SampleGroup_CN)")
+               .LeftJoin("SampleGroup", "USING (SampleGroup_CN)")
                .LeftJoin("Plot", "USING (Plot_CN)");
         }
 
