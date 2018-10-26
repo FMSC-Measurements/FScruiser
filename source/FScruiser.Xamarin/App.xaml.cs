@@ -1,4 +1,5 @@
-﻿using FScruiser.Services;
+﻿using CruiseDAL;
+using FScruiser.Services;
 using FScruiser.Util;
 using FScruiser.XF.Pages;
 using FScruiser.XF.Services;
@@ -103,7 +104,25 @@ namespace FScruiser.XF
                 {
                     try
                     {
-                        var datastore = new CuttingUnitDatastore(path);
+                        var database = new DAL(path);
+
+                        if (CruiseDAL.Updater.CheckNeedsMajorUpdate(database))
+                        {
+                            var result = await DialogService.DisplayAlertAsync("Update Cruise File?",
+                                "Cruise file needs to be updated.\r\n" +
+                                "Onece updated file can only be opened with latest cruise software",
+                                "Update", "Cancel");
+                            if (result)
+                            {
+                                CruiseDAL.Updater.UpdateMajorVersion(database);
+                            }
+                            else
+                            {
+                                return;
+                            }
+                        }
+
+                        var datastore = new CuttingUnitDatastore(database);
 
                         CuttingUnitDatastoresProvider.CuttingUnitDatastore = datastore;
                         CuttingUnitDatastoresProvider.SampleSelectorDataService = new SampleSelectorRepository(datastore);
