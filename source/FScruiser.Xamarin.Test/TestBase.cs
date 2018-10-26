@@ -1,4 +1,5 @@
-﻿using Xunit.Abstractions;
+﻿using Prism;
+using Xunit.Abstractions;
 
 namespace FScruiser.XF.Test
 {
@@ -6,15 +7,21 @@ namespace FScruiser.XF.Test
     {
         protected App App { get; }
         protected ITestOutputHelper Output { get; }
+        public IPlatformInitializer PlatformInitializer { get; }
+
 
         protected Prism.Ioc.IContainerExtension Container => (Prism.Ioc.IContainerExtension)App.Container;
 
-        public TestBase(ITestOutputHelper output)
+        public TestBase(ITestOutputHelper output) : this(output, null)
+        { }
+
+        public TestBase(ITestOutputHelper output, IPlatformInitializer platformInitializer)
         {
+            PlatformInitializer = platformInitializer ?? new TestPlatformInitializer();
             Output = output;
             Xamarin.Forms.Mocks.MockForms.Init();
 
-            App = new App(null);
+            App = new App(PlatformInitializer);
         }
     }
 }
