@@ -7,7 +7,6 @@ using Microsoft.AppCenter.Crashes;
 using Plugin.Permissions;
 using Prism;
 using Prism.Ioc;
-using Prism.Navigation;
 using Prism.Services;
 using System;
 using System.Collections.Generic;
@@ -29,7 +28,11 @@ namespace FScruiser.XF
 
         public ICuttingUnitDatastoreProvider CuttingUnitDatastoresProvider { get; private set; } = new CuttingUnitDatastoreProvider();
 
-        private App() { }
+        public IApplicationSettings Settings { get; } = new ApplicationSettings();
+
+        private App()
+        {
+        }
 
         public App(IPlatformInitializer platformInitializer) : base(platformInitializer)
         { }
@@ -43,6 +46,16 @@ namespace FScruiser.XF
             Microsoft.AppCenter.AppCenter.Start($"ios={Secrets.APPCENTER_KEY_IOS};android={Secrets.APPCENTER_KEY_DROID};uwp={Secrets.APPCENTER_KEY_UWP}"
                 , typeof(Microsoft.AppCenter.Distribute.Distribute)
                 , typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Crashes));
+
+            var isFirstRun = Properties.GetValueOrDefault<bool>("isFirstLaunch", true);
+            if(isFirstRun)
+            {
+                var enableDiagnostics = await DialogService.DisplayAlertAsync("", "FScruiser collects diagnostic information and error reports to help us provide a better user experience.\r\n" +
+                    "Would you like to enable this feature?\r\n" +
+                    "You can change this option later in the Settings page.", "Enable", "No Thanks");
+
+                Settings.EnableAnalitics = Settings.EnableCrashReports = enableDiagnostics;
+            }
 #endif
 
             MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_SELECTED, async (sender, path) =>
@@ -89,9 +102,9 @@ namespace FScruiser.XF
             {
                 var status = await CrossPermissions.Current.CheckPermissionStatusAsync(Plugin.Permissions.Abstractions.Permission.Storage);
 
-                if(status != Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+                if (status != Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                 {
-                    if(await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Plugin.Permissions.Abstractions.Permission.Storage))
+                    if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Plugin.Permissions.Abstractions.Permission.Storage))
                     {
                         await DialogService.DisplayAlertAsync("Request Access To Storage", "FScruiser needs access to files on device", "OK");
                     }
@@ -100,7 +113,7 @@ namespace FScruiser.XF
                     status = requestResults.GetValueOrDefault(Plugin.Permissions.Abstractions.Permission.Storage);
                 }
 
-                if(status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+                if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                 {
                     try
                     {
@@ -148,12 +161,10 @@ namespace FScruiser.XF
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogException("permissions", "request permissions error in method LoadCruiseFileAsync", ex);
             }
-
-            
         }
 
         //protected void ReloadNavigation()
@@ -208,6 +219,7 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.PlotTallyPage, ViewModels.PlotTallyViewModel>("PlotTally");
             containerRegistry.RegisterForNavigation<Pages.PlotEditPage, ViewModels.PlotEditViewModel>("PlotEdit");
             containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManageCruisersViewModel>("Cruisers");
+            containerRegistry.RegisterForNavigation<Pages.SettingsPage, ViewModels.SettingsViewModel>("Settings");
             containerRegistry.RegisterForNavigation<Pages.LimitingDistancePage, ViewModels.LimitingDistanceViewModel>("LimitingDistance");
             containerRegistry.RegisterForNavigation<Pages.LogsListPage, ViewModels.LogsListViewModel>("Logs");
             containerRegistry.RegisterForNavigation<Pages.LogEditPage, ViewModels.LogEditViewModel>("Log");
@@ -231,8 +243,8 @@ namespace FScruiser.XF
         {
             LogException(catigory, message, ex, data);
 
-            var result = await  DialogService.DisplayAlertAsync(catigory, message, "Details", "OK");
-            if(result == true)//user clicked Details
+            var result = await DialogService.DisplayAlertAsync(catigory, message, "Details", "OK");
+            if (result == true)//user clicked Details
             {
                 await DialogService.DisplayAlertAsync(catigory, ex.ToString(), "Close");
             }

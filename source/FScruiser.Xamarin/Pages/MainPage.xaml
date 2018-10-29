@@ -50,16 +50,29 @@
                     </ListView.ItemTemplate>
                 </ListView>
 
-                <Button BackgroundColor="Transparent" Image="ic_feedback_white_24dp.png" VerticalOptions="End" 
-                        Command="{prism:NavigateTo 'Feedback'}"/>
+                <StackLayout 
+                    Orientation="Horizontal" 
+                    VerticalOptions="End"
+                    HorizontalOptions="Center">
+                    <Button 
+                        BackgroundColor="Transparent" 
+                        Image="ic_settings_white_24dp.png"  
+                        Command="{prism:NavigateTo '\Settings'}"/>
+                    <Button 
+                        BackgroundColor="Transparent" 
+                        Image="ic_feedback_white_24dp.png"  
+                        Command="{prism:NavigateTo '\Feedback'}"/>
+                </StackLayout>
             </StackLayout>
         </ContentPage>
     </MasterDetailPage.Master>
     <!--<MasterDetailPage.Detail>
         <NavigationPage BarBackgroundColor="{StaticResource primary_500}" BarTextColor="{StaticResource white_90}">
-            --><!--<x:Arguments>
+            -->
+    <!--<x:Arguments>
                 <pages:CuttingUnitListPage NavigationPage.HasBackButton="False" />
-            </x:Arguments>--><!--
+            </x:Arguments>-->
+    <!--
         </NavigationPage>
     </MasterDetailPage.Detail>-->
 </MasterDetailPage>
