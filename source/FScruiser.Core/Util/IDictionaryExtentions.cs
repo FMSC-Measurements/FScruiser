@@ -11,6 +11,18 @@ namespace FScruiser.Util
             else { return default(TValue); }
         }
 
+        public static Tvalue GetValueOrDefault<Tvalue>(this IDictionary<string, object> @this, string key, Tvalue defaultValue)
+        {
+            if(@this.ContainsKey(key))
+            {
+                return (Tvalue)@this[key];
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
         public static void SetValue<TKey, TValue>(this IDictionary<TKey, TValue> @this, TKey key, TValue value)
         {
             if(@this.ContainsKey(key))
