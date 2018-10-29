@@ -133,7 +133,15 @@ namespace FScruiser.XF.ViewModels
 
             try
             {
-                await NavigationService.NavigateAsync(obj.NavigationPath, navParams);
+                var result = await NavigationService.NavigateAsync(obj.NavigationPath, navParams);
+
+                var ex = result.Exception;
+                if (ex != null)
+                {
+                    Debug.WriteLine("ERROR::::" + ex);
+                    Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", obj.NavigationPath } });
+                }
+
             }
             catch (Exception ex)
             {

@@ -6,24 +6,35 @@
              x:Class="FScruiser.XF.App">
     <Application.Resources>
         <ResourceDictionary>
+            <!-- colors -->
             <Color x:Key="fs_brown">#312418</Color>
             <Color x:Key="primary_500">#345E36</Color>
             <Color x:Key="fs_green">#345E36</Color>
             <Color x:Key="accent">#1E90FF</Color>
             <Color x:Key="accentText">Blue</Color>
+            
+            <!-- these colors provide semi transparent pigments to be used as background coulors or text color. 
+            using a semi trasparent color as a font or background color is a good alternative to using greys
+            as these semi transparent pigments will play well with any other colors lower down in the visual stack-->
             <Color x:Key="white_90">#E1ffffff</Color>
             <Color x:Key="white_50">#7FFFFFFF</Color>
             <Color x:Key="white_38">#60FFFFFF</Color>
             <Color x:Key="white_12">#1EFFFFFF</Color>
+            <Color x:Key="black_90">#E5000000</Color>
             <Color x:Key="black_70">#B2000000</Color>
             <Color x:Key="black_30">#4C000000</Color>
             <Color x:Key="black_12">#1E000000</Color>
 
+            <!-- base styles -->
             <Style x:Key="button_base" TargetType="Button">
                 <Setter Property="CornerRadius"     Value="10" />
             </Style>
 
+            <Style x:Key="editor_base" TargetType="Editor">
+                <Setter Property="BackgroundColor" Value="{StaticResource black_30}" />
+            </Style>
 
+            <!-- converters -->
             <tc_conv:HasDataConverter x:Key="hasDataConverter" />
         </ResourceDictionary>
     </Application.Resources>

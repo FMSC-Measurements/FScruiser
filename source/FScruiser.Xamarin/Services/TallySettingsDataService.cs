@@ -1,94 +1,64 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using FScruiser.Services;
+﻿using FScruiser.Services;
 using FScruiser.Util;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace FScruiser.XF.Services
 {
+    public class TallySettings
+    {
+        public bool EnableCruiserPopup { get; set; }
+
+        public bool EnableAskEnterTreeData { get; set; }
+
+        public List<string> Cruisers { get; set; } = new List<string>();
+    }
+
     public class TallySettingsDataService : INPC_Base, ITallySettingsDataService
     {
+        protected TallySettings Data { get; set; }
+        protected object DataSyncLock { get; } = new object();
+
         public bool EnableCruiserPopup
         {
             get
             {
-                var propDict = App.Current.Properties;
-                if (propDict.ContainsKey(nameof(EnableCruiserPopup)))
-                {
-                    return (bool)propDict[nameof(EnableCruiserPopup)];
-                }
-                else { return true; }
+                EnsureLoaded();
+                return Data.EnableCruiserPopup;
             }
-            set
-            {
-                var propDict = App.Current.Properties;
-                if (propDict.ContainsKey(nameof(EnableCruiserPopup)))
-                {
-                    propDict[nameof(EnableCruiserPopup)] = value;
-                }
-                else
-                {
-                    propDict.Add(nameof(EnableCruiserPopup), value);
-                }
-            }
+            set => Data.EnableCruiserPopup = value;
         }
 
         public bool EnableAskEnterTreeData
         {
             get
             {
-                var propDict = App.Current.Properties;
-                if (propDict.ContainsKey(nameof(EnableAskEnterTreeData)))
-                {
-                    return (bool)propDict[nameof(EnableAskEnterTreeData)];
-                }
-                else { return false; }
+                EnsureLoaded();
+                return Data.EnableAskEnterTreeData;
             }
-            set
-            {
-                var propDict = App.Current.Properties;
-                if (propDict.ContainsKey(nameof(EnableAskEnterTreeData)))
-                {
-                    propDict[nameof(EnableAskEnterTreeData)] = value;
-                }
-                else
-                {
-                    propDict.Add(nameof(EnableAskEnterTreeData), value);
-                }
-            }
+            set => Data.EnableAskEnterTreeData = value;
         }
 
         public IEnumerable<string> Cruisers
         {
             get
             {
-                var propDict = App.Current.Properties;
-                if (propDict.ContainsKey(nameof(Cruisers)))
-                {
-                    var cruisers = (string)propDict[nameof(Cruisers)];
-                    return cruisers.Split(' ');
-                }
-                else
-                {
-                    return Enumerable.Empty<string>();
-                }
+                EnsureLoaded();
+                return Data.Cruisers.ToArray();
             }
         }
 
         public void AddCruiser(string cruiser)
         {
-            if(string.IsNullOrWhiteSpace(cruiser)) { return; }
+            if (string.IsNullOrWhiteSpace(cruiser)) { return; }
             cruiser = cruiser.Trim();
+            cruiser = cruiser.ToUpper();
 
-            var propDict = App.Current.Properties;
-            if (propDict.ContainsKey(nameof(Cruisers)))
+            var cruisers = Data.Cruisers;
+            if (cruisers.Contains(cruiser) == false)
             {
-                var cruisers = (string)propDict[nameof(Cruisers)];
-                cruisers += " " + cruiser;
-                propDict[nameof(Cruisers)] = cruisers;
-            }
-            else
-            {
-                propDict.Add(nameof(Cruisers), cruiser);
+                Data.Cruisers.Add(cruiser);
+                RaisePropertyChanged(nameof(Cruisers));
             }
         }
 
@@ -96,11 +66,62 @@ namespace FScruiser.XF.Services
         {
             var cruisers = Cruisers;
 
-            var propDict = App.Current.Properties;
-            if (propDict.ContainsKey(nameof(Cruisers)))
+            Data.Cruisers.Remove(cruiser);
+            RaisePropertyChanged(nameof(Cruisers));
+        }
+
+        public void EnsureLoaded()
+        {
+            lock (DataSyncLock)
             {
-                propDict[nameof(Cruisers)] = string.Join(" ", cruisers.Where(x => x != cruiser).ToArray());
+                if (Data == null)
+                {
+                    Refresh();
+                }
             }
+        }
+
+        public void Refresh()
+        {
+            lock (DataSyncLock)
+            {
+                var propDict = App.Current.Properties;
+
+                if (propDict.ContainsKey("TallySettings"))
+                {
+                    var tallySettings = JsonConvert.DeserializeObject<TallySettings>((string)propDict["TallySettings"]);
+                    Data = tallySettings;
+                }
+                else
+                {
+                    Data = new TallySettings();
+                }
+
+                RaisePropertyChangedAll();
+            }
+        }
+
+        public void Save()
+        {
+            lock (DataSyncLock)
+            {
+                var tallySettings = Data;
+                if (tallySettings != null)
+                {
+                    var tallySettingsSer = JsonConvert.SerializeObject(tallySettings);
+
+                    var propDict = App.Current.Properties;
+                    propDict.SetValue("TallySettings", tallySettingsSer);
+                    App.Current.SavePropertiesAsync();
+                }
+            }
+        }
+
+        protected void RaisePropertyChangedAll()
+        {
+            RaisePropertyChanged(nameof(EnableAskEnterTreeData));
+            RaisePropertyChanged(nameof(EnableCruiserPopup));
+            RaisePropertyChanged(nameof(Cruisers));
         }
     }
 }

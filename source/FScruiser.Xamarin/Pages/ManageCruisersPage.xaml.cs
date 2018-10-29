@@ -1,7 +1,5 @@
-﻿using FScruiser.Services;
+﻿using FScruiser.XF.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.Windows.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -14,18 +12,28 @@ namespace FScruiser.XF.Pages
         {
             InitializeComponent();
             _addCruiserButton.Clicked += _addCruiserButton_Clicked;
+            _addCruiserEntry.Completed += _addCruiserEntry_Completed;
+        }
+
+        private void AddCruiser()
+        {
+            var cruiser = _addCruiserEntry.Text;
+
+            if (BindingContext is ManageCruisersViewModel vm && vm != null)
+            {
+                vm.AddCruiser(cruiser);
+                _addCruiserEntry.Text = null;
+            }
+        }
+
+        private void _addCruiserEntry_Completed(object sender, EventArgs e)
+        {
+            AddCruiser();
         }
 
         private void _addCruiserButton_Clicked(object sender, EventArgs e)
         {
-            _addCruiserEntry.Text = null;
-            //var cruiserValue = _addCruiserEntry.Text;
-            //if (!string.IsNullOrWhiteSpace(cruiserValue))
-            //{
-            //    DataService.AddCruiser(cruiserValue);
-            //    base.OnPropertyChanged(nameof(Cruisers));
-            //    _addCruiserEntry.Text = "";
-            //}
+            AddCruiser();
         }
     }
 }

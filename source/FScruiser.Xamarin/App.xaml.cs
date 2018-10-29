@@ -207,7 +207,7 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.PlotListPage, ViewModels.PlotListViewModel>("Plots");
             containerRegistry.RegisterForNavigation<Pages.PlotTallyPage, ViewModels.PlotTallyViewModel>("PlotTally");
             containerRegistry.RegisterForNavigation<Pages.PlotEditPage, ViewModels.PlotEditViewModel>("PlotEdit");
-            containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManagerCruisersViewModel>("Cruisers");
+            containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManageCruisersViewModel>("Cruisers");
             containerRegistry.RegisterForNavigation<Pages.LimitingDistancePage, ViewModels.LimitingDistanceViewModel>("LimitingDistance");
             containerRegistry.RegisterForNavigation<Pages.LogsListPage, ViewModels.LogsListViewModel>("Logs");
             containerRegistry.RegisterForNavigation<Pages.LogEditPage, ViewModels.LogEditViewModel>("Log");
