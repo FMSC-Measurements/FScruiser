@@ -47,16 +47,9 @@ namespace FScruiser.XF
                 , typeof(Microsoft.AppCenter.Distribute.Distribute)
                 , typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Crashes));
 
-            var isFirstRun = Properties.GetValueOrDefault<bool>("isFirstLaunch", true);
-            if(isFirstRun)
-            {
-                var enableDiagnostics = await DialogService.DisplayAlertAsync("", "FScruiser collects diagnostic information and error reports to help us provide a better user experience.\r\n" +
-                    "Would you like to enable this feature?\r\n" +
-                    "You can change this option later in the Settings page.", "Enable", "No Thanks");
-
-                Settings.EnableAnalitics = Settings.EnableCrashReports = enableDiagnostics;
-            }
+            
 #endif
+            
 
             MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_SELECTED, async (sender, path) =>
             {
@@ -78,15 +71,7 @@ namespace FScruiser.XF
             //    }
             //});
 
-            try
-            {
-                await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("ERROR::::" + ex);
-                Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", "/Main/Navigation/CuttingUnits" } });
-            }
+            await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
         }
 
         protected async System.Threading.Tasks.Task LoadCruiseFileAsync(string path)
@@ -182,6 +167,19 @@ namespace FScruiser.XF
         protected override async void OnStart()
         {
             // Handle when your app starts
+
+            var isFirstRun = Properties.GetValueOrDefault<bool>("isFirstLaunch", true);
+            if (isFirstRun)
+            {
+                var enableDiagnostics = await DialogService.DisplayAlertAsync("", $"FScruiser can automaticly send dianostics and crash reports.{Environment.NewLine}{Environment.NewLine} " +
+                    $"This feature is optional, however, it helps us to create a better experience.{Environment.NewLine}{Environment.NewLine}" +
+                    $"Would you like to enable this feature?{Environment.NewLine}{Environment.NewLine}" +
+                    "You can also change this option in the settings page.", "Enable", "No Thanks");
+
+                Settings.EnableAnalitics = Settings.EnableCrashReports = enableDiagnostics;
+
+                Properties.SetValue("isFirstLaunch", false);
+            }
 
             var cruise_path = Properties.GetValueOrDefault("cruise_path") as string;
 
