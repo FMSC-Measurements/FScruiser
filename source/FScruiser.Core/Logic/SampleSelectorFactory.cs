@@ -23,6 +23,24 @@ namespace FScruiser.Logic
         }
     }
 
+    public class ZeroFrequencySelecter : SampleSelecter, IFrequencyBasedSelecter
+    {
+        public int Frequency {
+            get => 0;
+            set => throw new InvalidOperationException();
+        }
+
+        public override SampleItem NextItem()
+        {
+            return (boolItem)null;
+        }
+
+        public override bool Ready(bool throwException)
+        {
+            return true;
+        }
+    }
+
     public class FrequencyMismatchException : Exception
     {
         public FrequencyMismatchException(string message) : base(message)
@@ -119,7 +137,7 @@ namespace FScruiser.Logic
             SampleSelecter selecter = null;
             int iFrequency = (int)sampleGroup.InsuranceFrequency;
             int frequency = (int)sampleGroup.SamplingFrequency;
-            if (frequency == 0) { selecter = null; }
+            if (frequency == 0) { selecter = new ZeroFrequencySelecter(); }
             else
             {
                 selecter = new FMSC.Sampling.SystematicSelecter(frequency, iFrequency, true);
