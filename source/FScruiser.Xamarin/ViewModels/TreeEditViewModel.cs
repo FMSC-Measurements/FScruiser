@@ -321,6 +321,13 @@ namespace FScruiser.XF.ViewModels
         public ICommand ShowLogsCommand => _showLogsCommand ?? (_showLogsCommand = new Command(ShowLogs));
 
         public TreeEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
+            , IDialogService dialogService)
+        {
+            Datastore = datastoreProvider.CuttingUnitDatastore;
+            DialogService = dialogService;
+        }
+
+        public TreeEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
             , IDialogService dialogService, INavigationService navigationService) : base(navigationService)
         {
             Datastore = datastoreProvider.CuttingUnitDatastore;
