@@ -93,7 +93,7 @@ namespace FScruiser.Logic
             ISampleSelectorDataService sampleSelectorRepo)
         {
             var sampler = sampleSelectorRepo.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
-            boolItem item = (boolItem)sampler?.NextItem();//sampler may be null if sample group has frequency of zero
+            boolItem item = (boolItem)sampler.NextItem();
 
             //If we receive nothing from the sampler, we don't have a sample
             if (item != null)//&& (item.IsSelected || item.IsInsuranceItem))
