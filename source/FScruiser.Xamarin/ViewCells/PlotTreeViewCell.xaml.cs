@@ -119,7 +119,7 @@ namespace FScruiser.XF.ViewCells
             var tree = BindingContext as TreeStub_Plot;
             if (tree != null)
             {
-                TreeViewModel?.OnNavigatedTo(new Prism.Navigation.NavigationParameters() { { "tree_guid", tree.Tree_GUID } });
+                TreeViewModel?.OnNavigatedTo(new Prism.Navigation.NavigationParameters() { { "Tree_Guid", tree.Tree_GUID } });
 
                 //TreeViewModel?.Init(tree.Tree_GUID);
             }
