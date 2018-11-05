@@ -4,7 +4,7 @@
              xmlns:cells="clr-namespace:FScruiser.XF.ViewCells"
              xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
              xmlns:tk_conv="clr-namespace:Xamarin.Toolkit.Converters;assembly=Xamarin.Toolkit.Converters"
-             xmlns:xe="clr-namespace:XamEffects;assembly=XamEffects"
+             xmlns:my_behv="clr-namespace:FScruiser.XF.Behaviors"
              x:Class="FScruiser.XF.Pages.PlotTallyPage"
              BackgroundColor ="White"
              x:Name="_page"
@@ -17,7 +17,6 @@
                                               x:TypeArguments="Color"
                                               TrueObject="{StaticResource primary_500}"
                                               FalseObject="DimGray"/>
-
 
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -32,6 +31,9 @@
                       ItemSelected="TallyFeedListView_ItemSelected"
                       CachingStrategy="RetainElement"
                       SeparatorColor="Silver">
+                <ListView.Behaviors>
+                    <my_behv:ScrollOnLoadBehavior/>
+                </ListView.Behaviors>
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <cells:PlotTreeViewCell />
@@ -51,10 +53,7 @@
                 <flow:FlowListView.FlowColumnTemplate>
                     <DataTemplate>
                         <Frame CornerRadius="5" Margin ="3" 
-                               BackgroundColor="{Binding InCruise, Converter={StaticResource tallyIncruiseBackgroundColorConverter}}"
-                               xe:Commands.Tap="{Binding TallyCommand}"
-                               xe:Commands.TapParameter="{Binding .}"
-                               xe:TouchEffect.Color="{StaticResource white_50}">
+                               BackgroundColor="{Binding InCruise, Converter={StaticResource tallyIncruiseBackgroundColorConverter}}">
 
                             <StackLayout HorizontalOptions="Fill" 
                                          VerticalOptions="Fill" Padding="3">
