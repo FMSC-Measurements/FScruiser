@@ -412,10 +412,7 @@ namespace FScruiser.Services
                             "WHERE CuttingUnit.Code = @p1 AND Stratum.Code = @p2 AND SampleGroup.Code = @p3;"
                             , new object[] { unitCode, sg.StCode, sg.SgCode });
 
-                        tallyPop.InCruise = Database.ExecuteScalar<bool?>("SELECT 1 FROM Plot " +
-                            "JOIN Stratum USING (Stratum_CN) " +
-                            "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                            "WHERE Stratum.Code = @p1 AND CuttingUnit.Code = @p2 AND PlotNumber = @p3;", tallyPop.StratumCode, unitCode, plotNumber) ?? false;
+                        tallyPop.InCruise = GetIsTallyPopInCruise(unitCode, plotNumber, tallyPop.StratumCode);
                     }
                 }
                 //if there are no tally populations in the sample group
@@ -426,7 +423,7 @@ namespace FScruiser.Services
                     {
                         new TallyPopulation_Plot()
                         {
-                            InCruise = true,
+                            InCruise = GetIsTallyPopInCruise(unitCode, plotNumber, sg.StCode),
                             SampleGroupCode = sg.SgCode,
                             StratumCode = sg.StCode,
                             TallyDescription = sg.StCode + " | " + sg.SgCode,
@@ -448,6 +445,15 @@ namespace FScruiser.Services
             //    .Join("CuttingUnit", "USING (CuttingUnit_CN)")
             //    .Where($"CuttingUnit.Code = @p1 AND Stratum.Method IN ({string.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray())})")
             //    .Query(unitCode).ToArray();
+        }
+
+        bool GetIsTallyPopInCruise(string unitCode, int plotNumber, string stratumCode)
+        {
+            return Database.ExecuteScalar<bool?>("SELECT 1 FROM Plot " +
+                            "JOIN Stratum USING (Stratum_CN) " +
+                            "JOIN CuttingUnit USING (CuttingUnit_CN) " +
+                            "WHERE Stratum.Code = @p1 AND CuttingUnit.Code = @p2 AND PlotNumber = @p3;",
+                            stratumCode, unitCode, plotNumber) ?? false;
         }
 
         #endregion sampleGroup
