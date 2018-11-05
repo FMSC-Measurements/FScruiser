@@ -202,7 +202,7 @@ namespace FScruiser.XF.ViewModels
 
         public void ShowEditPlot()
         {
-            NavigationService.NavigateAsync("Plot", new NavigationParameters($"UnitCode={UnitCode}&PlotNumber={PlotNumber}"));
+            NavigationService.NavigateAsync("PlotEdit", new NavigationParameters($"UnitCode={UnitCode}&PlotNumber={PlotNumber}"));
         }
 
         public void DeleteTree(string tree_guid)

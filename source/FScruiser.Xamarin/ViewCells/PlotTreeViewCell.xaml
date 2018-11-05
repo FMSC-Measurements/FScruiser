@@ -28,6 +28,7 @@
                             </ResourceDictionary>
                         </StackLayout.Resources>
                         <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20"/>
+                        <Label Text="{Binding SampleGroupCode}" FontSize="20"/>
                         <Label Text="{Binding TreeNumber, StringFormat='Tree# {0}'}" TextColor="Blue" FontSize="30"/>
                         <Label Text="{Binding CountOrMeasure}" FontSize="30"/>
                         <Label x:Name="CruiserInitialsLabel" Text="{Binding }" TextColor="Black"
