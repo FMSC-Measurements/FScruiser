@@ -131,7 +131,9 @@ namespace FScruiser.Core.Test.Logic
 
             var sampler = SampleSelectorFactory.MakeSampleSelecter(sg);
 
-            sampler.Should().BeNull();
+            sampler.Should().NotBeNull();
+            sampler.NextItem().Should().BeNull();
+            sampler.Should().BeOfType<ZeroFrequencySelecter>();
         }
 
         [Theory]
