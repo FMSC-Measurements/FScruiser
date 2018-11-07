@@ -306,13 +306,18 @@ namespace FScruiser.XF.ViewModels
 
         private void _tree_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            var tree = sender as Tree;
+            if(tree == null) { return; }
+
             var property = e.PropertyName;
             if (property == nameof(Tree.Species)
                 || property == nameof(Tree.StratumCode)
                 || property == nameof(Tree.SampleGroupCode)
                 || property == nameof(Tree.LiveDead)) { return; }//when these property change we will be saving the tree manualy
 
-            RefreshErrorsAndWarnings(Tree);
+            //SaveTree(tree);
+
+            RefreshErrorsAndWarnings(tree);
         }
 
         #endregion tree property
@@ -337,6 +342,8 @@ namespace FScruiser.XF.ViewModels
         public override void OnNavigatedFrom(INavigationParameters parameters)
         {
             base.OnNavigatedFrom(parameters);
+            SaveTree();
+
             Tree = null;//unwire tree
         }
 

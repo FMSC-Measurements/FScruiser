@@ -321,7 +321,7 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Fact]
-        public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_no_tally_setup()
+        public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_no_tally_setup_noPlot()
         {
             var method = CruiseDAL.Schema.CruiseMethods.PNT;
 
@@ -386,13 +386,91 @@ namespace FScruiser.Core.Test.Services
                     unit3tallyPop.LiveDead.Should().BeNull("liveDead");
                     unit3tallyPop.StratumCode.Should().Be("st3");
                     unit3tallyPop.SampleGroupCode.Should().Be("sg3");
+                    unit3tallyPop.InCruise.Should().BeFalse();
+                }
+            }
+        }
+
+        [Fact]
+        public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_no_tally_setup()
+        {
+            var method = CruiseDAL.Schema.CruiseMethods.PNT;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                database.Insert(new CuttingUnitDO
+                {
+                    Code = "u3",
+                    Area = 0
+                });
+
+                database.Insert(new StratumDO
+                {
+                    Code = "st3",
+                    Method = method
+                });
+
+                database.Insert(new StratumDO
+                {
+                    Code = "st4",
+                    Method = CruiseDAL.Schema.CruiseMethods.PCM
+                });
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 3,
+                    Stratum_CN = 3
+                });
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 3,
+                    Stratum_CN = 4
+                });
+
+                database.Insert(new SampleGroupDO
+                {
+                    Stratum_CN = 3,
+                    Code = "sg3",
+                    CutLeave = "C",
+                    UOM = "01",
+                    PrimaryProduct = "01"
+                });
+
+                database.Insert(new SampleGroupTreeDefaultValueDO
+                {
+                    SampleGroup_CN = 3,
+                    TreeDefaultValue_CN = 1
+                });
+
+                database.Insert(new PlotDO
+                {
+                    CuttingUnit_CN = 3,
+                    Stratum_CN = 3,
+                    PlotNumber = 1
+                });
+
+                {
+                    //we are going to check that the tally population returned is vallid for a
+                    //tally population with no count tree record associated
+                    //it should return one tally pop per sample group in the unit, that is associated with a FIX or PNT stratum
+                    var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
+                    unit3tallyPops.Should().HaveCount(1);
+                    var unit3tallyPop = unit3tallyPops.Single();
+                    unit3tallyPop.CountTree_CN.Should().BeNull("countTree_CN");
+                    unit3tallyPop.Species.Should().BeNull("Species");
+                    unit3tallyPop.LiveDead.Should().BeNull("liveDead");
+                    unit3tallyPop.StratumCode.Should().Be("st3");
+                    unit3tallyPop.SampleGroupCode.Should().Be("sg3");
                     unit3tallyPop.InCruise.Should().BeTrue();
                 }
             }
         }
 
         [Fact]
-        public void GetPlotTallyPopulationsByUnitCode()
+        public void GetPlotTallyPopulationsByUnitCode_noPlot()
         {
             var method = CruiseDAL.Schema.CruiseMethods.PCM;
 
@@ -465,6 +543,96 @@ namespace FScruiser.Core.Test.Services
                 unit3tallyPop.StratumCode.Should().Be("st3");
                 unit3tallyPop.SampleGroupCode.Should().Be("sg3");
                 unit3tallyPop.InCruise.Should().BeFalse();
+
+                var unit4tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u4", 1);
+                unit4tallyPops.Should().HaveCount(1);
+                var unit4tallyPop = unit4tallyPops.Single();
+                unit4tallyPop.CountTree_CN.Should().BeNull();
+                unit4tallyPop.InCruise.Should().BeFalse();
+            }
+        }
+
+        [Fact]
+        public void GetPlotTallyPopulationsByUnitCode()
+        {
+            var method = CruiseDAL.Schema.CruiseMethods.PCM;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                //set up two cutting units one (u3) will be given a count tree record
+                //the other (u4) will not,
+                //so that we can test situations where count tree records are missing for a unit
+                database.Insert(new CuttingUnitDO
+                {
+                    Code = "u3",
+                    Area = 0,
+                });
+
+                database.Insert(new CuttingUnitDO
+                {
+                    Code = "u4",
+                    Area = 0,
+                });
+
+                database.Insert(new StratumDO
+                {
+                    Code = "st3",
+                    Method = method,
+                });
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 3,
+                    Stratum_CN = 3,
+                });
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 4,
+                    Stratum_CN = 3,
+                });
+
+                database.Insert(new SampleGroupDO
+                {
+                    Stratum_CN = 3,
+                    Code = "sg3",
+                    CutLeave = "C",
+                    UOM = "01",
+                    PrimaryProduct = "01"
+                });
+
+                database.Insert(new SampleGroupTreeDefaultValueDO
+                {
+                    SampleGroup_CN = 3,
+                    TreeDefaultValue_CN = 1
+                });
+
+                database.Insert(new CountTreeDO()
+                {
+                    CuttingUnit_CN = 3,
+                    SampleGroup_CN = 3,
+                    Tally_CN = 1,
+                    TreeDefaultValue_CN = 1
+                });
+
+                database.Insert(new PlotDO
+                {
+                    CuttingUnit_CN = 3,
+                    Stratum_CN = 3,
+                    PlotNumber = 1
+                });
+
+                //tally population should
+                var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
+                unit3tallyPops.Should().HaveCount(1);
+                var unit3tallyPop = unit3tallyPops.Single();
+                unit3tallyPop.CountTree_CN.Should().NotBeNull();
+                unit3tallyPop.Species.Should().Be("sp1");
+                unit3tallyPop.StratumCode.Should().Be("st3");
+                unit3tallyPop.SampleGroupCode.Should().Be("sg3");
+                unit3tallyPop.InCruise.Should().BeTrue();
 
                 var unit4tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u4", 1);
                 unit4tallyPops.Should().HaveCount(1);
