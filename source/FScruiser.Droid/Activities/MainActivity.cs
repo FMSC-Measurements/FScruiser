@@ -18,6 +18,8 @@ namespace FScruiser.Droid
             base.OnCreate(savedInstanceState);
 
             Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            Xamarin.Toolkit.Effects.Droid.Effects.Init();
+            DLToolkit.Forms.Controls.FlowListView.Init();
 
             var app = new App(new AndroidPlatformInitializer(this));
 

@@ -30,7 +30,7 @@ namespace FScruiser.XF
 
         public IApplicationSettings Settings { get; } = new ApplicationSettings();
 
-        private App()
+        public App()
         {
         }
 
@@ -216,6 +216,7 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.PlotListPage, ViewModels.PlotListViewModel>("Plots");
             containerRegistry.RegisterForNavigation<Pages.PlotTallyPage, ViewModels.PlotTallyViewModel>("PlotTally");
             containerRegistry.RegisterForNavigation<Pages.PlotEditPage, ViewModels.PlotEditViewModel>("PlotEdit");
+            containerRegistry.RegisterForNavigation<Pages.ThreePPNTPlotPage, ViewModels.ThreePPNTPlotViewModel>("ThreePPNTPlot");
             containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManageCruisersViewModel>("Cruisers");
             containerRegistry.RegisterForNavigation<Pages.SettingsPage, ViewModels.SettingsViewModel>("Settings");
             containerRegistry.RegisterForNavigation<Pages.LimitingDistancePage, ViewModels.LimitingDistanceViewModel>("LimitingDistance");
