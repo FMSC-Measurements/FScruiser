@@ -234,6 +234,105 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Fact]
+        public void GetStratumPlot_plot_does_not_exist()
+        {
+            var plotNumber = 1;
+            var stratumCode = "st3";
+            var unitCode = "u1";
+            var method = "PNT";
+
+            var random = new Randomizer();
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var stratum = new StratumDO
+                {
+                    Code = stratumCode,
+                    Method = method,
+                    BasalAreaFactor = random.Float(),
+                    FixedPlotSize = random.Float(),
+                    KZ3PPNT = random.Long()
+                };
+                database.Insert(stratum);
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 1,
+                    Stratum_CN = 3,
+                });
+
+                var stratumPlot = datastore.GetStratumPlot(unitCode, stratumCode, plotNumber, false);
+
+                stratumPlot.Should().NotBeNull();
+                stratumPlot.PlotNumber.Should().Be(plotNumber);
+                stratumPlot.StratumCode.Should().Be(stratumCode);
+                stratumPlot.UnitCode.Should().Be(unitCode);
+
+                stratumPlot.BAF.Should().Be(stratum.BasalAreaFactor);
+                stratumPlot.FPS.Should().Be(stratum.FixedPlotSize);
+                stratumPlot.KZ.Should().Be((int)stratum.KZ3PPNT);
+
+                stratumPlot.InCruise.Should().BeFalse();
+            }
+
+        }
+
+        [Fact]
+        public void GetStratumPlot_plot_does_exist()
+        {
+            var plotNumber = 1;
+            var stratumCode = "st3";
+            var unitCode = "u1";
+            var method = "PNT";
+
+            var random = new Randomizer();
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var stratum = new StratumDO
+                {
+                    Code = stratumCode,
+                    Method = method,
+                    BasalAreaFactor = random.Float(),
+                    FixedPlotSize = random.Float(),
+                    KZ3PPNT = random.Long()
+                };
+                database.Insert(stratum);
+
+                database.Insert(new CuttingUnitStratumDO
+                {
+                    CuttingUnit_CN = 1,
+                    Stratum_CN = stratum.Stratum_CN,
+                });
+
+                database.Insert(new PlotDO
+                {
+                    CuttingUnit_CN = 1,
+                    Stratum_CN = stratum.Stratum_CN,
+                    PlotNumber = 1
+                });
+
+                var stratumPlot = datastore.GetStratumPlot(unitCode, stratumCode, plotNumber, false);
+
+                stratumPlot.Should().NotBeNull();
+                stratumPlot.PlotNumber.Should().Be(plotNumber);
+                stratumPlot.StratumCode.Should().Be(stratumCode);
+                stratumPlot.UnitCode.Should().Be(unitCode);
+
+                stratumPlot.BAF.Should().Be(stratum.BasalAreaFactor);
+                stratumPlot.FPS.Should().Be(stratum.FixedPlotSize);
+                stratumPlot.KZ.Should().Be((int)stratum.KZ3PPNT);
+
+                stratumPlot.InCruise.Should().BeTrue();
+            }
+
+        }
+
+        [Fact]
         public void InsertStratumPlot()
         {
             var plotNumber = 1;
@@ -783,6 +882,44 @@ namespace FScruiser.Core.Test.Services
                 database.ExecuteScalar<int>("SELECT Stratum_CN FROM Tree WHERE Tree_GUID = @p1", tree_GUID.ToString()).Should().Be(1);
                 database.ExecuteScalar<int>("SELECT SampleGroup_CN FROM Tree WHERE Tree_GUID = @p1", tree_GUID.ToString()).Should().Be(1);
                 database.ExecuteScalar<int>("SELECT TreeDefaultValue_CN FROM Tree WHERE Tree_GUID = @p1", tree_GUID.ToString()).Should().Be(1);
+            }
+        }
+
+        [Fact]
+        public void CreatePlotTree()
+        {
+            var unitCode = "u1";
+            var stratumCode = "st1";
+            var sgCode = "sg1";
+            var species = "sp1";
+            var liveDead = "L";
+            var countMeasure = "C";
+            var treeCount = 1;
+
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                database.Insert(new PlotDO()
+                {
+                    PlotNumber = 1,
+                    Stratum_CN = 1,
+                    CuttingUnit_CN = 1
+                });
+
+                var tree_GUID = datastore.CreatePlotTree(unitCode, 1, stratumCode, sgCode, species, liveDead, countMeasure, treeCount);
+
+                var tree = datastore.GetTree(tree_GUID);
+                tree.Should().NotBeNull();
+
+                tree.Tree_GUID.Should().Be(tree_GUID);
+                tree.StratumCode.Should().Be(stratumCode);
+                tree.SampleGroupCode.Should().Be(sgCode);
+                tree.Species.Should().Be(species);
+                tree.LiveDead.Should().Be(liveDead);
+                tree.CountOrMeasure.Should().Be(countMeasure);
+                tree.TreeCount.Should().Be(treeCount);
             }
         }
 

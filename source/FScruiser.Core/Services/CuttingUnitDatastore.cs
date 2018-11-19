@@ -16,7 +16,10 @@ namespace FScruiser.Services
     {
         private const int NUMBER_OF_TALLY_ENTRIES_PERPAGE = 20;
 
-        private readonly string PLOT_METHODS = String.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray());
+        private readonly string PLOT_METHODS = String.Join(", ", CruiseMethods.PLOT_METHODS
+            .Append(CruiseMethods.THREEPPNT)
+            .Append(CruiseMethods.FIXCNT)
+            .Select(x => "'" + x + "'").ToArray());
 
         private const string CREATE_TREE_COMMAND = "INSERT INTO Tree " +
                 "(Tree_GUID, TreeNumber, CuttingUnit_CN, Stratum_CN, SampleGroup_CN, TreeDefaultValue_CN, Species, LiveDead, CountOrMeasure, TreeCount, KPI, STM) " +
@@ -140,7 +143,8 @@ namespace FScruiser.Services
 
             foreach (var stratum in strata)
             {
-                var stratumPlot = GetStratumPlot(unitCode, stratum.Code, plotNumber, insertIfNotExists);
+                var stratumPlot = GetStratumPlot(unitCode, stratum.Code, plotNumber, 
+                    (stratum.Method != CruiseMethods.THREEPPNT) && insertIfNotExists);//do not automaticly add plot if its a 3PPNT 
 
                 stratumPlots.Add(stratumPlot);
             }
@@ -150,7 +154,15 @@ namespace FScruiser.Services
 
         public StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber, bool insertIfNotExists = false)
         {
-            var stratumPlot = Database.Query<StratumPlot>("SELECT 1 AS InCruise, Stratum.Code AS StratumCode, Plot.* FROM Plot " +
+
+            var stratumPlot = Database.Query<StratumPlot>("SELECT 1 AS InCruise, " +
+                "Stratum.Code AS StratumCode, " +
+                "CuttingUnit.Code AS UnitCode, " +
+                "Stratum.BasalAreaFactor AS BAF, " +
+                "Stratum.FixedPlotSize AS FPS, " +
+                "Stratum.Method AS CruiseMethod, " +
+                "Stratum.KZ3PPNT AS KZ, " +
+                "Plot.* FROM Plot " +
                     "JOIN CuttingUnit USING (CuttingUnit_CN) " +
                     "JOIN Stratum USING (Stratum_CN) " +
                     "WHERE CuttingUnit.Code = @p1 " +
@@ -159,12 +171,18 @@ namespace FScruiser.Services
 
             if (stratumPlot == null)
             {
-                stratumPlot = new StratumPlot()
-                {
-                    PlotNumber = plotNumber,
-                    StratumCode = stratumCode,
-                    InCruise = false
-                };
+                stratumPlot = Database.Query<StratumPlot>("SELECT 0 AS InCruise, " +
+                "Stratum.Code AS StratumCode, " +
+                "Stratum.BasalAreaFactor AS BAF, " +
+                "Stratum.FixedPlotSize AS FPS, " +
+                "Stratum.Method AS CruiseMethod, " +
+                "Stratum.KZ3PPNT AS KZ " +
+                "FROM Stratum " +
+                    "WHERE Stratum.Code = @p1;"
+                    , new object[] { stratumCode }).FirstOrDefault();
+
+                stratumPlot.UnitCode = unitCode;
+                stratumPlot.PlotNumber = plotNumber;
 
                 if (insertIfNotExists)
                 {
@@ -657,7 +675,7 @@ namespace FScruiser.Services
         public void CreatePlotTree(string tree_guid, string unitCode, int plotNumber, string stratumCode, string sampleGroupCode, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false)
         {
             var plot_cn = Database.ExecuteScalar<int?>("SELECT Plot_CN FROM Plot " +
-                "JOIN CuttingUnit_CN USING (CuttingUnit_CN) " +
+                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
                 "JOIN Stratum USING (Stratum_CN) " +
                 "WHERE CuttingUnit.Code = @p1 " +
                 "AND Stratum.Code = @p2 " +

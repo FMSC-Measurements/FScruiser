@@ -31,16 +31,19 @@ namespace FScruiser.Models
         [Field("Plot_GUID")]
         public string Plot_GUID { get; set; }
 
-        [Field(Alias = "StratumCode", SQLExpression = "Stratum.Code", PersistanceFlags = PersistanceFlags.Never)]
+        [Field(Alias = "UnitCode", PersistanceFlags = PersistanceFlags.Never)]
+        public string UnitCode { get; set; }
+
+        [Field(Alias = "StratumCode", PersistanceFlags = PersistanceFlags.Never)]
         public string StratumCode { get; set; }
 
-        [Field(Alias = "CruiseMethod", SQLExpression = "Stratum.Method", PersistanceFlags = PersistanceFlags.Never)]
+        [Field(Alias = "CruiseMethod", PersistanceFlags = PersistanceFlags.Never)]
         public string CruiseMethod { get; set; }
 
-        [Field(Alias = "BAF", SQLExpression = "Stratum.BasalAreaFactor", PersistanceFlags = PersistanceFlags.Never)]
+        [Field(Alias = "BAF", PersistanceFlags = PersistanceFlags.Never)]
         public double BAF { get; set; }
 
-        [Field(Alias = "FPS", SQLExpression = "Stratum.FixedPlotSize", PersistanceFlags = PersistanceFlags.Never)]
+        [Field(Alias = "FPS", PersistanceFlags = PersistanceFlags.Never)]
         public double FPS { get; set; }
 
         [Field("PlotNumber")]
@@ -63,6 +66,9 @@ namespace FScruiser.Models
             get => _kpi;
             set => SetValue(ref _kpi, value);
         }
+
+        [Field(Alias = "KZ", PersistanceFlags = PersistanceFlags.Never)]
+        public int KZ { get; set; }
 
         [Field("Remarks")]
         public string Remarks
