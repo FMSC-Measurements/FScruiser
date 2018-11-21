@@ -18,6 +18,8 @@
                                               TrueObject="{StaticResource primary_500}"
                                               FalseObject="DimGray"/>
 
+            <tk_conv:HasDataConverter x:Key="hasDataConverter" />
+
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.ToolbarItems>
@@ -43,6 +45,7 @@
 
 
             <flow:FlowListView  x:Name="TallyListView" 
+                                IsVisible="{Binding TalliesFiltered, Converter={StaticResource hasDataConverter}}"
                                 FlowItemsSource="{Binding TalliesFiltered}"
                                 FlowItemTappedCommand="{Binding TallyCommand}"
                                 FlowColumnCount="3" 

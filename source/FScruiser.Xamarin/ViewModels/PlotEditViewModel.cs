@@ -1,5 +1,6 @@
 ﻿using FScruiser.Models;
 using FScruiser.Services;
+using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
 using FScruiser.XF.Util;
 using Prism.Navigation;
@@ -112,8 +113,18 @@ namespace FScruiser.XF.ViewModels
             }
             else
             {
-                Datastore.InsertStratumPlot(UnitCode, stratumPlot);
-                stratumPlot.InCruise = true;
+                if (stratumPlot.CruiseMethod == CruiseDAL.Schema.CruiseMethods.THREEPPNT)
+                {
+                    var query = $"{NavParams.UNIT}={stratumPlot.UnitCode}&{NavParams.PLOT_NUMBER}={stratumPlot.PlotNumber}&{NavParams.STRATUM}={stratumPlot.StratumCode}";
+
+                    await NavigationService.NavigateAsync("ThreePPNTPlot",
+                        new NavigationParameters(query));
+                }
+                else
+                {
+                    Datastore.InsertStratumPlot(UnitCode, stratumPlot);
+                    stratumPlot.InCruise = true;
+                }
             }
         }
 
