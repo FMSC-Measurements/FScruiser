@@ -7,6 +7,7 @@ using Microsoft.AppCenter.Crashes;
 using Plugin.Permissions;
 using Prism;
 using Prism.Ioc;
+using Prism.Navigation;
 using Prism.Services;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,8 @@ namespace FScruiser.XF
     {
         public const string CURRENT_NAV_PATH = "current_nav_path";
         public const string CURRENT_NAV_PARAMS = "current_nav_params";
+
+        public new INavigationService NavigationService => base.NavigationService;
 
         protected IPageDialogService DialogService => Container?.Resolve<IPageDialogService>();
 
@@ -204,6 +207,8 @@ namespace FScruiser.XF
             containerRegistry.RegisterSingleton<IDialogService, XamarinDialogService>();
             containerRegistry.RegisterSingleton<ITallySettingsDataService, TallySettingsDataService>();
             //containerRegistry.RegisterInstance<ICuttingUnitDatastore>(null);
+
+            containerRegistry.RegisterInstance<Prism.Logging.ILoggerFacade>(new AppCenterLoggerService());
 
             containerRegistry.RegisterInstance<ICuttingUnitDatastoreProvider>(this.CuttingUnitDatastoresProvider);
 

@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using FScruiser.XF.Test;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Xunit;
@@ -14,24 +15,52 @@ namespace FScruiser.XF.Pages
         {
         }
 
+        public static IEnumerable<object[]> PageTypes
+        {
+            get
+            {
+                var assembly = Assembly.GetAssembly(typeof(MainPage));
+
+                var pageTypes = assembly.GetTypes()
+                .Where(t => t.Namespace == "FScruiser.XF.Pages" && t.IsSubclassOf(typeof(Xamarin.Forms.Page)))
+                .Select(x => new object[] { x });
+
+                return  pageTypes;
+            }
+        }
+
         /// <summary>
         /// verify that all page classes initialize and there are no silly mistakes in the xaml
         /// </summary>
-        [Fact]
-        public void InitializePages()
+        [Theory]
+        [MemberData(nameof(PageTypes))]
+        public void CreatePage(Type pageType)
         {
-            var assembly = Assembly.GetAssembly(typeof(MainPage));
+            var page = Activator.CreateInstance(pageType) as Xamarin.Forms.Page;
 
-            var pageTypes = assembly.GetTypes()
-                .Where(t => t.Namespace == "FScruiser.XF.Pages" && t.IsSubclassOf(typeof(Xamarin.Forms.Page)));
+            page.Should().NotBeNull();
+        }
 
-            foreach (var t in pageTypes)
-            {
-                Output.WriteLine(t.Name);
-                var page = Activator.CreateInstance(t) as Xamarin.Forms.Page;
+        [Theory]
+        [MemberData(nameof(PageTypes))]
+        public void ResolveViewModel(Type pageType)
+        {
+            var page = Activator.CreateInstance(pageType) as Xamarin.Forms.Page;
 
-                page.Should().NotBeNull();
-            }
+            Container.ResolveViewModelForView(page, pageType);
+
+            
+            page.BindingContext.Should().NotBeNull();
+            var viewModelType = page.BindingContext.GetType().Name;
+
+            Output.WriteLine($"ViewModelType:{viewModelType}");
+        }
+
+        [Theory]
+        [InlineData("Main")]
+        public void NavigateTo(string pageName)
+        {
+            App.NavigationService.NavigateAsync(pageName);
         }
     }
 }
