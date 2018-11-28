@@ -154,7 +154,7 @@ namespace FScruiser.XF.ViewModels
         {
             try
             {
-                var fileData = await CrossFilePicker.Current.PickFile();
+                var fileData = await CrossFilePicker.Current.PickFile(new string[] { ".cruise" });
                 if (fileData == null) { return; }//user canceled file picking
 
                 var filePath = fileData.FilePath;
