@@ -57,11 +57,11 @@
                     <Button 
                         BackgroundColor="Transparent" 
                         Image="ic_settings_white_24dp.png"  
-                        Command="{prism:NavigateTo '\Settings'}"/>
+                        Command="{Binding ShowSettingsCommand}"/>
                     <Button 
                         BackgroundColor="Transparent" 
                         Image="ic_feedback_white_24dp.png"  
-                        Command="{prism:NavigateTo '\Feedback'}"/>
+                        Command="{Binding ShowFeedbackCommand}"/>
                 </StackLayout>
             </StackLayout>
         </ContentPage>
