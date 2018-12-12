@@ -741,6 +741,82 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
+        [Fact]
+        public void GetFixCNTTallyPopulations()
+        {
+            using (var database = CreateDatabase())
+            {
+
+                var stratum = new StratumDO()
+                {
+                    Code = "fixCnt1",
+                    Method = CruiseDAL.Schema.CruiseMethods.FIXCNT
+                };
+                database.Insert(stratum);
+
+                var sg = new SampleGroupDO()
+                {
+                    Code = "sgFixCnt",
+                    CutLeave = "C",
+                    UOM = "01",
+                    PrimaryProduct = "01",
+                    Stratum_CN = stratum.Stratum_CN
+                };
+                database.Insert(sg);
+
+                var tdv = new TreeDefaultValueDO()
+                {
+                    Species = "someSpecies",
+                    LiveDead = "L",
+                    PrimaryProduct = "01"
+                };
+                database.Insert(tdv);
+
+                var sgTdv = new SampleGroupTreeDefaultValueDO()
+                {
+                    SampleGroup_CN = sg.SampleGroup_CN,
+                    TreeDefaultValue_CN = tdv.TreeDefaultValue_CN
+                };
+                database.Insert(sgTdv);
+
+                var fixCntTallyClass = new FixCNTTallyClassDO()
+                {          
+                    FieldName = (int)FixCNTTallyField.DBH,
+                    Stratum_CN = stratum.Stratum_CN
+                };
+                database.Insert(fixCntTallyClass);
+                //database.Execute($"Update FixCNTTallyClass set FieldName = 'DBH';");
+
+                var fixCntTallyPop = new FixCNTTallyPopulationDO()
+                {
+                    FixCNTTallyClass_CN = fixCntTallyClass.FixCNTTallyClass_CN,
+                    SampleGroup_CN = sg.SampleGroup_CN,
+                    TreeDefaultValue_CN = tdv.TreeDefaultValue_CN,
+                    IntervalSize = 101,
+                    Min = 102,
+                    Max = 103
+                };
+                database.Insert(fixCntTallyPop);
+
+
+                var datastore = new CuttingUnitDatastore(database);
+
+                var result = datastore.GetFixCNTTallyPopulations(stratum.Code).ToArray();
+                result.Should().HaveCount(1);
+
+                var firstResult = result.First();
+                firstResult.IntervalSize.Should().Be(101);
+                firstResult.IntervalMin.Should().Be(102);
+                firstResult.IntervalMax.Should().Be(103);
+
+                firstResult.SGCode.Should().Be(sg.Code);
+                firstResult.StratumCode.Should().Be(stratum.Code);
+                firstResult.Species.Should().Be(tdv.Species);
+                firstResult.FieldName.Should().Be(FixCNTTallyField.DBH);
+                //firstResult.LiveDead.Should().Be(tdv.LiveDead);
+            }
+        }
+
         #endregion plot
 
         [Theory]

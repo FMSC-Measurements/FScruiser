@@ -288,6 +288,78 @@ namespace FScruiser.Services
                 unitCode, stratumCode, plotNumber);
         }
 
+        public IEnumerable<FixCntTallyPopulation> GetFixCNTTallyPopulations(string stratumCode)
+        {
+            return Database.Query<FixCntTallyPopulation>(
+                "SELECT St.Code AS StratumCode, SG.Code AS SGCode, " +
+                "tdv.Species AS tdvSpecies, tdv.LiveDead AS tdvLiveDead, tc.FieldName AS FieldName, " +
+                "Min as IntervalMin, Max AS IntervalMax, IntervalSize, TreeDefaultValue_CN " +
+                "FROM FixCNTTallyPopulation " +
+                "JOIN SampleGroup AS SG USING (SampleGroup_CN) " +
+                "JOIN Stratum AS St USING (Stratum_CN) " +
+                "JOIN FixCNTTallyClass AS tc USING (Stratum_CN) " +
+                "JOIN TreeDefaultValue AS tdv USING (TreeDefaultValue_CN) " +
+                "WHERE St.Code = @p1;", new object[] { stratumCode });
+        }
+
+        public Tree GetFixCNTTallyTree(string unitCode, int plotNumber, string stratumCode, string sgCode, int treeDefaultValue_CN, FixCNTTallyField fieldName, double value)
+        {
+            var fieldNameStr = fieldName.ToString();
+
+            return QueryTree_Base()
+                .Where($"{fieldNameStr} = @p1 AND Plot.PlotNumber = @p2 AND CuttingUnit.Code = @p3 " +
+                $"AND Stratum.Code = @p4 AND SampleGroup.Code = @p5 AND Tree.TreeDefaultValue_CN = @p6")
+                .Limit(1, 0)
+                .Query(value, plotNumber, unitCode, stratumCode, sgCode, treeDefaultValue_CN)
+                .FirstOrDefault();
+        }
+
+        public Tree CreateFixCNTTallyTree(string unitCode, int plotNumber, string stratumCode, string sgCode, int treeDefaultValue_CN, FixCNTTallyField fieldName, double value, int treeCount = 0)
+        {
+            var tree_guid = Guid.NewGuid().ToString();
+
+            var plot_cn = Database.ExecuteScalar<int?>("SELECT Plot_CN FROM Plot " +
+                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
+                "JOIN Stratum USING (Stratum_CN) " +
+                "WHERE CuttingUnit.Code = @p1 " +
+                "AND Stratum.Code = @p2 " +
+                "AND PlotNumber = @p3;", new object[] { unitCode, stratumCode, plotNumber });
+
+            if (plot_cn == null) { throw new InvalidOperationException($"Plot # {plotNumber} could not be found"); }
+
+            var fieldNameStr = fieldName.ToString();
+
+            Database.Execute("INSERT INTO Tree " +
+                $"(Tree_GUID, TreeNumber, CuttingUnit_CN, Plot_CN, Stratum_CN, SampleGroup_CN, TreeDefaultValue_CN, Species, LiveDead, CountOrMeasure, TreeCount, {fieldNameStr}) " +
+                "VALUES (@p1,\r\n " + //tree_guid
+                "(SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree JOIN CuttingUnit USING (CuttingUnit_CN) WHERE CuttingUnit.Code = @p2 AND Tree.Plot_CN = @p3),\r\n " + //get highest tree number using unitCode and plot_cn
+                "(SELECT CuttingUnit_CN FROM CuttingUnit WHERE Code = @p2),\r\n " + //cuttingUnit_CN
+                "@p3,\r\n " + //plot_cn
+                "(SELECT Stratum_CN FROM Stratum WHERE Code = @p4),\r\n " + //stratum_cn
+                "(SELECT SampleGroup_CN FROM SampleGroup JOIN Stratum USING (Stratum_CN) WHERE SampleGroup.Code = @p5 AND Stratum.Code = @p4),\r\n " + //sampleGroup_CN
+                "@p6,\r\n " + //TreeDefaultValue_CN
+                "(SELECT Species FROM TreeDefaultValue WHERE TreeDefaultValue_CN == @p6),\r\n" + //species
+                "(SELECT LiveDead FROM TreeDefaultValue WHERE TreeDefaultValue_CN == @p6),\r\n" + //liveDead
+                "'M',\r\n " + //countMeasure
+                "@p7,\r\n " + //treecount
+                "@p8);" 
+                , new object[]
+                {
+                    tree_guid
+                    , unitCode
+                    , plot_cn
+                    , stratumCode
+                    , sgCode
+                    , treeDefaultValue_CN
+                    , treeCount
+                    , value
+                }
+            );
+
+            var tree = QueryTree_Base().Where("Tree_GUID = @p1").Query(tree_guid).First();
+            return tree;
+        }
+
         #endregion plot
 
         #region strata
@@ -573,7 +645,7 @@ namespace FScruiser.Services
         public IEnumerable<Tree> GetTreesByUnitCode(string unitCode)
         {
             return QueryTree_Base()
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+                //.Join("CuttingUnit", "USING (CuttingUnit_CN)")
                 .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
                 .Query(unitCode).ToArray();
         }

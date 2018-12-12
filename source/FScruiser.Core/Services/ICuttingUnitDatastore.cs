@@ -40,6 +40,12 @@ namespace FScruiser.Services
 
         int GetNumTreeRecords(string unitCode, string stratumCode, int plotNumber);
 
+        IEnumerable<FixCntTallyPopulation> GetFixCNTTallyPopulations(string stratumCode);
+
+        Tree GetFixCNTTallyTree(string unitCode, int plotNumber, string stratumCode, string sgCode, int treeDefaultValue_CN, FixCNTTallyField fieldName, double value);
+
+        Tree CreateFixCNTTallyTree(string unitCode, int plotNumber, string stratumCode, string sgCode, int treeDefaultValue_CN, FixCNTTallyField fieldName, double value, int treeCount = 0);
+
         #endregion plots
 
         #region stratra
