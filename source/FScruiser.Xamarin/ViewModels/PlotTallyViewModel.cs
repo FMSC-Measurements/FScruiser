@@ -2,6 +2,7 @@
 using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
 using Prism.Navigation;
 using System;
@@ -129,8 +130,8 @@ namespace FScruiser.XF.ViewModels
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
-            var plotNumver = PlotNumber = parameters.GetValue<int>("PlotNumber");
+            var unitCode = UnitCode = parameters.GetValue<string>(NavParams.UNIT);
+            var plotNumver = PlotNumber = parameters.GetValue<int>(NavParams.PLOT_NUMBER);
 
             var salePurpose = Datastore.GetCruisePurpose();
             IsRecon = salePurpose.ToLower() == "recon";

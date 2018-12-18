@@ -6,29 +6,70 @@ using Prism.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
     public class FixCNTViewModel : ViewModelBase
     {
-        public IEnumerable<FixCntTallyPopulation> TallyPopulations { get; set; }
+        private Command<FixCNTTallyBucket> _processTallyCommand;
+        private bool _isUntallyEnabled;
 
-        public ICuttingUnitDatastore Datastore { get; set; }
+        public IEnumerable<FixCntTallyPopulation> TallyPopulations { get; protected set; }
+
+        public ICuttingUnitDatastore Datastore { get; protected set; }
+
+        public ICommand ProcessTallyCommand => _processTallyCommand ?? (_processTallyCommand = new Command<FixCNTTallyBucket>(ProcessTally));
+
+        public bool IsUntallyEnabled
+        {
+            get { return _isUntallyEnabled; }
+            set { SetValue(ref _isUntallyEnabled, value); }
+        }
 
         public FixCNTViewModel(INavigationService navigationService, ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
         {
             Datastore = datastoreProvider.CuttingUnitDatastore;
         }
 
-        public void Tally(string species, Double midValue)
+        public void Tally(FixCNTTallyBucket tallyBucket)
         {
-            var tallyPopulation = TallyPopulations.Where(x => x.Species == species).First();
-
-            var bucket = tallyPopulation.Buckets.Where(x => x.Value == midValue).Single();
-
-            var tree = bucket.Tree;
+            var tree = tallyBucket.Tree;
             tree.TreeCount++;
             Datastore.UpdateTree(tree);
+        }
+
+        //public void Tally(string species, Double midValue)
+        //{
+        //    var tallyPopulation = TallyPopulations.Where(x => x.Species == species).First();
+
+        //    var bucket = tallyPopulation.Buckets.Where(x => x.Value == midValue).Single();
+
+        //    Tally(bucket);
+        //}
+
+        public void UnTally(FixCNTTallyBucket tallyBucket)
+        {
+            var tree = tallyBucket.Tree;
+            var treeCount = tree.TreeCount;
+            if (treeCount > 0)
+            {
+                tree.TreeCount = treeCount - 1;
+                Datastore.UpdateTree(tree);
+            }
+        }
+
+        public void ProcessTally(FixCNTTallyBucket tallyBucket)
+        {
+            if(IsUntallyEnabled)
+            {
+                UnTally(tallyBucket);
+            }
+            else
+            {
+                Tally(tallyBucket);
+            }
         }
 
         protected override void Refresh(INavigationParameters parameters)
@@ -65,6 +106,7 @@ namespace FScruiser.XF.ViewModels
             }
 
             TallyPopulations = tallyPopulations;
+            RaisePropertyChanged(nameof(TallyPopulations));
         }
     }
 }
