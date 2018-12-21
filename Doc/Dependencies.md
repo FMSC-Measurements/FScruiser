@@ -2,6 +2,9 @@
 
 # FScruiser.Xamarin
 
+## Xamarin.Forms
+ currently using version 4.0-preview because it includes the new CollectionView. using the CollectionView in preview requires setting a flag in FScruiser.Droid.MainActivity.OnCreate
+
 ## FlowListView
 Listview used for stratum selection for its ability to arrange items dynamicly in rows
 
@@ -18,12 +21,15 @@ for checking and requesting permissions if disabled. Depends on Plugin.CurrentAc
 ## Prism
 MVVM framework, Navigation 
 
-## pt.Xamarin.Plugin.FilePicker
+### Prism.Autofac.Forms
+ variant of prism library that uses autofac under the covers for IOC. There is no direct dependency on autofac and other variants could be used without requiring code changes. 
+
+## Xamarin.Plugin.FilePicker
 for FilePicker
-multiple forks of this library exist some better supported than others. Keep track of developments on this library. 
+multiple forks of this library exist some better supported than others. Currently this seems the best supported Keep track of developments on this library. 
 
 ## Xamarin.Toolkit.*
-useful suit of libraries that extend functionality of controls
+useful suit of libraries that extend functionality of controls using Behaviors, Converters, and Effects
 
 ## Scripty.MsBuild
 build tool. **not a run-time dependency **
