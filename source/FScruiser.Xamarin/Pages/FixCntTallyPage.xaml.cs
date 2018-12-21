@@ -15,13 +15,6 @@ namespace FScruiser.XF.Pages
         public FixCntTallyPage()
         {
             InitializeComponent();
-
-            _enableUntallySwitch.Toggled += _enableUntallySwitch_Toggled;
-        }
-
-        private void _enableUntallySwitch_Toggled(object sender, ToggledEventArgs e)
-        {
-            System.Diagnostics.Debug.Write("Toggle");
         }
     }
 }
