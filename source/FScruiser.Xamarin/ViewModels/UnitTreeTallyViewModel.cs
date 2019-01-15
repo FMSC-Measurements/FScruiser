@@ -19,10 +19,8 @@ namespace FScruiser.XF.ViewModels
 
         private Dictionary<string, IEnumerable<TallyPopulation>> _tallies;
         private string _selectedStratumCode = STRATUM_FILTER_ALL;
-        private ICommand _stratumSelectedCommand;
-        private ICommand _tallyCommand;
+
         private IList<TallyEntry> _tallyFeed;
-        private ICommand _editTreeCommand;
 
         public event EventHandler TallyEntryAdded;
 
@@ -81,6 +79,16 @@ namespace FScruiser.XF.ViewModels
 
         public string UnitCode { get; set; }
 
+        #region Commands
+
+        private ICommand _editTreeCommand;
+        private ICommand _showTallyMenuCommand;
+        private ICommand _stratumSelectedCommand;
+        private ICommand _tallyCommand;
+
+        public ICommand ShowTallyMenuCommand => _showTallyMenuCommand
+            ?? (_showTallyMenuCommand = new Command<TallyPopulation>(ShowTallyMenu));
+
         public ICommand TallyCommand => _tallyCommand
             ?? (_tallyCommand = new Command<TallyPopulation>(async (x) => await this.TallyAsync(x)));
 
@@ -90,10 +98,7 @@ namespace FScruiser.XF.ViewModels
         public ICommand EditTreeCommand => _editTreeCommand
             ?? (_editTreeCommand = new Command<string>(EditTree));
 
-        public void EditTree(string tree_guid)
-        {
-            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { "Tree_Guid", tree_guid } }, useModalNavigation: true);
-        }
+        #endregion Commands
 
         public ICuttingUnitDatastore Datastore { get; }
 
@@ -148,6 +153,16 @@ namespace FScruiser.XF.ViewModels
         protected void RaiseTallyEntryAdded()
         {
             TallyEntryAdded?.Invoke(this, null);
+        }
+
+        private void ShowTallyMenu(TallyPopulation obj)
+        {
+            DialogService.ShowMessageAsync("Tally Menu");
+        }
+
+        public void EditTree(string tree_guid)
+        {
+            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { "Tree_Guid", tree_guid } }, useModalNavigation: true);
         }
 
         public async Task TallyAsync(TallyPopulation pop)
@@ -215,7 +230,5 @@ namespace FScruiser.XF.ViewModels
         {
             SelectedStratumCode = code ?? STRATUM_FILTER_ALL;
         }
-
-        
     }
 }

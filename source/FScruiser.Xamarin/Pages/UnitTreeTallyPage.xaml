@@ -27,24 +27,24 @@
                 </ListView.Behaviors>
                 <ListView.ItemTemplate>
                     <cells:TreeDataTemplateSelector>
-                        
+
                         <cells:TreeDataTemplateSelector.TreeItemTemplate>
                             <DataTemplate>
                                 <cells:TallyEntryTreeViewCell/>
                             </DataTemplate>
-                            
+
                         </cells:TreeDataTemplateSelector.TreeItemTemplate>
 
                         <cells:TreeDataTemplateSelector.BasicTemplate>
-                            
+
                             <DataTemplate>
                                 <cells:TallyEntryViewCell/>
                             </DataTemplate>
-                            
+
                         </cells:TreeDataTemplateSelector.BasicTemplate>
-                        
+
                     </cells:TreeDataTemplateSelector>
-                    
+
                 </ListView.ItemTemplate>
             </ListView>
 
@@ -58,26 +58,89 @@
                                 BackgroundColor="Gray"
                                 VerticalOptions="CenterAndExpand">
                 <flow:FlowListView.FlowColumnTemplate>
-                    
-                    <DataTemplate>
-                        
-                        <Frame CornerRadius="5" BackgroundColor="Green" Margin ="3">
-                            
-                            <StackLayout HorizontalOptions="Fill" 
-                                         VerticalOptions="Fill" Padding="3">
-                                <Label Text="{Binding TallyDescription}" 
-                                       HorizontalTextAlignment="Center" />
-                                <Label Text="{Binding TreeCount}" 
-                                       HorizontalTextAlignment="Center" 
-                                       BackgroundColor="White" 
-                                       TextColor="Black" />
-                                <Label Text="{Binding TallyHotKey}"
-                                       HorizontalTextAlignment="Center" />
-                            </StackLayout>
-                            
-                        </Frame>
-                    </DataTemplate>
-                    
+
+                    <cells:TallyDataTemplateSelector>
+                        <cells:TallyDataTemplateSelector.TallyTemplate>
+                            <DataTemplate>
+
+                                <Frame CornerRadius="5" BackgroundColor="Green" Margin ="3" HeightRequest="100" Padding="0">
+                                    <!--<Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding BindingContext.TallyCommand, Source={Reference _page}}}"
+                                                              CommandParameter="{Binding .}"/>
+                            </Frame.GestureRecognizers>-->
+
+                                    <Grid Padding="0" >
+
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+
+                                        <ImageButton    x:Name="_showTallyMenuButton"
+                                                        Grid.Column="1" Grid.Row="0"
+                                                        Padding="3"
+                                                        Command="{Binding BindingContext.ShowTallyMenuCommand, Source={Reference _page}}" 
+                                                        Source="ic_more_vert_black_24dp.png" 
+                                                        CommandParameter="{Binding .}"  />
+
+                                        <Label  Grid.Column="0" Grid.Row="0"
+                                                Grid.ColumnSpan="2"
+                                                Text="{Binding TallyDescription}" 
+                                                HorizontalTextAlignment="Center" />
+
+                                        <Frame  Grid.Column="0" Grid.Row="2"
+                                                Grid.ColumnSpan="2"
+                                                Padding="11,0,11,0" Margin="0"
+                                                HorizontalOptions="Center"
+                                                BackgroundColor="White" 
+                                                CornerRadius="10">
+                                            
+                                            <Label  
+                                                    Text="{Binding TreeCount}" 
+                                                    HorizontalTextAlignment="Center" 
+                                                    BackgroundColor="Transparent"
+                                                    TextColor="Black" />
+                                        </Frame>
+
+                                        <Label  Grid.Column="0" Grid.Row="3"
+                                                Grid.ColumnSpan="2"
+                                                Text="{Binding TallyHotKey}"
+                                                HorizontalTextAlignment="Center" />
+
+                                        <!--<StackLayout    Grid.Column="0" Grid.Row="0"
+                                                        Grid.ColumnSpan="2" Grid.RowSpan="2"
+                                                        HorizontalOptions="Fill" 
+                                                        VerticalOptions="Fill" Padding="3">
+
+                                            <Label  Text="{Binding TallyDescription}" 
+                                                    HorizontalTextAlignment="Center" />
+
+                                            <Label  Text="{Binding TreeCount}" 
+                                                    HorizontalTextAlignment="Center" 
+                                                    BackgroundColor="White" 
+                                                    TextColor="Black" />
+
+                                            <Label  Text="{Binding TallyHotKey}"
+                                                    HorizontalTextAlignment="Center" />
+
+                                        </StackLayout>-->
+
+                                    </Grid>
+
+                                </Frame>
+                            </DataTemplate>
+                        </cells:TallyDataTemplateSelector.TallyTemplate>
+                    </cells:TallyDataTemplateSelector>
+
                 </flow:FlowListView.FlowColumnTemplate>
             </flow:FlowListView>
 
@@ -87,7 +150,7 @@
                                HeightRequest="44"
                                FlowItemsSource="{Binding StrataFilterOptions}">
                 <flow:FlowListView.FlowColumnTemplate>
-                    
+
                     <DataTemplate>
                         <Button Text="{Binding .}" 
                                 TextColor="{StaticResource white_90}" BackgroundColor="{StaticResource primary_500}" 
@@ -95,10 +158,10 @@
                                 Command="{Binding BindingContext.StratumSelectedCommand, Source={x:Reference StratumFilterListView}}"
                                 CommandParameter="{Binding .}"/>
                     </DataTemplate>
-                    
+
                 </flow:FlowListView.FlowColumnTemplate>
             </flow:FlowListView>
-            
+
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

@@ -46,6 +46,11 @@ namespace FScruiser.Logic
             IDialogService dialogService)
         {
 
+            if(pop.IsClickerTally)
+            {
+                return CreateTallyWithTree(unitCode, pop, "M", pop.Frequency);
+            }
+
             var sampler = samplerService.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
 
             //if doing a manual tally create a tree and jump out

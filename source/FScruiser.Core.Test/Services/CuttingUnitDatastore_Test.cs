@@ -73,7 +73,8 @@ namespace FScruiser.Core.Test.Services
                 Code = "sg1",
                 CutLeave = "C",
                 UOM = "01",
-                PrimaryProduct = "01"
+                PrimaryProduct = "01",
+                SamplingFrequency = 101
             });
 
             database.Insert(new SampleGroupDO
@@ -82,7 +83,8 @@ namespace FScruiser.Core.Test.Services
                 Code = "sg2",
                 CutLeave = "C",
                 UOM = "01",
-                PrimaryProduct = "01"
+                PrimaryProduct = "01",
+                SamplingFrequency = 102
             });
 
             //TreeDefaults
@@ -817,6 +819,11 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
+        public void CreateFixCNTTallyTree()
+        {
+
+        }
+
         #endregion plot
 
         [Theory]
@@ -855,6 +862,29 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
+        [Fact]
+        public void GetTallyPopulationsByUnitCode_Test_with_clicker_tally()
+        {
+            var unitCode = "u1";
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                database.Execute($"UPDATE SampleGroup SET SampleSelectorType = '{CruiseDAL.Schema.CruiseMethods.CLICKER_SAMPLER_TYPE}';");
+
+                var results = datastore.GetTallyPopulationsByUnitCode(unitCode);
+                results.Should().HaveCount(2);
+
+                foreach (var pop in results)
+                {
+                    pop.IsClickerTally.Should().BeTrue();
+
+                    VerifyTallyPopulation(pop);
+                }
+            }
+        }
+
         private static void VerifyTallyPopulation(Models.TallyPopulation result, string species = null)
         {
             if (species != null)
@@ -867,6 +897,7 @@ namespace FScruiser.Core.Test.Services
             result.TallyDescription.Should().NotBeNullOrWhiteSpace();
             result.TallyHotKey.Should().NotBeNullOrWhiteSpace();
             result.Method.Should().NotBeNullOrWhiteSpace();
+            result.Frequency.Should().BeGreaterThan(0);
         }
 
         [Fact]

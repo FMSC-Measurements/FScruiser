@@ -436,14 +436,38 @@ namespace FScruiser.Services
 
         public IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode)
         {
-            return Database.From<TallyPopulation>()
-                .Join("Tally", "USING (Tally_CN)")
-                .Join("SampleGroup", "USING (SampleGroup_CN)")
-                .LeftJoin("TreeDefaultValue", "USING (TreeDefaultValue_CN)")
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
-                .Query(unitCode).ToArray();
+            return Database.Query<TallyPopulation>(
+                "SELECT Tally.Description AS TallyDescription, " +
+                "Tally.HotKey AS TallyHotKey, " +
+                "Stratum.Code AS StratumCode, " +
+                "Stratum.Method AS StratumMethod, " +
+                "SampleGroup.Code AS SampleGroupCode, " +
+                "SampleGroup.SamplingFrequency AS Frequency, " +
+                "SampleGroup.MinKPI AS sgMinKPI, " +
+                "SampleGroup.MaxKPI AS sgMaxKPI, " +
+                "SampleGroup_CN, " +
+                "TreeDefaultValue.Species AS tdvSpecies, " +
+                "TreeDefaultValue.LiveDead AS tdvLiveDead, " +
+                "TreeCount, " +
+                "SumKPI, " +
+                $"SampleGroup.SampleSelectorType == '{CruiseMethods.CLICKER_SAMPLER_TYPE}' AS IsClickerTally " +
+                "FROM CountTree " +
+                "JOIN Tally USING (Tally_CN) " +
+                "JOIN SampleGroup USING (SampleGroup_CN) " +
+                "LEFT JOIN TreeDefaultValue USING (TreeDefaultValue_CN) " +
+                "JOIN Stratum USING (Stratum_CN) " +
+                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
+                $"WHERE CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})"
+                , new object[] { unitCode }).ToArray();
+
+            //return Database.From<TallyPopulation>()
+            //    .Join("Tally", "USING (Tally_CN)")
+            //    .Join("SampleGroup", "USING (SampleGroup_CN)")
+            //    .LeftJoin("TreeDefaultValue", "USING (TreeDefaultValue_CN)")
+            //    .Join("Stratum", "USING (Stratum_CN)")
+            //    .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+            //    .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
+            //    .Query(unitCode).ToArray();
         }
 
         private class SampleGroupStratumInfo
