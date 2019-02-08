@@ -8,7 +8,7 @@
              x:Class="FScruiser.XF.Pages.PlotTallyPage"
              BackgroundColor ="White"
              x:Name="_page"
-             Title="{Binding PlotNumber, StringFormat='Plot Number {0}'}">
+             Title="{Binding PlotNumber, StringFormat='{}Plot Number {0}'}">
     <ContentPage.Resources>
         <ResourceDictionary>
             <Color x:Key="tallyIncruiseColor"></Color>

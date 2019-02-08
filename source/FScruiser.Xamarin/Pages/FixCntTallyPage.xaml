@@ -68,7 +68,7 @@
 
                                                 </StackLayout.GestureRecognizers>
 
-                                                <Label Text="{Binding Value, StringFormat='{0}&quot;'}"
+                                                <Label Text="{Binding Value, StringFormat='{}{0}&quot;'}"
                                                FontAttributes="Bold"
                                                HorizontalTextAlignment="Center"
                                                VerticalOptions="Center"/>
