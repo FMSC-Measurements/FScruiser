@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Xamarin.Forms;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -45,22 +46,19 @@ namespace FScruiser.XF.Pages
         [MemberData(nameof(PageTypes))]
         public void ResolveViewModel(Type pageType)
         {
+            //get our page
             var page = Activator.CreateInstance(pageType) as Xamarin.Forms.Page;
 
-            Container.ResolveViewModelForView(page, pageType);
+            //call this method that causes Prism to resolve the viewmodel for our view
+            Prism.Mvvm.ViewModelLocationProvider.AutoWireViewModelChanged(page, (p, vm) =>
+            {
+                p.Should().NotBeNull();
+                vm.Should().NotBeNull();
 
-            
-            page.BindingContext.Should().NotBeNull();
-            var viewModelType = page.BindingContext.GetType().Name;
+                Output.WriteLine($"ViewModelType:{vm.GetType().Name}");
 
-            Output.WriteLine($"ViewModelType:{viewModelType}");
-        }
-
-        [Theory]
-        [InlineData("Main")]
-        public void NavigateTo(string pageName)
-        {
-            App.NavigationService.NavigateAsync(pageName);
+                ((Page)page).BindingContext = vm;
+            });
         }
     }
 }
