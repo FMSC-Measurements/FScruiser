@@ -126,9 +126,14 @@ namespace FScruiser.XF.ViewModels
 
                 var tallyPop = viewModel.TallyPopulations.First();
 
-                viewModel.Tally(tallyPop.Species, tallyPop.IntervalMin + tallyPop.IntervalSize / 2);
+                tallyPop.Buckets.Should().NotBeEmpty();
 
-                tallyPop.Buckets.First().Tree.TreeCount.Should().Be(1);
+                var bucket = tallyPop.Buckets.FirstOrDefault();
+                bucket.Should().NotBeNull();
+
+                viewModel.Tally(bucket);
+
+                bucket.Tree.TreeCount.Should().Be(1);
             }
         }
     }
