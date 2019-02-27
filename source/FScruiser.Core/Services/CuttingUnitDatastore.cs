@@ -143,7 +143,7 @@ namespace FScruiser.Services
 
             foreach (var stratum in strata)
             {
-                var stratumPlot = GetStratumPlot(unitCode, stratum.Code, plotNumber, 
+                var stratumPlot = GetStratumPlot(unitCode, stratum.Code, plotNumber,
                     (stratum.Method != CruiseMethods.THREEPPNT) && insertIfNotExists);//do not automaticly add plot if its a 3PPNT 
 
                 stratumPlots.Add(stratumPlot);
@@ -342,7 +342,7 @@ namespace FScruiser.Services
                 "(SELECT LiveDead FROM TreeDefaultValue WHERE TreeDefaultValue_CN == @p6),\r\n" + //liveDead
                 "'M',\r\n " + //countMeasure
                 "@p7,\r\n " + //treecount
-                "@p8);" 
+                "@p8);"
                 , new object[]
                 {
                     tree_guid
@@ -437,27 +437,37 @@ namespace FScruiser.Services
         public IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode)
         {
             return Database.Query<TallyPopulation>(
-                "SELECT Tally.Description AS TallyDescription, " +
-                "Tally.HotKey AS TallyHotKey, " +
-                "Stratum.Code AS StratumCode, " +
-                "Stratum.Method AS StratumMethod, " +
-                "SampleGroup.Code AS SampleGroupCode, " +
-                "SampleGroup.SamplingFrequency AS Frequency, " +
-                "SampleGroup.MinKPI AS sgMinKPI, " +
-                "SampleGroup.MaxKPI AS sgMaxKPI, " +
-                "SampleGroup_CN, " +
-                "TreeDefaultValue.Species AS tdvSpecies, " +
-                "TreeDefaultValue.LiveDead AS tdvLiveDead, " +
+                "SELECT tp.Description, " +
+                "tp.StratumCode AS StratumCode, " +
+                "st.Method AS StratumMethod, " +
+                "tp.SampleGroupCode AS SampleGroupCode, " +
+                "tp.Species AS Species, " +
+                "tp.LiveDead, tp.LiveDead, " +
+                "tp.HotKey AS HotKey, " +
+                "sg.SampleGroup_CN, " +
                 "TreeCount, " +
+                //"sum(tl.TreeCount) AS TreeCount, " +
                 "SumKPI, " +
-                $"SampleGroup.SampleSelectorType == '{CruiseMethods.CLICKER_SAMPLER_TYPE}' AS IsClickerTally " +
-                "FROM CountTree " +
-                "JOIN Tally USING (Tally_CN) " +
-                "JOIN SampleGroup USING (SampleGroup_CN) " +
-                "LEFT JOIN TreeDefaultValue USING (TreeDefaultValue_CN) " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                $"WHERE CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})"
+                //"sum(tl.KPI) SumKPI, " +
+                "sg.SamplingFrequency AS Frequency, " +
+                "sg.MinKPI AS sgMinKPI, " +
+                "sg.MaxKPI AS sgMaxKPI, " +
+                $"sg.SampleSelectorType == '{CruiseMethods.CLICKER_SAMPLER_TYPE}' AS IsClickerTally " +
+                "FROM TallyPopulation AS tp " +
+                "JOIN Stratum AS st ON tp.StratumCode = st.Code " +
+                "JOIN CuttingUnitStratum AS cust ON cust.Stratum_CN = st.Stratum_CN " +
+                "JOIN CuttingUnit AS cu ON cust.CuttingUnit_CN = cu.CuttingUnit_CN " +
+                "JOIN SampleGroup AS sg ON tp.SampleGroupCode = sg.Code AND st.Stratum_CN = sg.Stratum_CN " +
+                "LEFT JOIN (SELECT sum(TreeCount) AS TreeCount, sum(KPI) SumKPI, " +
+                    "StratumCode, SampleGroupCode, Species, LiveDead " +
+                    "FROM TallyLedger " +
+                    "WHERE PlotNumber IS NULL AND UnitCode = @p1 " +
+                    "GROUP BY StratumCode, SampleGroupCode, ifnull(species, ''), ifnull(LiveDead, '')) AS tl " +
+                    "ON tp.StratumCode = tl.StratumCode " +
+                    "AND tp.SampleGroupCode = tl.SampleGroupCode " +
+                    "AND ifnull(tp.Species, '') = ifnull(tl.Species, '') " +
+                    "AND ifnull(tp.LiveDead, '') = ifnull(tl.LiveDead, '') " +
+                $"WHERE cu.Code = @p1 AND st.Method NOT IN ({PLOT_METHODS})"
                 , new object[] { unitCode }).ToArray();
 
             //return Database.From<TallyPopulation>()
@@ -469,6 +479,48 @@ namespace FScruiser.Services
             //    .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
             //    .Query(unitCode).ToArray();
         }
+
+        public TallyPopulation GetTallyPopulation(string unitCode, string stratumCode, string sampleGroupCode, string species, string liveDead)
+        {
+            return Database.Query<TallyPopulation>(
+                "SELECT tp.Description, " +
+                    "tp.StratumCode AS StratumCode, " +
+                    "st.Method AS StratumMethod, " +
+                    "tp.SampleGroupCode AS SampleGroupCode, " +
+                    "tp.Species AS Species, " +
+                    "tp.LiveDead, tp.LiveDead, " +
+                    "tp.HotKey AS HotKey, " +
+                    "sg.SampleGroup_CN, " +
+                    "TreeCount, " +
+                    //"sum(tl.TreeCount) AS TreeCount, " +
+                    "SumKPI, " +
+                    //"sum(tl.KPI) SumKPI, " +
+                    "sg.SamplingFrequency AS Frequency, " +
+                    "sg.MinKPI AS sgMinKPI, " +
+                    "sg.MaxKPI AS sgMaxKPI, " +
+                    $"sg.SampleSelectorType == '{CruiseMethods.CLICKER_SAMPLER_TYPE}' AS IsClickerTally " +
+                    "FROM TallyPopulation AS tp " +
+                    "JOIN Stratum AS st ON tp.StratumCode = st.Code " +
+                    "JOIN CuttingUnitStratum AS cust ON cust.Stratum_CN = st.Stratum_CN " +
+                    "JOIN CuttingUnit AS cu ON cust.CuttingUnit_CN = cu.CuttingUnit_CN " +
+                    "JOIN SampleGroup AS sg ON tp.SampleGroupCode = sg.Code AND st.Stratum_CN = sg.Stratum_CN " +
+                    "LEFT JOIN (SELECT sum(TreeCount) AS TreeCount, sum(KPI) SumKPI, " +
+                        "StratumCode, SampleGroupCode, Species, LiveDead " +
+                        "FROM TallyLedger " +
+                        "WHERE PlotNumber IS NULL AND UnitCode = @p1 " +
+                        "GROUP BY StratumCode, SampleGroupCode, ifnull(species, ''), ifnull(LiveDead, '')) AS tl " +
+                        "ON tp.StratumCode = tl.StratumCode " +
+                        "AND tp.SampleGroupCode = tl.SampleGroupCode " +
+                        "AND ifnull(tp.Species, '') = ifnull(tl.Species, '') " +
+                        "AND ifnull(tp.LiveDead, '') = ifnull(tl.LiveDead, '') " +
+                    "WHERE cu.Code = @p1 " +
+                        "AND tp.StratumCode = @p2 " +
+                        "AND tp.SampleGroupCode = @p3 " +
+                        "AND ifNull(tp.Species, '') = ifNull(@p4,'') " +
+                        "AND ifNull(tp.LiveDead, '') = ifNull(@p5,'')"
+                , new object[] { unitCode, stratumCode, sampleGroupCode, species, liveDead }).FirstOrDefault();
+        }
+
 
         private class SampleGroupStratumInfo
         {
@@ -498,9 +550,21 @@ namespace FScruiser.Services
             foreach (var sg in sampleGroups)
             {
                 //get tally populations by reading from the count tree table for all cutting units, allowing us to fill in gaps for units with missing count tree records.
-                var sgTallyPops = Database.Query<TallyPopulation_Plot>("SELECT SampleGroup_CN, Tally.Description AS TallyDescription, Tally.HotKey AS TallyHotKey, Stratum.Code AS StratumCode, Stratum.Method AS StratumMethod, " +
-                    "SampleGroup.Code AS SampleGroupCode, SampleGroup.SampleSelectorType AS sgSampleSelectorType, SampleGroup.MinKPI AS sgMinKPI, SampleGroup.MaxKPI AS sgMaxKPI, " +
-                    "TDV.Species AS tdvSpecies, TDV.LiveDead AS tdvLiveDead " +
+                var sgTallyPops = Database.Query<TallyPopulation_Plot>("SELECT SampleGroup_CN, " +
+                    "Tally.Description AS TallyDescription, " +
+                    "Tally.HotKey AS TallyHotKey, " +
+
+                    "Stratum.Code AS StratumCode, " +
+                    "Stratum.Method AS StratumMethod, " +
+
+                    "SampleGroup.Code AS SampleGroupCode, " +
+                    "SampleGroup.SampleSelectorType AS sgSampleSelectorType, " +
+                    "SampleGroup.MinKPI AS sgMinKPI, " +
+                    "SampleGroup.MaxKPI AS sgMaxKPI, " +
+
+                    "TDV.Species AS Species, " +
+                    "TDV.LiveDead AS LiveDead " +
+
                     "FROM CountTree " +
                     "JOIN Tally USING (Tally_CN) " +
                     "JOIN SampleGroup USING (SampleGroup_CN) " +
@@ -1081,6 +1145,15 @@ namespace FScruiser.Services
                 .Query(unitCode, plotNumber);
         }
 
+        public void InsertTallyLedger(TallyLedger tallyLedger)
+        {
+            tallyLedger.TallyLedgerID = Guid.NewGuid().ToString();
+            tallyLedger.TimeStamp = DateTime.Now;
+
+            Database.Insert(tallyLedger);
+
+        }
+
         public void InsertTallyEntry(TallyEntry entry)
         {
             Database.BeginTransaction();
@@ -1097,29 +1170,29 @@ namespace FScruiser.Services
 
                 Database.Insert(entry);
 
-                var countTree_CN = Database.ExecuteScalar<int?>("SELECT CountTree_CN FROM CountTree " +
-                    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                    "JOIN SampleGroup USING (SampleGroup_CN) " +
-                    "JOIN Stratum USING (Stratum_CN) " +
-                    "LEFT JOIN TreeDefaultValue as TDV USING (TreeDefaultValue_CN) " +
-                    "WHERE CuttingUnit.Code = @p1 " +
-                    "AND Stratum.Code = @p2 " +
-                    "AND SampleGroup.Code = @p3 " +
-                    "AND ifnull(TDV.Species,'') = @p4 " +
-                    "AND ifnull(TDV.LiveDead, '') = @p5; "
-                    , entry.UnitCode
-                    , entry.StratumCode
-                    , entry.SampleGroupCode
-                    , entry.Species ?? ""
-                    , entry.LiveDead ?? "");
+                //var countTree_CN = Database.ExecuteScalar<int?>("SELECT CountTree_CN FROM CountTree " +
+                //    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
+                //    "JOIN SampleGroup USING (SampleGroup_CN) " +
+                //    "JOIN Stratum USING (Stratum_CN) " +
+                //    "LEFT JOIN TreeDefaultValue as TDV USING (TreeDefaultValue_CN) " +
+                //    "WHERE CuttingUnit.Code = @p1 " +
+                //    "AND Stratum.Code = @p2 " +
+                //    "AND SampleGroup.Code = @p3 " +
+                //    "AND ifnull(TDV.Species,'') = @p4 " +
+                //    "AND ifnull(TDV.LiveDead, '') = @p5; "
+                //    , entry.UnitCode
+                //    , entry.StratumCode
+                //    , entry.SampleGroupCode
+                //    , entry.Species ?? ""
+                //    , entry.LiveDead ?? "");
 
-                Database.Execute("UPDATE CountTree " +
-                    "SET TreeCount = TreeCount + @p1, " +
-                    "SumKPI = SumKPI + @p2 " +
-                    "WHERE CountTree_CN = @p3;",
-                    entry.TreeCount,
-                    entry.KPI,
-                    countTree_CN);
+                //Database.Execute("UPDATE CountTree " +
+                //    "SET TreeCount = TreeCount + @p1, " +
+                //    "SumKPI = SumKPI + @p2 " +
+                //    "WHERE CountTree_CN = @p3;",
+                //    entry.TreeCount,
+                //    entry.KPI,
+                //    countTree_CN);
 
                 //Database.Execute(
                 //    "UPDATE CountTree SET " +

@@ -33,7 +33,7 @@ namespace FScruiser.XF
 
         public IApplicationSettings Settings { get; } = new ApplicationSettings();
 
-        public App()
+        public App() : this(new BasePlatformInitializer())
         {
         }
 
@@ -85,6 +85,7 @@ namespace FScruiser.XF
             //    Analytics.TrackEvent("Error::::LoadCruiseFile|Invalid File Path", new Dictionary<string, string>() { { "FilePath", path } });
             //    return;
             //}
+
 
             try
             {
@@ -204,11 +205,10 @@ namespace FScruiser.XF
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterSingleton<IDialogService, XamarinDialogService>();
+            //See BasePlatformInitializer class for other type regestration
+
             containerRegistry.RegisterSingleton<ITallySettingsDataService, TallySettingsDataService>();
             //containerRegistry.RegisterInstance<ICuttingUnitDatastore>(null);
-
-            containerRegistry.RegisterInstance<Prism.Logging.ILoggerFacade>(new AppCenterLoggerService());
 
             containerRegistry.RegisterInstance<ICuttingUnitDatastoreProvider>(this.CuttingUnitDatastoresProvider);
 
@@ -222,6 +222,8 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.PlotTallyPage, ViewModels.PlotTallyViewModel>("PlotTally");
             containerRegistry.RegisterForNavigation<Pages.FixCntTallyPage, ViewModels.FixCNTViewModel>("FixCNTTally");
             containerRegistry.RegisterForNavigation<Pages.PlotEditPage, ViewModels.PlotEditViewModel>("PlotEdit");
+            containerRegistry.RegisterForNavigation<Pages.TreeCountEditPage, ViewModels.TreeCountEditViewModel>("TreeCountEdit");
+
             containerRegistry.RegisterForNavigation<Pages.ThreePPNTPlotPage, ViewModels.ThreePPNTPlotViewModel>("ThreePPNTPlot");
             containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManageCruisersViewModel>("Cruisers");
             containerRegistry.RegisterForNavigation<Pages.SettingsPage, ViewModels.SettingsViewModel>("Settings");

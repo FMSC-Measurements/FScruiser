@@ -53,6 +53,9 @@
     <Compile Update="Pages\CuttingUnitListPage.xaml.cs">
       <DependentUpon>CuttingUnitListPage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Pages\TreeCountEditPage.xaml.cs">
+      <DependentUpon>TreeCountEditPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Pages\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -70,6 +73,9 @@
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\AskKpiPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Pages\TreeCountEditPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Pages\FeedbackPage.xaml">
@@ -115,6 +121,9 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="ViewCells\PlotTreeViewCell.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="ViewCells\TallyEditViewCell.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="ViewCells\TallyEntryTreeViewCell.xaml">

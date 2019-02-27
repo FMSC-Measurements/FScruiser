@@ -74,6 +74,8 @@ namespace FScruiser.Services
 
         IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode);
 
+        TallyPopulation GetTallyPopulation(string unitCode, string stratumCode, string sampleGroupCode, string species, string liveDead);
+
         IEnumerable<TallyPopulation_Plot> GetPlotTallyPopulationsByUnitCode(string unitCode, int plotNumber);
 
         #region treeFields
@@ -149,6 +151,8 @@ namespace FScruiser.Services
         IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber);
 
         void InsertTallyEntry(TallyEntry entry);
+
+        void InsertTallyLedger(TallyLedger tallyLedger);
 
         void DeleteTally(TallyEntry tallyEntry);
 

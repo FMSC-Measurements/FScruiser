@@ -28,6 +28,12 @@
                 <ListView.ItemTemplate>
                     <cells:TreeDataTemplateSelector>
 
+                        <cells:TreeDataTemplateSelector.TallyEditTemplate>
+                            <DataTemplate>
+                                <cells:TallyEditViewCell/>
+                            </DataTemplate>
+                        </cells:TreeDataTemplateSelector.TallyEditTemplate>
+
                         <cells:TreeDataTemplateSelector.TreeItemTemplate>
                             <DataTemplate>
                                 <cells:TallyEntryTreeViewCell/>
@@ -103,7 +109,7 @@
                                                 HorizontalOptions="Center"
                                                 BackgroundColor="White" 
                                                 CornerRadius="10">
-                                            
+
                                             <Label  
                                                     Text="{Binding TreeCount}" 
                                                     HorizontalTextAlignment="Center" 

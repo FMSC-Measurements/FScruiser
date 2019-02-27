@@ -61,7 +61,7 @@
                                 
                                 <!-- stratum code and add/remove button-->
                                 <StackLayout Orientation="Horizontal">
-                                    <Label Text="{Binding StratumCode, StringFormat='Stratum {0}'}" 
+                                    <Label Text="{Binding StratumCode, StringFormat='{}Stratum {0}'}" 
                                            Margin="10,0,30,0" 
                                            VerticalTextAlignment="Center" 
                                            HorizontalOptions="StartAndExpand"/>

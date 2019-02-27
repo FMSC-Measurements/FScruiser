@@ -5,6 +5,8 @@ namespace FScruiser
 {
     public class Constants
     {
+        public enum TallyLedger_EntryType { unknown = 0, Utility, TreeCountEdit, Tally };
+
         public static readonly TreeFieldSetupDO[] DEFAULT_TREE_FIELDS = new TreeFieldSetupDO[]{
             new TreeFieldSetupDO(){
                 Field = nameof(Tree.TreeNumber), Heading = "Tree", FieldOrder = 1, ColumnType = "Text" },

@@ -2,6 +2,7 @@
 using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
 using Prism.Navigation;
 using System;
@@ -157,7 +158,7 @@ namespace FScruiser.XF.ViewModels
 
         private void ShowTallyMenu(TallyPopulation obj)
         {
-            DialogService.ShowMessageAsync("Tally Menu");
+            NavigationService.NavigateAsync($"TreeCountEdit?{NavParams.UNIT}={UnitCode}&{NavParams.STRATUM}={obj.StratumCode}&{NavParams.SAMPLE_GROUP}={obj.SampleGroupCode}&{NavParams.SPECIES}={obj.Species}&{NavParams.LIVE_DEAD}={obj.LiveDead}");
         }
 
         public void EditTree(string tree_guid)

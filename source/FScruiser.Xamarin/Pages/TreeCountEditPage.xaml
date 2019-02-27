@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FScruiser.XF.Pages.TreeCountEditPage"
+             Title="Edit Tree Count">
+    <ContentPage.Content>
+        <StackLayout>
+            <StackLayout VerticalOptions="CenterAndExpand"
+                         Margin="20,0,20,0">
+                <Frame BackgroundColor="Blue" Padding="5">
+                    <StackLayout>
+                        <StackLayout>
+                            <Label  Text="Tally Population" 
+                                    FontSize="Small"/>
+                            
+                            <Label  Text="{Binding TallyPopulationDescription}" 
+                                    FontSize="Large"
+                                    Margin="15,7,0,0"/>
+                        </StackLayout>
+
+                        <Frame  BackgroundColor="Green"
+                                HorizontalOptions="Center"
+                                WidthRequest="150"
+                                Padding="5">
+                            
+                            <StackLayout    Orientation="Horizontal" 
+                                    HorizontalOptions="Center">
+                                <Label Text="{Binding UnitCode, StringFormat='{}Unit: {0}'}"/>
+
+                                <Label Text="{Binding StratumCode, StringFormat='{}Stratum: {0}'}"/>
+                            </StackLayout>
+                        </Frame>
+                    </StackLayout>
+                </Frame>
+
+                <Label Text="{Binding TreeCount, StringFormat='{}Current Tree Count: {0}'}"
+                   HorizontalOptions="CenterAndExpand"/>
+
+                <StackLayout WidthRequest="220" 
+                             HorizontalOptions="Center">
+                    <StackLayout    Orientation="Horizontal" 
+                                    HorizontalOptions="Fill">
+                        <Label  Text="Difference" 
+                                VerticalTextAlignment="Center"
+                                HorizontalOptions="StartAndExpand"/>
+
+                        <Entry  x:Name="_treeCountDifferenceEntry" 
+                                Text="{Binding TreeCountDelta}"
+                                WidthRequest="50"/>
+                    </StackLayout>
+
+                    <StackLayout    Orientation="Horizontal" >
+                        <Label Text="Reason" 
+                               VerticalTextAlignment="Center" 
+                               HorizontalOptions="StartAndExpand"/>
+
+                        <Picker ItemsSource="{Binding EditReasonOptions}" 
+                            SelectedItem="{Binding EditReason}" 
+                            VerticalOptions="CenterAndExpand" 
+                            WidthRequest="150"/>
+                    </StackLayout>
+                </StackLayout>
+
+                <StackLayout >
+                    <Label Text="Remarks"/>
+
+                    <Editor Text="{Binding Remarks}" HeightRequest="100"/>
+                </StackLayout>
+
+                <Label Text="{Binding AdjustedTreeCount, StringFormat='{}Adjusted Tree Count:{0}'}"/>
+
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand" VerticalOptions="End">
+                <Button Text="Submit"
+                        BackgroundColor="Green"
+                        Command="{Binding SaveTreeCountEditCommand}"/>
+
+                <Button x:Name="_cancelButton" Text="Cancel"
+                        Clicked="_cancelButton_Clicked"/>
+            </StackLayout>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

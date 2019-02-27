@@ -18,7 +18,8 @@ namespace FScruiser.Logic
                 TreeCount = treeCount,
                 KPI = kpi,
                 ThreePRandomValue = threePRandomeValue,
-                IsSTM = stm
+                IsSTM = stm,
+                EntryType = Constants.TallyLedger_EntryType.Tally
             };
 
             return tallyEntry;
@@ -33,7 +34,8 @@ namespace FScruiser.Logic
                 KPI = kpi,
                 ThreePRandomValue = threePRandomeValue,
                 IsSTM = stm,
-                Tree_GUID = Guid.NewGuid().ToString()
+                Tree_GUID = Guid.NewGuid().ToString(),
+                EntryType = Constants.TallyLedger_EntryType.Tally
             };
 
             return tallyEntry;

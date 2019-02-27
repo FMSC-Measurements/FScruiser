@@ -843,6 +843,23 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
+        [Theory]
+        [InlineData("u1", "st1", "sg1", "sp1")]
+        public void GetTallyPopulation(string unitCode, string stratum, string sampleGroup, string species)
+        {
+            string liveDead = "L";
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var pop = datastore.GetTallyPopulation(unitCode, stratum, sampleGroup, species, liveDead);
+                pop.Should().NotBeNull();
+
+                VerifyTallyPopulation(pop);
+            }
+        }
+
         [Fact]
         public void GetTallyPopulationsByUnitCode_Test()
         {
@@ -850,6 +867,8 @@ namespace FScruiser.Core.Test.Services
 
             using (var database = CreateDatabase())
             {
+                database.ExecuteScalar<int>("SELECT count(*) FROM TallyPopulation;").Should().Be(2);
+
                 var datastore = new CuttingUnitDatastore(database);
 
                 var results = datastore.GetTallyPopulationsByUnitCode(unitCode);
@@ -1091,6 +1110,40 @@ namespace FScruiser.Core.Test.Services
 
         #region tally entry
 
+        [Fact]
+        public void GetTallyEntry()
+        {
+            var unit = "u1";
+            var stratum = "st1";
+            var sampleGroup = "sg1";
+            var species = "sp1";
+            var liveDead = "L";
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var pop = datastore.GetTallyPopulation(unit, stratum, sampleGroup, species, liveDead);
+
+                datastore.InsertTallyEntry(new TallyEntry(unit, pop));
+
+                var tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
+
+                tallyEntries.Should().HaveCount(1);
+
+
+
+
+                datastore.InsertTallyLedger(new TallyLedger(unit, pop));
+
+                tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
+
+                tallyEntries.Should().HaveCount(2);
+
+            }
+        }
+
+
         [Theory]
         [InlineData(null, null)]
         [InlineData("", "")]
@@ -1107,9 +1160,11 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var pop = datastore.GetTallyPopulationsByUnitCode(unitCode)
-                    .Where(x => (x.Species ?? "") == (species ?? ""))
-                    .FirstOrDefault();
+                var pops = datastore.GetTallyPopulationsByUnitCode(unitCode).ToArray();
+
+                    pops = pops.Where(x => (x.Species ?? "") == (species ?? "")).ToArray();
+
+                var pop = pops.FirstOrDefault();
 
                 pop.Should().NotBeNull();
 
@@ -1122,7 +1177,8 @@ namespace FScruiser.Core.Test.Services
                     //Species = species,
                     //LiveDead = liveDead,
                     CountOrMeasure = countMeasure,
-                    TreeCount = treeCount
+                    TreeCount = treeCount,
+                    EntryType = Constants.TallyLedger_EntryType.Tally
                 };
 
                 datastore.InsertTallyEntry(tallyEntry);
@@ -1138,6 +1194,7 @@ namespace FScruiser.Core.Test.Services
 
                 resultTallyEntry.Should().NotBeNull();
                 resultTallyEntry.TreeNumber.Should().NotBeNull();
+                resultTallyEntry.EntryType.Should().Be(Constants.TallyLedger_EntryType.Tally);
 
                 var tree = database.From<TreeDO>().Where("Tree_GUID = @p1").Query(tallyEntry.Tree_GUID).FirstOrDefault();
                 var stratum_CN = database.ExecuteScalar<long?>("SELECT Stratum_CN FROM Stratum WHERE Code = @p1;", stratumCode);
@@ -1162,14 +1219,51 @@ namespace FScruiser.Core.Test.Services
                     tree.TreeDefaultValue_CN.Should().NotBeNull();
                 }
 
-                var countTree = database.From<CountTreeDO>().LeftJoin("TreeDefaultValue AS TDV", "USING (TreeDefaultValue_CN)")
-                    .Where("ifnull(TDV.Species, '') = ifnull(@p1, '')").Query(species).Single();
+                //var countTree = database.From<CountTreeDO>().LeftJoin("TreeDefaultValue AS TDV", "USING (TreeDefaultValue_CN)")
+                //    .Where("ifnull(TDV.Species, '') = ifnull(@p1, '')").Query(species).Single();
 
-                countTree.TreeCount.Should().Be(treeCount);
+                //countTree.TreeCount.Should().Be(treeCount);
 
                 var tallyPopulate = datastore.GetTallyPopulationsByUnitCode(unitCode).Where(x => (x.Species ?? "") == (species ?? "")).Single();
 
                 tallyPopulate.TreeCount.Should().Be(treeCount);
+            }
+        }
+
+        [Fact]
+        public void InsertTallyLedger()
+        {
+            string unitCode = "u1";
+            string stratum = "st1";
+            string sampleGroup = "sg1";
+            string species = "sp1";
+            string liveDead = "L";
+
+            int treeCountDiff = 1;
+            int kpi = 1;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var pop = datastore.GetTallyPopulation(unitCode, stratum, sampleGroup, species, liveDead);
+                pop.Should().NotBeNull();
+                VerifyTallyPopulation(pop);
+                pop.TreeCount.Should().Be(0);
+                pop.SumKPI.Should().Be(0);
+
+                var tallyLedger = new TallyLedger(unitCode, pop);
+                tallyLedger.TreeCount = treeCountDiff;
+                tallyLedger.KPI = 1;
+
+                datastore.InsertTallyLedger(tallyLedger);
+
+                database.ExecuteScalar<int>("SELECT count(*) FROM TallyLedger;").Should().Be(1);
+                database.ExecuteScalar<int>("SELECT sum(TreeCount) FROM TallyLedger;").Should().Be(treeCountDiff);
+
+                var popAfter = datastore.GetTallyPopulation(unitCode, stratum, sampleGroup, species, liveDead);
+                popAfter.TreeCount.Should().Be(treeCountDiff);
+                popAfter.SumKPI.Should().Be(kpi);
             }
         }
 

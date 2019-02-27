@@ -1,5 +1,6 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
 using System;
+using static FScruiser.Constants;
 
 namespace FScruiser.Models
 {
@@ -69,6 +70,12 @@ namespace FScruiser.Models
 
         [Field(nameof(TimeStamp))]
         public DateTime TimeStamp { get; set; }
+
+        [Field(nameof(EntryType))]
+        public TallyLedger_EntryType EntryType { get; set; }
+
+        [Field(nameof(Reason))]
+        public string Reason { get; set; }
 
         //[Field(nameof(Signature))]
         //public string Signature { get; set; }

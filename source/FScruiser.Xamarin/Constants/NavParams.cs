@@ -14,6 +14,10 @@ namespace FScruiser.XF.Constants
 
         public const string SAMPLE_GROUP = "Sg";
 
+        public const string SPECIES = "Sp";
+
+        public const string LIVE_DEAD = "ld";
+
         public const string PLOT_NUMBER = "PlotNumber";
 
         public const string TREE_GUID = "Tree_Guid";

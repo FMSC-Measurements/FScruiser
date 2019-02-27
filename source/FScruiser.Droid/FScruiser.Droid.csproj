@@ -15,7 +15,7 @@
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
-    <TargetFrameworkVersion>v8.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
@@ -75,18 +75,13 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\values\styles.xml" />
-	
     <None Include="Properties\AndroidManifest.xml" />
-	
-	<AndroidResource Include="Resources\drawable\*.xml" />
+    <AndroidResource Include="Resources\drawable\*.xml" />
     <AndroidResource Include="Resources\drawable\*.png" />
-	
     <AndroidResource Include="Resources\drawable-*\*.png" />
-	<AndroidResource Include="Resources\drawable-*\*.xml" />
-	
-	<AndroidAsset Include="Assets\sounds\*.wav" />
+    <AndroidResource Include="Resources\drawable-*\*.xml" />
+    <AndroidAsset Include="Assets\sounds\*.wav" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\FScruiser.Core\FScruiser.Core.csproj">
       <Project>{5a2e5b93-c35f-451e-ad72-e7a045fdf1be}</Project>
@@ -102,7 +97,6 @@
       <Version>2.1.0.4</Version>
     </PackageReference>
   </ItemGroup>
-
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
      Other similar extension points exist, see Microsoft.Common.targets.
