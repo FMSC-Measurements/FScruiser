@@ -15,27 +15,38 @@ namespace FScruiser.XF.ViewModels
 {
     public class PlotEditViewModel : ViewModelBase
     {
-        private int _plotNumber;
-        private IEnumerable<StratumPlot> _stratumPlots;
-        private Command<StratumPlot> _showLimitingDistanceCommand;
-        private Command<StratumPlot> _toggleInCruiseCommand;
+        private Plot _plot;
+        private IEnumerable<Plot_Stratum> _stratumPlots;
+        private Command<Plot_Stratum> _showLimitingDistanceCommand;
+        private Command<Plot_Stratum> _toggleInCruiseCommand;
 
-        public ICommand ShowLimitingDistanceCommand => _showLimitingDistanceCommand ?? (_showLimitingDistanceCommand = new Command<StratumPlot>(async x => await ShowLimitingDistanceCalculatorAsync(x)));
+        public Plot Plot
+        {
+            get => _plot;
+            set
+            {
+                SetValue(ref _plot, value);
+                RaisePropertyChanged(nameof(PlotNumber));
+            }
+        }
 
-        public ICommand ToggleInCruiseCommand => _toggleInCruiseCommand ?? (_toggleInCruiseCommand = new Command<StratumPlot>(async (x) => await ToggleInCruiseAsync(x)));
+        public ICommand ShowLimitingDistanceCommand => _showLimitingDistanceCommand ?? (_showLimitingDistanceCommand = new Command<Plot_Stratum>(async x => await ShowLimitingDistanceCalculatorAsync(x)));
+
+        public ICommand ToggleInCruiseCommand => _toggleInCruiseCommand ?? (_toggleInCruiseCommand = new Command<Plot_Stratum>(async (x) => await ToggleInCruiseAsync(x)));
 
         #region PlotNumber
 
         public int PlotNumber
         {
-            get { return _plotNumber; }
+            get { return Plot?.PlotNumber ?? 0; }
             set
             {
-                if (_plotNumber == value) { return; }
-                if (OnPlotNumberChanging(_plotNumber, value))
+                var curPlotNumber = Plot?.PlotNumber;
+                if (curPlotNumber.HasValue == false || curPlotNumber == value) { return; }
+                if (OnPlotNumberChanging(curPlotNumber.Value, value))
                 {
-                    SetValue(ref _plotNumber, value);
-                    OnPlotNumberChanged(_plotNumber);
+                    Plot.PlotNumber = value;
+                    OnPlotNumberChanged(value);
                 }
             }
         }
@@ -50,6 +61,7 @@ namespace FScruiser.XF.ViewModels
                     stratumPlot.PlotNumber = plotNumber;
                 }
             }
+            RaisePropertyChanged(nameof(PlotNumber));
         }
 
         private bool OnPlotNumberChanging(int oldValue, int newValue)
@@ -67,11 +79,11 @@ namespace FScruiser.XF.ViewModels
 
         #endregion PlotNumber
 
-        public string UnitCode { get; set; }
+        public string UnitCode => Plot?.CuttingUnitCode;
 
         public IEnumerable<StratumProxy> Strata { get; set; }
 
-        public IEnumerable<StratumPlot> StratumPlots
+        public IEnumerable<Plot_Stratum> StratumPlots
         {
             get { return _stratumPlots; }
             set
@@ -91,7 +103,7 @@ namespace FScruiser.XF.ViewModels
             DialogService = dialogService;
         }
 
-        public async Task ToggleInCruiseAsync(StratumPlot stratumPlot)
+        public async Task ToggleInCruiseAsync(Plot_Stratum stratumPlot)
         {
             if (stratumPlot.InCruise)
             {
@@ -101,13 +113,13 @@ namespace FScruiser.XF.ViewModels
                 {
                     if (await DialogService.AskYesNoAsync("Removing stratum will delete all tree data", "Continue?"))
                     {
-                        Datastore.DeleteStratumPlot(stratumPlot.Plot_GUID);
+                        Datastore.DeletePlot_Stratum(stratumPlot.CuttingUnitCode, stratumPlot.StratumCode, stratumPlot.PlotNumber);
                         stratumPlot.InCruise = false;
                     }
                 }
                 else
                 {
-                    Datastore.DeleteStratumPlot(stratumPlot.Plot_GUID);
+                    Datastore.DeletePlot_Stratum(stratumPlot.CuttingUnitCode, stratumPlot.StratumCode, stratumPlot.PlotNumber);
                     stratumPlot.InCruise = false;
                 }
             }
@@ -115,14 +127,14 @@ namespace FScruiser.XF.ViewModels
             {
                 if (stratumPlot.CruiseMethod == CruiseDAL.Schema.CruiseMethods.THREEPPNT)
                 {
-                    var query = $"{NavParams.UNIT}={stratumPlot.UnitCode}&{NavParams.PLOT_NUMBER}={stratumPlot.PlotNumber}&{NavParams.STRATUM}={stratumPlot.StratumCode}";
+                    var query = $"{NavParams.UNIT}={stratumPlot.CuttingUnitCode}&{NavParams.PLOT_NUMBER}={stratumPlot.PlotNumber}&{NavParams.STRATUM}={stratumPlot.StratumCode}";
 
                     await NavigationService.NavigateAsync("ThreePPNTPlot",
                         new NavigationParameters(query));
                 }
                 else
                 {
-                    Datastore.InsertStratumPlot(UnitCode, stratumPlot);
+                    Datastore.InsertPlot_Stratum(stratumPlot);
                     stratumPlot.InCruise = true;
                 }
             }
@@ -130,56 +142,47 @@ namespace FScruiser.XF.ViewModels
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
-            var plotNumber = parameters.GetValueOrDefault<int>("PlotNumber");
-            var isAddingPlot = parameters.GetValueOrDefault<bool>("IsAddingPlot");
+            var plotID = parameters.GetValue<string>(NavParams.PlotID);
 
-            if (isAddingPlot)
+            var unitCode = parameters.GetValue<string>(NavParams.UNIT);
+            var plotNumber = parameters.GetValue<int>(NavParams.PLOT_NUMBER);
+
+            Plot plot = null;
+            if (string.IsNullOrWhiteSpace(plotID) == false)
             {
-                plotNumber = Datastore.GetNextPlotNumber(unitCode);
+                plot = Datastore.GetPlot(plotID);
             }
             else
             {
+                plot = Datastore.GetPlot(unitCode, plotNumber);
             }
 
-            _plotNumber = plotNumber;
-            RaisePropertyChanged(nameof(PlotNumber));
-
-            //var strata = Strata = Datastore.GetPlotStrataProxies(UnitCode).ToArray();
-            //var stratumPlots = new List<StratumPlotViewModel>();
-
-            //foreach (var stratum in strata)
-            //{
-            //    var stratumPlot = new StratumPlotViewModel(Datastore, DialogService, UnitCode, stratum.Code, PlotNumber, isAddingPlot);
-
-            //    stratumPlots.Add(stratumPlot);
-            //}
-
-            var stratumPlots = Datastore.GetStratumPlots(unitCode, plotNumber, isAddingPlot);
+            var stratumPlots = Datastore.GetPlot_Strata(plot.CuttingUnitCode, plot.PlotNumber);
 
             foreach (var stratumPlot in stratumPlots)
             {
                 stratumPlot.PropertyChanged += StratumPlot_PropertyChanged;
             }
 
+            Plot = plot;
             StratumPlots = stratumPlots;
         }
 
         private void StratumPlot_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (sender is StratumPlot stratumPlot && stratumPlot != null)
+            if (sender is Plot_Stratum stratumPlot && stratumPlot != null)
             {
                 var propertyName = e.PropertyName;
-                if (e.PropertyName == nameof(StratumPlot.InCruise)) { return; }
+                if (e.PropertyName == nameof(Plot_Stratum.InCruise)) { return; }
 
                 if (stratumPlot.InCruise)
                 {
-                    Datastore.UpdateStratumPlot(stratumPlot);
+                    Datastore.UpdatePlot_Stratum(stratumPlot);
                 }
             }
         }
 
-        public async Task ShowLimitingDistanceCalculatorAsync(StratumPlot stratumPlot)
+        public async Task ShowLimitingDistanceCalculatorAsync(Plot_Stratum stratumPlot)
         {
             try
             {

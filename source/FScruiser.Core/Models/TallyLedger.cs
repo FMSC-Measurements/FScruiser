@@ -11,20 +11,30 @@ namespace FScruiser.Models
     [EntitySource("TallyLedger")]
     public class TallyLedger
     {
+        public class EntryTypeValues
+        {
+            public const string TALLY = "tally";
+            public const string UTILITY = "utility";
+            public const string TREECOUNT_EDIT = "treecount_edit";
+            public const string CLICKER = "clicker";
+        }
+
         public TallyLedger(string unitCode, TallyPopulation tallyPopulation)
         {
-            UnitCode = unitCode;
+            CuttingUnitCode = unitCode;
             StratumCode = tallyPopulation.StratumCode;
             SampleGroupCode = tallyPopulation.SampleGroupCode;
             Species = tallyPopulation.Species ?? "";
             LiveDead = tallyPopulation.LiveDead ?? "";
         }
 
+        
+
         [Field(nameof(TallyLedgerID))]
         public string TallyLedgerID { get; set; }
 
-        [Field(nameof(UnitCode))]
-        public string UnitCode { get; set; }
+        [Field(nameof(CuttingUnitCode))]
+        public string CuttingUnitCode { get; set; }
 
         [Field(nameof(StratumCode))]
         public string StratumCode { get; set; }
@@ -32,11 +42,17 @@ namespace FScruiser.Models
         [Field(nameof(SampleGroupCode))]
         public string SampleGroupCode { get; set; }
 
+        [Field(nameof(PlotNumber))]
+        public string PlotNumber { get; set; }
+
         [Field(nameof(Species))]
         public string Species { get; set; }
 
         [Field(nameof(LiveDead))]
         public string LiveDead { get; set; }
+
+        [Field(nameof(TreeID))]
+        public string TreeID { get; set; }
 
         [Field(nameof(TreeCount))]
         public int TreeCount { get; set; }
@@ -47,11 +63,10 @@ namespace FScruiser.Models
         [Field(nameof(ThreePRandomValue))]
         public int ThreePRandomValue { get; set; }
 
-        [Field(nameof(Tree_GUID))]
-        public string Tree_GUID { get; set; }
+        
 
-        [Field(nameof(TimeStamp))]
-        public DateTime TimeStamp { get; set; }
+        [Field(nameof(CreatedBy))]
+        public DateTime CreatedBy { get; set; }
 
         [Field(nameof(Reason))]
         public string Reason { get; set; }
@@ -63,6 +78,6 @@ namespace FScruiser.Models
         public string Remarks { get; set; }
 
         [Field(nameof(EntryType))]
-        public TallyLedger_EntryType EntryType { get; set; }
+        public string EntryType { get; set; }
     }
 }

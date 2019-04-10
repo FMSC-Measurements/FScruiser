@@ -29,7 +29,7 @@ namespace FScruiser.Logic
                 TreeCount = treeCount,
                 KPI = kpi,
                 STM = (stm) ? "Y" : "N",
-                Tree_GUID = Guid.NewGuid().ToString()
+                TreeID = Guid.NewGuid().ToString()
             };
         }
 

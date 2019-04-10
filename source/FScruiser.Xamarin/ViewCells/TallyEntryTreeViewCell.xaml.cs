@@ -1,4 +1,5 @@
 ﻿using FScruiser.Models;
+using FScruiser.XF.Constants;
 using FScruiser.XF.ViewModels;
 using Prism.Ioc;
 using System;
@@ -54,7 +55,7 @@ namespace FScruiser.XF.ViewCells
             
         }
 
-        private void _treeViewModel_TreeFieldsChanged(object sender, System.Collections.Generic.IEnumerable<CruiseDAL.DataObjects.TreeFieldSetupDO> e)
+        private void _treeViewModel_TreeFieldsChanged(object sender, System.Collections.Generic.IEnumerable<TreeFieldSetup> e)
         {
             var view = MakeEditControlContainer(TreeViewModel.TreeFields);
 
@@ -67,7 +68,7 @@ namespace FScruiser.XF.ViewCells
             TreeViewModel?.SaveTree();
             if (BindingContext is TallyEntry tallyEntry && tallyEntry != null)
             {
-                MessagingCenter.Send<object, string>(this, Messages.EDIT_TREE_CLICKED, tallyEntry.Tree_GUID);
+                MessagingCenter.Send<object, string>(this, Messages.EDIT_TREE_CLICKED, tallyEntry.TreeID);
             }
         }
 
@@ -81,7 +82,7 @@ namespace FScruiser.XF.ViewCells
             if (isSelected)
             {
                 var tallyItem = BindingContext as TallyEntry;
-                if (tallyItem?.HasTree ?? false)
+                if (tallyItem?.TreeID != null)
                 {
                     var container = ((App)App.Current).Container;
 
@@ -108,7 +109,7 @@ namespace FScruiser.XF.ViewCells
             _treeEditPanel.IsVisible = isSelected;
         }
 
-        private View MakeEditControlContainer(System.Collections.Generic.IEnumerable<CruiseDAL.DataObjects.TreeFieldSetupDO> treeFields)
+        private View MakeEditControlContainer(System.Collections.Generic.IEnumerable<TreeFieldSetup> treeFields)
         {
             var grid = new Grid();
 
@@ -149,10 +150,10 @@ namespace FScruiser.XF.ViewCells
 
         private void RefreshTree()
         {
-            var tallyItem = BindingContext as TallyEntry;
-            if (tallyItem?.HasTree ?? false)
+            var tallyEntry = BindingContext as TallyEntry;
+            if (tallyEntry?.TreeID != null)
             {
-                TreeViewModel?.OnNavigatedTo(new Prism.Navigation.NavigationParameters() { { "Tree_Guid", tallyItem.Tree_GUID } });
+                TreeViewModel?.OnNavigatedTo(new Prism.Navigation.NavigationParameters() { { NavParams.TreeID, tallyEntry.TreeID } });
             }
         }
     }

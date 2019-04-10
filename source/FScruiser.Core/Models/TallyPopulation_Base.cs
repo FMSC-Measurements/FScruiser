@@ -11,9 +11,6 @@ namespace FScruiser.Models
 {
     public class TallyPopulation_Base : INPC_Base
     {
-        [Field("CountTree_CN")]
-        public long? CountTree_CN { get; set; }
-
         [Field("Description")]
         public string TallyDescription { get; set; }
 

@@ -1,5 +1,4 @@
-﻿using CruiseDAL.DataObjects;
-using FScruiser.Models;
+﻿using FScruiser.Models;
 
 namespace FScruiser
 {
@@ -7,37 +6,37 @@ namespace FScruiser
     {
         public enum TallyLedger_EntryType { unknown = 0, Utility, TreeCountEdit, Tally };
 
-        public static readonly TreeFieldSetupDO[] DEFAULT_TREE_FIELDS = new TreeFieldSetupDO[]{
-            new TreeFieldSetupDO(){
-                Field = nameof(Tree.TreeNumber), Heading = "Tree", FieldOrder = 1, ColumnType = "Text" },
-            new TreeFieldSetupDO() {
+        public static readonly TreeFieldSetup[] DEFAULT_TREE_FIELDS = new TreeFieldSetup[]{
+            new TreeFieldSetup(){
+                Field = nameof(Tree_Ex.TreeNumber), Heading = "Tree", FieldOrder = 1, ColumnType = "Text" },
+            new TreeFieldSetup() {
                 Field = "Stratum", Heading = "St", FieldOrder = 2, ColumnType = "Text"  },
-            new TreeFieldSetupDO() {
+            new TreeFieldSetup() {
                 Field = "SampleGroup", Heading = "SG", FieldOrder = 3, ColumnType = "Text" },
-            new TreeFieldSetupDO() {
-                Field = nameof(Tree.Species), Heading = "Sp", FieldOrder = 4, ColumnType = "Combo" },
-            new TreeFieldSetupDO() {
-                Field = nameof(Tree.DBH), Heading = "DBH", FieldOrder = 5, ColumnType = "Text" },
-            new TreeFieldSetupDO() {
-                Field = nameof(Tree.TotalHeight), Heading = "THT", FieldOrder = 6, ColumnType = "Text" },
-            new TreeFieldSetupDO() {
-                Field = nameof(Tree.SeenDefectPrimary), Heading = "Def", FieldOrder = 7, ColumnType = "Text" }
+            new TreeFieldSetup() {
+                Field = nameof(Tree_Ex.Species), Heading = "Sp", FieldOrder = 4, ColumnType = "Combo" },
+            new TreeFieldSetup() {
+                Field = nameof(Tree_Ex.DBH), Heading = "DBH", FieldOrder = 5, ColumnType = "Text" },
+            new TreeFieldSetup() {
+                Field = nameof(Tree_Ex.TotalHeight), Heading = "THT", FieldOrder = 6, ColumnType = "Text" },
+            new TreeFieldSetup() {
+                Field = nameof(Tree_Ex.SeenDefectPrimary), Heading = "Def", FieldOrder = 7, ColumnType = "Text" }
         };
 
         public static readonly string[] HEIGHT_FIELDS = new string[]
         {
-            nameof(Tree.TotalHeight),
-            nameof(Tree.HeightToFirstLiveLimb),
-            nameof(Tree.MerchHeightPrimary),
-            nameof(Tree.MerchHeightSecondary),
-            nameof(Tree.UpperStemHeight)
+            nameof(Tree_Ex.TotalHeight),
+            nameof(Tree_Ex.HeightToFirstLiveLimb),
+            nameof(Tree_Ex.MerchHeightPrimary),
+            nameof(Tree_Ex.MerchHeightSecondary),
+            nameof(Tree_Ex.UpperStemHeight)
         };
 
         public static readonly string[] DIAMATER_FIELDS = new string[]
         {
-            nameof(Tree.DBH),
-            nameof(Tree.DBHDoubleBarkThickness),
-            nameof(Tree.UpperStemDiameter)
+            nameof(Tree_Ex.DBH),
+            nameof(Tree_Ex.DBHDoubleBarkThickness),
+            nameof(Tree_Ex.UpperStemDiameter)
         };
 
         public static readonly string[] LESS_IMPORTANT_TREE_FIELDS = new string[]
@@ -46,22 +45,22 @@ namespace FScruiser
             "Stratum",
             "SampleGroup",
             nameof(Tree.CountOrMeasure),
-            nameof(Tree.TreeCount),
-            nameof(Tree.KPI),
-            nameof(Tree.STM),
-            nameof(Tree.Initials),
-            nameof(Tree.LiveDead),
-            nameof(Tree.Grade),
-            nameof(Tree.HiddenPrimary)
+            "TreeCount",
+            "KPI",
+            "STM",
+            nameof(Tree_Ex.Initials),
+            nameof(Tree_Ex.LiveDead),
+            nameof(Tree_Ex.Grade),
+            nameof(Tree_Ex.HiddenPrimary)
         };
 
-        public static readonly LogFieldSetupDO[] DEFAULT_LOG_FIELDS = new LogFieldSetupDO[]{
-            new LogFieldSetupDO(){
-                Field = nameof(LogDO.LogNumber), Heading = "LogNum", FieldOrder = 1, ColumnType = "Text" },
-            new LogFieldSetupDO(){
-                Field = nameof(LogDO.Grade), Heading = "Grade", FieldOrder = 2, ColumnType = "Text"},
-            new LogFieldSetupDO() {
-                Field = nameof(LogDO.SeenDefect), Heading = "PctSeenDef", FieldOrder = 3, ColumnType = "Text"}
+        public static readonly LogFieldSetup[] DEFAULT_LOG_FIELDS = new LogFieldSetup[]{
+            new LogFieldSetup(){
+                Field = nameof(Log.LogNumber), Heading = "LogNum"},
+            new LogFieldSetup(){
+                Field = nameof(Log.Grade), Heading = "Grade"},
+            new LogFieldSetup() {
+                Field = nameof(Log.SeenDefect), Heading = "PctSeenDef"}
         };
     }
 }

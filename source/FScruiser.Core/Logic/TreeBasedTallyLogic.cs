@@ -10,38 +10,40 @@ namespace FScruiser.Logic
 {
     public class TreeBasedTallyLogic
     {
-        static TallyEntry CreateTally(string unitCode, TallyPopulation population, int treeCount = 1, int kpi = 0, int threePRandomeValue = 0, bool stm = false)
+        static TallyAction CreateTally(string unitCode, TallyPopulation population, 
+            bool isSample, bool isInsuranceSample = false, int treeCount = 1, int kpi = 0, int threePRandomeValue = 0, bool stm = false)
         {
-            var tallyEntry = new TallyEntry(unitCode, population)
+
+            var tallyEntry = new TallyAction(unitCode, population)
             {
-                CountOrMeasure = "C",
+                IsSample = isSample, 
+                IsInsuranceSample = isInsuranceSample,
                 TreeCount = treeCount,
                 KPI = kpi,
                 ThreePRandomValue = threePRandomeValue,
-                IsSTM = stm,
-                EntryType = Constants.TallyLedger_EntryType.Tally
+                STM = stm,
             };
 
             return tallyEntry;
         }
 
-        static TallyEntry CreateTallyWithTree(string unitCode, TallyPopulation population, string countOrMeasure, int treeCount = 1, int kpi = 0, int threePRandomeValue = 0, bool stm = false)
+        static TallyAction CreateTallyWithTree(string unitCode, TallyPopulation population, 
+            bool isInsurance = false, int treeCount = 1, int kpi = 0, 
+            int threePRandomeValue = 0, bool stm = false)
         {
-            var tallyEntry = new TallyEntry(unitCode, population)
+            var tallyEntry = new TallyAction(unitCode, population)
             {
-                CountOrMeasure = countOrMeasure,
+                CountOrMeasure = isInsurance ? TallyAction.CountOrMeasureValue.I : TallyAction.CountOrMeasureValue.M,
                 TreeCount = treeCount,
                 KPI = kpi,
                 ThreePRandomValue = threePRandomeValue,
-                IsSTM = stm,
-                Tree_GUID = Guid.NewGuid().ToString(),
-                EntryType = Constants.TallyLedger_EntryType.Tally
+                STM = stm,
             };
 
             return tallyEntry;
         }
 
-        public static async Task<TallyEntry> TallyAsync(string unitCode,
+        public static async Task<TallyAction> TallyAsync(string unitCode,
             TallyPopulation pop,
             ICuttingUnitDatastore datastore,
             ISampleSelectorDataService samplerService,
@@ -50,7 +52,8 @@ namespace FScruiser.Logic
 
             if(pop.IsClickerTally)
             {
-                return CreateTallyWithTree(unitCode, pop, "M", pop.Frequency);
+                return CreateTally(unitCode, pop, isSample: true, 
+                    isInsuranceSample: false, treeCount: pop.Frequency);
             }
 
             var sampler = samplerService.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
@@ -58,7 +61,8 @@ namespace FScruiser.Logic
             //if doing a manual tally create a tree and jump out
             if (sampler is ClickerSelecter clickerSelecter)
             {
-                return CreateTallyWithTree(unitCode, pop, "M", clickerSelecter.Frequency);
+                return CreateTally(unitCode, pop, isSample: true, 
+                    isInsuranceSample: false, treeCount: clickerSelecter.Frequency);
             }
             else if (pop.Method == CruiseMethods.S3P)
             {
@@ -79,7 +83,7 @@ namespace FScruiser.Logic
             }
         }
 
-        public static async Task<TallyEntry> TallyS3P(string unitCode, TallyPopulation pop,
+        public static async Task<TallyAction> TallyS3P(string unitCode, TallyPopulation pop,
             ISampleSelectorDataService samplerService,
             IDialogService dialogService)
         {
@@ -98,7 +102,8 @@ namespace FScruiser.Logic
                 {
                     if (kpi == -1)  //user entered sure to measure
                     {
-                        return CreateTallyWithTree(unitCode, pop, "M", stm: true);
+                        return CreateTally(unitCode, pop, isSample: true, 
+                            isInsuranceSample: false, stm: true);
                     }
                     else
                     {
@@ -107,11 +112,13 @@ namespace FScruiser.Logic
                         {
                             bool isInsuranceTree = secondarySampler.IsSelectingITrees && secondarySampler.InsuranceCounter.Next();
 
-                            return CreateTallyWithTree(unitCode, pop, (isInsuranceTree) ? "I" : "M", kpi: kpi.Value, threePRandomeValue:item3p.KPI);
+                            return CreateTally(unitCode, pop, isSample: true, 
+                                isInsuranceSample: isInsuranceTree, kpi: kpi.Value, threePRandomeValue:item3p.KPI);
                         }
                         else
                         {
-                            return CreateTally(unitCode, pop, kpi: kpi.Value, threePRandomeValue: item3p.KPI);
+                            return CreateTally(unitCode, pop, isSample: false, 
+                                kpi: kpi.Value, threePRandomeValue: item3p.KPI);
                         }
                     }
                 }
@@ -122,13 +129,13 @@ namespace FScruiser.Logic
             }
             else
             {
-                return CreateTally(unitCode, pop);
+                return CreateTally(unitCode, pop, isSample: false);
             }
         }
 
         //DataService (CreateNewTreeEntry)
         //SampleGroup (MinKPI/MaxKPI)
-        public static TallyEntry TallyThreeP(string unitCode, 
+        public static TallyAction TallyThreeP(string unitCode, 
             TallyPopulation pop,
             int kpi,
             ISampleSelectorDataService samplerService)
@@ -137,7 +144,7 @@ namespace FScruiser.Logic
 
             if (kpi == -1)  //user entered sure to measure
             {
-                return CreateTallyWithTree(unitCode, pop, "M", stm: true);
+                return CreateTally(unitCode, pop, isSample: true, isInsuranceSample: false, stm: true);
             }
             else
             {
@@ -146,18 +153,18 @@ namespace FScruiser.Logic
                 {
                     bool isInsuranceTree = sampler.IsSelectingITrees && sampler.InsuranceCounter.Next();
 
-                    return CreateTallyWithTree(unitCode, pop, (isInsuranceTree) ? "I" : "M", kpi: kpi, threePRandomeValue:item.KPI);
+                    return CreateTally(unitCode, pop, isSample: true, 
+                        isInsuranceSample: isInsuranceTree, kpi: kpi, threePRandomeValue:item.KPI);
                 }
                 else
                 {
-                    return CreateTally(unitCode, pop, kpi: kpi, threePRandomeValue: item.KPI);
+                    return CreateTally(unitCode, pop, isSample: false, 
+                        kpi: kpi, threePRandomeValue: item.KPI);
                 }
             }
         }
 
-        //DataService (CreateNewTreeEntry)
-        //
-        public static TallyEntry TallyStandard(string unitCode, 
+        public static TallyAction TallyStandard(string unitCode, 
             TallyPopulation pop,
             ISampleSelectorDataService samplerService)
         {
@@ -167,11 +174,11 @@ namespace FScruiser.Logic
             //If we receive nothing from the sampler, we don't have a sample
             if (item != null)//&& (item.IsSelected || item.IsInsuranceItem))
             {
-                return CreateTallyWithTree(unitCode, pop, (item.IsInsuranceItem) ? "I" : "M");
+                return CreateTally(unitCode, pop, isSample: true, isInsuranceSample: item.IsInsuranceItem);
             }
             else
             {
-                return CreateTally(unitCode, pop);
+                return CreateTally(unitCode, pop, isSample: false);
             }
         }
     }

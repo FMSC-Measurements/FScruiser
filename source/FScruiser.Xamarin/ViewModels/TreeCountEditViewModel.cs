@@ -117,7 +117,7 @@ namespace FScruiser.XF.ViewModels
             tallyLedger.TreeCount = treeCountDelta;
             tallyLedger.Reason = reason;
             tallyLedger.Remarks = Remarks;
-            tallyLedger.EntryType = TallyLedger_EntryType.TreeCountEdit;
+            tallyLedger.EntryType = TallyLedger.EntryTypeValues.TREECOUNT_EDIT;
 
             Datastore.InsertTallyLedger(tallyLedger);
 

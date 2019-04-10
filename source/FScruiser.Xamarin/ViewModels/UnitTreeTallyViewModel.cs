@@ -125,7 +125,7 @@ namespace FScruiser.XF.ViewModels
         {
             base.OnNavigatedTo(parameters);
 
-            MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, (sender, tree_guid) => EditTree(tree_guid));
+            MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, (sender, treeID) => EditTree(treeID));
             MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, (sender, tallyEntry) => Untally(tallyEntry));
         }
 
@@ -151,10 +151,7 @@ namespace FScruiser.XF.ViewModels
             TallyFeed = datastore.GetTallyEntriesByUnitCode(UnitCode).Reverse().ToObservableCollection();
         }
 
-        protected void RaiseTallyEntryAdded()
-        {
-            TallyEntryAdded?.Invoke(this, null);
-        }
+       
 
         private void ShowTallyMenu(TallyPopulation obj)
         {
@@ -168,33 +165,38 @@ namespace FScruiser.XF.ViewModels
 
         public async Task TallyAsync(TallyPopulation pop)
         {
-            var entry = await TreeBasedTallyLogic.TallyAsync(UnitCode, pop, Datastore, SampleSelectorService, DialogService);//TODO async
+            // perform logic to determin if tally is a sample
+            var action = await TreeBasedTallyLogic.TallyAsync(UnitCode, pop, Datastore, SampleSelectorService, DialogService);//TODO async
 
-            if (entry == null) { return; }
-            Datastore.InsertTallyEntry(entry);
+            // record action to the database,
+            // database will assign tree a tree number if there is a tree
+            if (action == null) { return; }
+            var entry = Datastore.InsertTallyAction(action);
+
+            // trigger updates due to tally
+            await HandleTally(pop, action, entry);
+        }
+
+        protected async Task HandleTally(TallyPopulation population,
+            TallyAction action, TallyEntry entry)
+        {
+            if (entry == null) { throw new ArgumentNullException(nameof(entry)); }
+            if (action == null) { throw new ArgumentNullException(nameof(action)); }
 
             TallyFeed.Add(entry);
             RaiseTallyEntryAdded();
 
-            await HandleTally(pop, entry);
-        }
-
-        protected async Task HandleTally(TallyPopulation population,
-            TallyEntry entry)
-        {
-            if (entry == null) { throw new ArgumentNullException(nameof(entry)); }
-
-            population.TreeCount = population.TreeCount + entry.TreeCount;
-            population.SumKPI = population.SumKPI + entry.KPI;
+            population.TreeCount = population.TreeCount + action.TreeCount;
+            population.SumKPI = population.SumKPI + action.KPI;
 
             SoundService.SignalTally();
-            if (entry.HasTree)
+            if (action.IsSample)
             {
-                if (entry.CountOrMeasure == "M")
+                if (action.IsInsuranceSample)
                 {
                     SoundService.SignalMeasureTree();
                 }
-                else if (entry.CountOrMeasure == "I")
+                else
                 {
                     SoundService.SignalInsuranceTree();
                 }
@@ -204,13 +206,12 @@ namespace FScruiser.XF.ViewModels
                     var cruiser = await DialogService.AskCruiserAsync();
                     if (cruiser != null)
                     {
-                        entry.Initials = cruiser;
+                        Datastore.UpdateTreeInitials(entry.TreeID, cruiser);
                     }
                 }
                 else
                 {
-                    var sampleType = (entry.CountOrMeasure == "M") ? "Measure Tree" :
-                                (entry.CountOrMeasure == "I") ? "Insurance Tree" : String.Empty;
+                    var sampleType = (action.IsInsuranceSample) ? "Insurance Tree" : "Measure Tree";
                     await DialogService.ShowMessageAsync("Tree #" + entry.TreeNumber.ToString(), sampleType);
                 }
 
@@ -221,10 +222,15 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public void Untally(TallyEntry tallyEntry)
+        protected void RaiseTallyEntryAdded()
         {
-            Datastore.DeleteTally(tallyEntry);
-            TallyFeed.Remove(tallyEntry);
+            TallyEntryAdded?.Invoke(this, null);
+        }
+
+        public void Untally(TallyEntry entry)
+        {
+            Datastore.DeleteTallyEntry(entry.TallyLedgerID);
+            TallyFeed.Remove(entry);
         }
 
         public void SetStratumFilter(string code)

@@ -1,5 +1,4 @@
-﻿using CruiseDAL.DataObjects;
-using FScruiser.Models;
+﻿using FScruiser.Models;
 using FScruiser.XF.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -12,11 +11,19 @@ namespace FScruiser.XF.Util
 {
     public class TreeEditControlFactory
     {
-        public static View MakeEditView(TreeFieldSetupDO field)
+        public static View MakeEditView(TreeFieldSetup field)
         {
             View editView = null;
             switch (field.Field)
             {
+                // unsupported fields 
+                case "KPI":
+                case "TreeCount":
+                case "TreeNumber":
+                    {
+                        return null;
+                    }
+
                 case "StratumCode":
                 case "Stratum":
                     {
@@ -24,7 +31,7 @@ namespace FScruiser.XF.Util
                         break;
                     }
                 case "SampleGroupCode":
-                case "SampleGroup":
+                case "Samplegroup":
                     {
                         editView = MakeSampleGroupPicker();
                         break;
@@ -39,32 +46,29 @@ namespace FScruiser.XF.Util
                         editView = MakeCountMeasurePicker();
                         break;
                     }
-                case nameof(Tree.Aspect):
-                case nameof(Tree.CrownRatio):
-                case nameof(Tree.DBH):
-                case nameof(Tree.DBHDoubleBarkThickness):
+                case nameof(TreeMeasurment.Aspect):
+                case nameof(TreeMeasurment.CrownRatio):
+                case nameof(TreeMeasurment.DBH):
+                case nameof(TreeMeasurment.DBHDoubleBarkThickness):
                 //case nameof(Tree.Diameter):
-                case nameof(Tree.DiameterAtDefect):
-                case nameof(Tree.DRC):
-                case nameof(Tree.FormClass):
+                case nameof(TreeMeasurment.DiameterAtDefect):
+                case nameof(TreeMeasurment.DRC):
+                case nameof(TreeMeasurment.FormClass):
                 //case nameof(Tree.Height):
-                case nameof(Tree.HeightToFirstLiveLimb):
-                case nameof(Tree.KPI)://int
-                case nameof(Tree.MerchHeightPrimary):
-                case nameof(Tree.MerchHeightSecondary):
-                case nameof(Tree.PoleLength):
-                case nameof(Tree.RecoverablePrimary):
-                case nameof(Tree.SeenDefectPrimary):
-                case nameof(Tree.SeenDefectSecondary):
-                case nameof(Tree.Slope):
-                case nameof(Tree.TopDIBPrimary):
-                case nameof(Tree.TopDIBSecondary):
-                case nameof(Tree.TotalHeight):
-                case nameof(Tree.TreeCount):
-                case nameof(Tree.TreeNumber):
-                case nameof(Tree.UpperStemDiameter):
-                case nameof(Tree.UpperStemHeight):
-                case nameof(Tree.VoidPercent):
+                case nameof(TreeMeasurment.HeightToFirstLiveLimb):
+                case nameof(TreeMeasurment.MerchHeightPrimary):
+                case nameof(TreeMeasurment.MerchHeightSecondary):
+                case nameof(TreeMeasurment.PoleLength):
+                case nameof(TreeMeasurment.RecoverablePrimary):
+                case nameof(TreeMeasurment.SeenDefectPrimary):
+                case nameof(TreeMeasurment.SeenDefectSecondary):
+                case nameof(TreeMeasurment.Slope):
+                case nameof(TreeMeasurment.TopDIBPrimary):
+                case nameof(TreeMeasurment.TopDIBSecondary):
+                case nameof(TreeMeasurment.TotalHeight):
+                case nameof(TreeMeasurment.UpperStemDiameter):
+                case nameof(TreeMeasurment.UpperStemHeight):
+                case nameof(TreeMeasurment.VoidPercent):
                     {
                         editView = new Entry();
                         ((InputView)editView).Keyboard = Keyboard.Numeric;
@@ -73,7 +77,7 @@ namespace FScruiser.XF.Util
                         editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
                         break;
                     }
-                case nameof(Tree.DefectCode):
+                case nameof(TreeMeasurment.DefectCode):
                     {
                         editView = new Entry();
                         ((InputView)editView).Keyboard = Keyboard.Default;

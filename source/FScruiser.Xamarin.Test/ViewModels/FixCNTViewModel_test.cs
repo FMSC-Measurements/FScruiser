@@ -1,5 +1,4 @@
 ﻿using CruiseDAL;
-using CruiseDAL.DataObjects;
 using FluentAssertions;
 using FScruiser.Models;
 using FScruiser.Services;

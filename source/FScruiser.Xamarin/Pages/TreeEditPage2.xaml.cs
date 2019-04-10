@@ -1,4 +1,4 @@
-﻿using CruiseDAL.DataObjects;
+﻿using FScruiser.Models;
 using FScruiser.Validation;
 using FScruiser.XF.Util;
 using FScruiser.XF.ViewModels;
@@ -103,7 +103,7 @@ namespace FScruiser.XF.Pages
             }
         }
 
-        private void ViewModel_TreeFieldsChanged(object sender, IEnumerable<TreeFieldSetupDO> e)
+        private void ViewModel_TreeFieldsChanged(object sender, IEnumerable<TreeFieldSetup> e)
         {
             UpdateTreeFields((TreeEditViewModel)sender);
         }
@@ -119,7 +119,7 @@ namespace FScruiser.XF.Pages
             }
         }
 
-        private View MakeTreeFields(IEnumerable<TreeFieldSetupDO> treeFields)
+        private View MakeTreeFields(IEnumerable<TreeFieldSetup> treeFields)
         {
             if (treeFields == null) { throw new ArgumentNullException(nameof(treeFields)); }
 

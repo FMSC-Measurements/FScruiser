@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace FScruiser.Models
 {
-    [EntitySource("CountTree")]
     public class TallyPopulation : TallyPopulation_Base
     {
         int _treeCount;

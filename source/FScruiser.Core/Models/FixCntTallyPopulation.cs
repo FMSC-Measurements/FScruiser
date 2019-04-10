@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    public enum FixCNTTallyField { Unknown, DBH, TotalHeight, DRC };
+    //public enum FixCNTTallyField { Unknown, DBH, TotalHeight, DRC };
 
     public class FixCntTallyPopulation
     {
@@ -17,23 +17,20 @@ namespace FScruiser.Models
         [Field("SGCode")]
         public string SGCode { get; set; }
 
-        [Field("tdvSpecies")]
+        [Field("Species")]
         public string Species { get; set; }
 
-        //[Field("tdvLiveDead")]
-        //public string LiveDead { get; set; }
+        [Field("LiveDead")]
+        public string LiveDead { get; set; }
 
-        [Field("TreeDefaultValue_CN")]
-        public int TreeDefaultValue_CN { get; set; }
+        [Field("Field")]
+        public string FieldName { get; set; }
 
-        [Field("FieldName")]
-        public FixCNTTallyField FieldName { get; set; }
+        [Field("Min")]
+        public int Min { get; set; }
 
-        [Field("IntervalMin")]
-        public int IntervalMin { get; set; }
-
-        [Field("IntervalMax")]
-        public int IntervalMax { get; set; }
+        [Field("Max")]
+        public int Max { get; set; }
 
         [Field("IntervalSize")]
         public int IntervalSize { get; set; }

@@ -35,9 +35,9 @@ namespace FScruiser.XF.ViewModels
 
         public void Tally(FixCNTTallyBucket tallyBucket)
         {
-            var tree = tallyBucket.Tree;
-            tree.TreeCount++;
-            Datastore.UpdateTree(tree);
+            //var tree = tallyBucket.Tree;
+            //tree.TreeCount++;
+            //Datastore.UpdateTree(tree);
         }
 
         //public void Tally(string species, Double midValue)
@@ -51,13 +51,13 @@ namespace FScruiser.XF.ViewModels
 
         public void UnTally(FixCNTTallyBucket tallyBucket)
         {
-            var tree = tallyBucket.Tree;
-            var treeCount = tree.TreeCount;
-            if (treeCount > 0)
-            {
-                tree.TreeCount = treeCount - 1;
-                Datastore.UpdateTree(tree);
-            }
+            //var tree = tallyBucket.Tree;
+            //var treeCount = tree.TreeCount;
+            //if (treeCount > 0)
+            //{
+            //    tree.TreeCount = treeCount - 1;
+            //    Datastore.UpdateTree(tree);
+            //}
         }
 
         public void ProcessTally(FixCNTTallyBucket tallyBucket)
@@ -85,22 +85,22 @@ namespace FScruiser.XF.ViewModels
             foreach (var tp in tallyPopulations)
             {
                 var buckets = new List<FixCNTTallyBucket>();
-                var interval = tp.IntervalMin + tp.IntervalSize / 2;
+                var interval = tp.Min + tp.IntervalSize / 2;
 
                 //foreach interval value try to read a tree
                 do
                 {
-                    var tree = Datastore.GetFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SGCode, tp.TreeDefaultValue_CN, tp.FieldName, interval);
+                    var tree = Datastore.GetFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SGCode, tp.Species, tp.LiveDead, tp.FieldName, interval);
                     //if tree doesn't exist create it
                     if (tree == null)
                     {
-                        tree = Datastore.CreateFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SGCode, tp.TreeDefaultValue_CN, tp.FieldName, interval);
+                        tree = Datastore.CreateFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SGCode, tp.Species, tp.LiveDead, tp.FieldName, interval);
                     }
 
                     buckets.Add(new FixCNTTallyBucket() { Value = interval, Tree = tree });
 
                     interval += tp.IntervalSize;
-                } while (interval <= tp.IntervalMax);
+                } while (interval <= tp.Max);
 
                 tp.Buckets = buckets;
             }

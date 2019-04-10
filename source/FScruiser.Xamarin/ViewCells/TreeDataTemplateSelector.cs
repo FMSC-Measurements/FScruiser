@@ -18,9 +18,9 @@ namespace FScruiser.XF.ViewCells
         {
             var tallyEntry = (TallyEntry)item;
 
-            if(tallyEntry.EntryType == FScruiser.Constants.TallyLedger_EntryType.Tally)
+            if(tallyEntry.EntryType == TallyLedger.EntryTypeValues.TALLY)
             {
-                return (tallyEntry.HasTree) ? TreeItemTemplate : BasicTemplate;
+                return (tallyEntry.TreeID != null) ? TreeItemTemplate : BasicTemplate;
             }
             else
             { return TallyEditTemplate; }

@@ -26,7 +26,7 @@ namespace FScruiser.XF.ViewModels
 
         public ICuttingUnitDatastore Datastore { get; }
 
-        public StratumPlot Plot { get; set; }
+        public Plot_Stratum Plot { get; set; }
 
         public double BafOrFps
         {
@@ -158,15 +158,15 @@ namespace FScruiser.XF.ViewModels
             var stratumCode = parameters.GetValue<string>("StratumCode");
             var plotNumber = parameters.GetValue<int>("PlotNumber");
 
-            var stratumPlot = Datastore.GetStratumPlot(unitCode, stratumCode, plotNumber, false);
+            var plot = Datastore.GetPlot_Stratum(unitCode, stratumCode, plotNumber);
 
-            if (stratumPlot != null)
+            if (plot != null)
             {
-                var isVariableRadious = IsVariableRadius = CruiseDAL.Schema.CruiseMethods.VARIABLE_RADIUS_METHODS.Contains(stratumPlot.CruiseMethod);
+                var isVariableRadious = IsVariableRadius = CruiseDAL.Schema.CruiseMethods.VARIABLE_RADIUS_METHODS.Contains(plot.CruiseMethod);
 
-                BafOrFps = (isVariableRadious) ? stratumPlot.BAF : stratumPlot.FPS;
+                BafOrFps = (isVariableRadious) ? plot.BAF : plot.FPS;
 
-                Plot = stratumPlot;
+                Plot = plot;
             }
         }
 
@@ -206,8 +206,7 @@ namespace FScruiser.XF.ViewModels
             var report = GenerateReport();
             if (!string.IsNullOrEmpty(report))
             {
-                Plot.Remarks += report;
-                Datastore.UpdateStratumPlot(Plot);
+                Datastore.AddPlotRemark(Plot.CuttingUnitCode, Plot.PlotNumber, report);
             }
         }
     }

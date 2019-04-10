@@ -7,24 +7,18 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("SampleGroup")]
+    [EntitySource("SampleGroup_V3")]
     public class SampleGroupProxy
     {
-        [Field("SampleGroup_CN")]
-        public int SampleGroup_CN { get; set; }
+        [Field("SampleGroupCode")]
+        public string SampleGroupCode { get; set; }
 
-        [Field("Stratum_CN")]
-        public int Stratum_CN { get; set; }
-
-        [Field("Code")]
-        public string Code { get; set; }
-
-        [Field(Alias = "StratumCode", SQLExpression = "Stratum.Code")]
+        [Field("StratumCode")]
         public string StratumCode { get; set; }
 
         public override string ToString()
         {
-            return Code;
+            return SampleGroupCode;
         }
     }
 }

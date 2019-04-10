@@ -50,12 +50,13 @@ namespace FScruiser.XF.ViewModels
 
         public void AddPlot(object obj)
         {
-            NavigationService.NavigateAsync($"PlotEdit?UnitCode={UnitCode}&IsAddingPlot=true");
+            var plotID = Datastore.AddNewPlot(UnitCode);
+            NavigationService.NavigateAsync($"PlotEdit?{NavParams.PlotID}={plotID}");
         }
 
         public void ShowEditPlot(Plot plot)
         {
-            NavigationService.NavigateAsync($"PlotEdit?UnitCode={UnitCode}&PlotNumber={plot.PlotNumber}");
+            NavigationService.NavigateAsync($"PlotEdit?{NavParams.PlotID}={plot.PlotID}");
         }
 
         public async void ShowTallyPlot(Plot plot)

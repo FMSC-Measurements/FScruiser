@@ -130,15 +130,30 @@ namespace FScruiser.XF.ViewModels
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            var unitCode = UnitCode = parameters.GetValue<string>(NavParams.UNIT);
-            var plotNumver = PlotNumber = parameters.GetValue<int>(NavParams.PLOT_NUMBER);
+            var plotID = parameters.GetValue<string>(NavParams.PlotID);
+
+            var unitCode = parameters.GetValue<string>(NavParams.UNIT);
+            var plotNumber = parameters.GetValue<int>(NavParams.PLOT_NUMBER);
+
+            Plot plot = null;
+            if (string.IsNullOrWhiteSpace(plotID) == false)
+            {
+                plot = Datastore.GetPlot(plotID);
+            }
+            else
+            {
+                plot = Datastore.GetPlot(unitCode, plotNumber);
+            }
 
             var salePurpose = Datastore.GetCruisePurpose();
             IsRecon = salePurpose.ToLower() == "recon";
 
-            TallyPopulations = Datastore.GetPlotTallyPopulationsByUnitCode(UnitCode, PlotNumber).ToArray();
+            TallyPopulations = Datastore.GetPlotTallyPopulationsByUnitCode(plot.CuttingUnitCode, plot.PlotNumber).ToArray();
             Strata = Datastore.GetPlotStrataProxies(UnitCode).ToArray();
             Trees = Datastore.GetPlotTreeProxies(UnitCode, PlotNumber).ToObservableCollection();
+
+            PlotNumber = plot.PlotNumber;
+            UnitCode = plot.CuttingUnitCode;
         }
 
 
@@ -148,7 +163,7 @@ namespace FScruiser.XF.ViewModels
 
             IDialogService dialogService = DialogService;
 
-            if (pop.IsEmptyBool)
+            if (pop.IsEmpty)
             {
                 await dialogService.ShowMessageAsync("To tally trees, goto plot edit page and unmark stratum as empty", "Stratum Is Marked As Empty");
                 return;
@@ -209,13 +224,13 @@ namespace FScruiser.XF.ViewModels
         public void DeleteTree(string tree_guid)
         {
             Datastore.DeleteTree(tree_guid);
-            var tree = Trees.Where(x => x.Tree_GUID == tree_guid).Single();
+            var tree = Trees.Where(x => x.TreeID == tree_guid).Single();
             Trees.Remove(tree);
         }
 
         public void DeleteTree(TreeStub_Plot tree)
         {
-            Datastore.DeleteTree(tree.Tree_GUID);
+            Datastore.DeleteTree(tree.TreeID);
             Trees.Remove(tree);
         }
 

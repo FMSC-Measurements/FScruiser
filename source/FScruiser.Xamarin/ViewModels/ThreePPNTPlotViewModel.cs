@@ -43,7 +43,7 @@ namespace FScruiser.XF.ViewModels
         protected ICuttingUnitDatastore Datastore { get; set; }
         protected IDialogService DialogService { get; set; }
 
-        public StratumPlot StratumPlot { get; protected set; }
+        public Plot_Stratum StratumPlot { get; protected set; }
 
         public ThreePPNTPlotViewModel(INavigationService navigationService, ICuttingUnitDatastoreProvider datastoreProvider, IDialogService dialogService)
             : base(navigationService)
@@ -58,8 +58,8 @@ namespace FScruiser.XF.ViewModels
             var unit = parameters.GetValue<string>(NavParams.UNIT);
             var plotNum = parameters.GetValue<int>(NavParams.PLOT_NUMBER);
 
-            var stratumPlot = Datastore.GetStratumPlot(unit, stratumCode, plotNum);
-            StratumPlot = stratumPlot;
+            var plotStratum = Datastore.GetPlot_Stratum(unit, stratumCode, plotNum);
+            StratumPlot = plotStratum;
         }
 
         public double CalculateKPI()
@@ -95,16 +95,16 @@ namespace FScruiser.XF.ViewModels
 
             var datastore = Datastore;
 
-            var stratumPlot = StratumPlot;
-            var unit = stratumPlot.UnitCode;
-            var stratumCode = stratumPlot.StratumCode;
-            var plotNumber = stratumPlot.PlotNumber;
+            var plotStratum = StratumPlot;
+            var unit = plotStratum.CuttingUnitCode;
+            var stratumCode = plotStratum.StratumCode;
+            var plotNumber = plotStratum.PlotNumber;
 
-            stratumPlot.InCruise = true;
-            datastore.InsertStratumPlot(stratumPlot.UnitCode, stratumPlot);
+            plotStratum.InCruise = true;
+            datastore.InsertPlot_Stratum(plotStratum);
 
             var random = new Random();
-            var randomValue = random.Next(1, StratumPlot.KZ);
+            var randomValue = random.Next(1, StratumPlot.KZ3PPNT);
 
             if (kpi > randomValue)
             {

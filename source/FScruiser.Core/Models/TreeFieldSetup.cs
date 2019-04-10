@@ -7,15 +7,19 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("LogFieldSetup_V3")]
-    public class LogFieldSetup
+    [EntitySource("TreeFieldSetup_V3")]
+    public class TreeFieldSetup
     {
         [Field("Field")]
         public string Field { get; set; }
 
-        //public int FieldOrder { get; set; }
         [Field("Heading")]
         public string Heading { get; set; }
 
+        [Field("FieldOrder")]
+        public int FieldOrder { get; set; }
+
+        [Obsolete]
+        public string ColumnType { get; set; }
     }
 }

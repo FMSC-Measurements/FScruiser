@@ -1,5 +1,4 @@
-﻿using CruiseDAL.DataObjects;
-using FMSC.ORM.EntityModel;
+﻿using FMSC.ORM.EntityModel;
 using FMSC.ORM.EntityModel.Attributes;
 using FScruiser.Util;
 using System;

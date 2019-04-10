@@ -1,5 +1,4 @@
-﻿using CruiseDAL.DataObjects;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FMSC.Sampling;
 using FScruiser.Logic;
 using FScruiser.Models;
@@ -17,7 +16,7 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_100PCT()
         {
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = "100PCT",
                 SampleSelectorState = "something",
@@ -37,7 +36,7 @@ namespace FScruiser.Core.Test.Logic
             //AND SampleSelectorType is not defined
             //THEN Sampler is not null
             //AND is of type Blocked
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = "STR",
                 SamplingFrequency = 1,
@@ -59,7 +58,7 @@ namespace FScruiser.Core.Test.Logic
             //AND SampleSelectorType is Systematic
             //THEN Sampler is not null
             //AND is of type Systematic
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = "STR",
                 SamplingFrequency = 1,
@@ -82,7 +81,7 @@ namespace FScruiser.Core.Test.Logic
         {
             //test: if sampling freq is 0
             //then Sampler is null
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = "STR",
                 SamplingFrequency = 0,
@@ -101,7 +100,7 @@ namespace FScruiser.Core.Test.Logic
         {
             //test: if sampling freq is 0
             //then Sampler is null
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = "STR",
                 SamplingFrequency = 20,
@@ -123,7 +122,7 @@ namespace FScruiser.Core.Test.Logic
         {
             //test: if sampling freq is 0
             //then Sampler is null
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = method,
                 SamplingFrequency = 0
@@ -145,7 +144,7 @@ namespace FScruiser.Core.Test.Logic
             //AND SampleSelectorType is not defined
             //THEN Sampler is not null
             //AND is of type Systematic
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = method,
                 SamplingFrequency = 1,
@@ -165,7 +164,7 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void DeserializeSamplerStatet_3P()
         {
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = "3P",
                 SampleSelectorState = null,
@@ -182,7 +181,7 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_F3P()
         {
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = "F3P",
                 SampleSelectorState = null,
@@ -198,7 +197,7 @@ namespace FScruiser.Core.Test.Logic
         [Fact]
         public void MakeSampleSelecter_P3P()
         {
-            var sg = new SampleGroup()
+            var sg = new SamplerState()
             {
                 Method = "P3P",
                 SampleSelectorState = null,

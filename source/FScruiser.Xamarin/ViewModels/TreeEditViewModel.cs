@@ -1,9 +1,9 @@
-﻿using CruiseDAL.DataObjects;
-using FScruiser.Models;
+﻿using FScruiser.Models;
 using FScruiser.Models.Validators;
 using FScruiser.Services;
 using FScruiser.Util;
 using FScruiser.Validation;
+using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
 using Prism.Navigation;
 using System;
@@ -21,7 +21,7 @@ namespace FScruiser.XF.ViewModels
         protected ICuttingUnitDatastore Datastore { get; set; }
         protected IDialogService DialogService { get; set; }
 
-        private TreeValidator _treeValidator;
+        private TreeValidator _treeValidator = new TreeValidator();
 
         public bool UseSimplifiedTreeFields { get; set; } = false;
 
@@ -29,14 +29,14 @@ namespace FScruiser.XF.ViewModels
 
         private bool _suspendSave;
 
-        public event EventHandler<IEnumerable<TreeFieldSetupDO>> TreeFieldsChanged;
+        public event EventHandler<IEnumerable<TreeFieldSetup>> TreeFieldsChanged;
 
         public event EventHandler ErrorsAndWarningsChanged;
 
         private ValidationResult _lastValidationResult;
         public IEnumerable<ValidationError> ErrorsAndWarnings => _lastValidationResult?.Errors.OrEmpty();
 
-        public IEnumerable<TreeFieldSetupDO> TreeFields
+        public IEnumerable<TreeFieldSetup> TreeFields
         {
             get
             {
@@ -51,9 +51,9 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        private IEnumerable<TreeFieldSetupDO> _treeFieldsExtended;
+        private IEnumerable<TreeFieldSetup> _treeFieldsExtended;
 
-        public IEnumerable<TreeFieldSetupDO> TreeFieldsExtended
+        public IEnumerable<TreeFieldSetup> TreeFieldsExtended
         {
             get { return _treeFieldsExtended; }
             set
@@ -116,7 +116,6 @@ namespace FScruiser.XF.ViewModels
 
             //SaveTree(tree);
 
-            RefreshValidationRules(tree);
             RefreshErrorsAndWarnings(tree);
             RefreshSampleGroups(tree);
             RefreshTreeDefaults(tree);
@@ -153,7 +152,7 @@ namespace FScruiser.XF.ViewModels
 
         #region SampleGroup
 
-        private SampleGroupProxy _nullSampleGroup = new SampleGroupProxy { Code = "" };
+        private SampleGroupProxy _nullSampleGroup = new SampleGroupProxy { SampleGroupCode = "" };
 
         public IEnumerable<SampleGroupProxy> SampleGroups
         {
@@ -165,7 +164,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public IEnumerable<string> SampleGroupCodes => SampleGroups.OrEmpty().Select(x => x.Code).ToArray();
+        public IEnumerable<string> SampleGroupCodes => SampleGroups.OrEmpty().Select(x => x.SampleGroupCode).ToArray();
 
         public string SampleGroupCode
         {
@@ -199,7 +198,6 @@ namespace FScruiser.XF.ViewModels
             }
             //SaveTree(tree);
 
-            RefreshValidationRules(tree);
             RefreshErrorsAndWarnings(tree);
             RefreshTreeDefaults(tree);
         }
@@ -273,7 +271,6 @@ namespace FScruiser.XF.ViewModels
                 }
                 finally { _suspendSave = false; }
 
-                RefreshValidationRules(tree);
                 RefreshErrorsAndWarnings(tree);
             }
         }
@@ -287,9 +284,9 @@ namespace FScruiser.XF.ViewModels
 
         #region tree property
 
-        private Tree _tree;
+        private Tree_Ex _tree;
 
-        public Tree Tree
+        public Tree_Ex Tree
         {
             get { return _tree; }
             protected set
@@ -306,7 +303,7 @@ namespace FScruiser.XF.ViewModels
 
         private void _tree_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            var tree = sender as Tree;
+            var tree = sender as Tree_Ex;
             if(tree == null) { return; }
 
             var property = e.PropertyName;
@@ -349,11 +346,11 @@ namespace FScruiser.XF.ViewModels
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            var tree_guid = parameters.GetValue<string>("Tree_Guid");
+            var treeID = parameters.GetValue<string>(NavParams.TreeID);
 
             var datastore = Datastore;
 
-            var tree = Tree = datastore.GetTree(tree_guid);
+            var tree = Tree = datastore.GetTree(treeID);
 
             if (tree == null)
             {
@@ -363,13 +360,12 @@ namespace FScruiser.XF.ViewModels
                 return;
             }
 
-            var unitCode = tree.UnitCode;
+            var unitCode = tree.CuttingUnitCode;
             Strata = datastore.GetStrataProxiesByUnitCode(unitCode).ToArray();
 
             RefreshSampleGroups(tree);
             RefreshTreeDefaults(tree);
             RefreshTreeFields(tree);
-            RefreshValidationRules(tree);
             RefreshErrorsAndWarnings(tree);
         }
 
@@ -398,22 +394,7 @@ namespace FScruiser.XF.ViewModels
             TreeFieldsExtended = Datastore.GetTreeFieldsByStratumCode(stratumCode).ToArray();
         }
 
-        protected void RefreshValidationRules(Tree tree)
-        {
-            if (tree == null) { return; }
-
-            _treeValidator = new TreeValidator();
-            if (!string.IsNullOrWhiteSpace(tree.StratumCode)
-                && !string.IsNullOrWhiteSpace(tree.SampleGroupCode)
-                && !string.IsNullOrWhiteSpace(tree.Species)
-                && !string.IsNullOrWhiteSpace(tree.LiveDead))
-            {
-                var treeAuditRules = Datastore.GetTreeAuditRules(tree.StratumCode, tree.SampleGroupCode, tree.Species, tree.LiveDead);
-                _treeValidator.Rules.AddRange(treeAuditRules);
-            }
-        }
-
-        protected void RefreshErrorsAndWarnings(Tree tree)
+        protected void RefreshErrorsAndWarnings(Tree_Ex tree)
         {
             if (tree == null) { return; }
 
@@ -432,7 +413,7 @@ namespace FScruiser.XF.ViewModels
 
         public void ShowLogs()
         {
-            NavigationService.NavigateAsync("Logs", new NavigationParameters($"Tree_Guid={Tree.Tree_GUID}"));
+            NavigationService.NavigateAsync("Logs", new NavigationParameters($"Tree_Guid={Tree.TreeID}"));
         }
 
         public void SaveTree()
@@ -446,7 +427,6 @@ namespace FScruiser.XF.ViewModels
             if (tree != null)
             {
                 Datastore.UpdateTree(Tree);
-                Datastore.UpdateTreeErrors(tree.Tree_GUID, ErrorsAndWarnings);
             }
         }
 

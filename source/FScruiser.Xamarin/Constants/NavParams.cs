@@ -20,9 +20,9 @@ namespace FScruiser.XF.Constants
 
         public const string PLOT_NUMBER = "PlotNumber";
 
-        public const string TREE_GUID = "Tree_Guid";
+        public const string TreeID = "TreeID";
 
-        public const string PLOT_GUID = "Plot_Guid";
+        public const string PlotID = "PlotID";
 
     }
 }

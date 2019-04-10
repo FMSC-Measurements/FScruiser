@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Log")]
+    [EntitySource("Log_V3")]
     public class Log : INPC_Base
     {
-        [Field("Log_GUID")]
-        public string Log_GUID { get; set; }
+        [Field("LogID")]
+        public string LogID { get; set; }
 
-        [Field(Alias = "Tree_GUID", SQLExpression = "Tree.Tree_GUID", PersistanceFlags = PersistanceFlags.Never)]
-        public string Tree_GUID { get; set; }
+        [Field("TreeID")]
+        public string TreeID { get; set; }
 
         private int _logNumber;
 
@@ -160,14 +160,5 @@ namespace FScruiser.Models
             get { return _createdBy; }
             set { _createdBy = value; }
         }
-
-        private string _modifiedBy;
-        [Field("ModifiedBy")]
-        public string ModifiedBy
-        {
-            get { return _modifiedBy; }
-            set { _modifiedBy = value; }
-        }
-
     }
 }

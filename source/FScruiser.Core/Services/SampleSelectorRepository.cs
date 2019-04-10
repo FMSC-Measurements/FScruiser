@@ -25,7 +25,7 @@ namespace FScruiser.Services
 
             if (_sampleSelectors.ContainsKey(key) == false)
             {
-                var sampleGroup = Datastore.GetSampleGroup(stratumCode, sgCode);
+                var sampleGroup = Datastore.GetSamplerState(stratumCode, sgCode);
                 var samplers = new SampleSelecter[2];
 
                 samplers[0] = SampleSelectorFactory.MakeSampleSelecter(sampleGroup);

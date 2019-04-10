@@ -64,7 +64,7 @@ namespace FScruiser.XF.ViewModels
         {
             var newLog = new Log()
             {
-                Tree_GUID = Tree_GUID
+                TreeID = Tree_GUID
             };
 
             Datastore.InsertLog(newLog);
@@ -74,7 +74,7 @@ namespace FScruiser.XF.ViewModels
 
         public void ShowEditLogPage(Log log)
         {
-            NavigationService.NavigateAsync("Log", new NavigationParameters($"CreateNew=false&Log_Guid={log.Log_GUID}"));
+            NavigationService.NavigateAsync("Log", new NavigationParameters($"CreateNew=false&Log_Guid={log.LogID}"));
         }
     }
 }
