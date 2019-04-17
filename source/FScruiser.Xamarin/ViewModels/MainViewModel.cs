@@ -36,8 +36,14 @@ namespace FScruiser.XF.ViewModels
     {
         private Command _selectFileCommand;
         private Command<NavigationListItem> _navigateCommand;
+        private Command _showSettingsCommand;
+        private Command _showFeedbackCommand;
 
         public ICommand SelectFileCommand => _selectFileCommand ?? (_selectFileCommand = new Command(SelectFileAsync));
+
+        public ICommand ShowSettingsCommand => _showSettingsCommand ?? (_showSettingsCommand = new Command(ShowSettings));
+
+        public ICommand ShowFeedbackCommand => _showFeedbackCommand ?? (_showFeedbackCommand = new Command(ShowFeedback));
 
         public ICommand NavigateCommand => _navigateCommand ?? (_navigateCommand = new Command<NavigationListItem>(async (x) => await NavigateToAsync(x)));
 
@@ -150,11 +156,21 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
+        public void ShowFeedback()
+        {
+            NavigationService.NavigateAsync("Feedback", useModalNavigation: true);
+        }
+
+        public void ShowSettings()
+        {
+            NavigationService.NavigateAsync("Settings", useModalNavigation: true);
+        }
+
         private async void SelectFileAsync(object obj)
         {
             try
             {
-                var fileData = await CrossFilePicker.Current.PickFile();
+                var fileData = await CrossFilePicker.Current.PickFile(new string[] { ".cruise" });
                 if (fileData == null) { return; }//user canceled file picking
 
                 var filePath = fileData.FilePath;

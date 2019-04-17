@@ -1,6 +1,7 @@
 ﻿using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
 using Microsoft.AppCenter.Crashes;
 using Prism.Navigation;
@@ -73,7 +74,7 @@ namespace FScruiser.XF.ViewModels
             var stratumCode = await DialogService.AskValueAsync("Select Stratum", StratumCodes);
             if (stratumCode != null)
             {
-                var tree_guid = datastore.CreateTree(UnitCode, stratumCode);
+                var tree_guid = datastore.CreateMeasureTree(UnitCode, stratumCode);
                 var newTree = datastore.GetTreeStub(tree_guid);
                 _trees.Add(newTree);
                 OnTreeAdded(null);
@@ -89,7 +90,7 @@ namespace FScruiser.XF.ViewModels
         {
             try
             {
-                var result = await NavigationService.NavigateAsync("Tree", new NavigationParameters($"Tree_Guid={tree.Tree_GUID}"));
+                var result = await NavigationService.NavigateAsync("Tree", new NavigationParameters() { { NavParams.TreeID, tree.TreeID } });
                 var ex = result.Exception;
                 if(ex != null)
                 {
@@ -108,14 +109,14 @@ namespace FScruiser.XF.ViewModels
         {
             if (tree == null) { return; }
 
-            Datastore.DeleteTree(tree.Tree_GUID);
+            Datastore.DeleteTree(tree.TreeID);
         }
 
         public async System.Threading.Tasks.Task ShowLogsAsync(TreeStub tree)
         {
             try
             {
-                var result = await NavigationService.NavigateAsync("Logs", new NavigationParameters($"Tree_Guid={tree.Tree_GUID}"));
+                var result = await NavigationService.NavigateAsync("Logs", new NavigationParameters() { { NavParams.TreeID, tree.TreeID } });
 
                 if(result?.Exception != null)
                 {

@@ -1,8 +1,10 @@
 ﻿using FluentAssertions;
 using FScruiser.XF.Test;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Xamarin.Forms;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,24 +16,49 @@ namespace FScruiser.XF.Pages
         {
         }
 
+        public static IEnumerable<object[]> PageTypes
+        {
+            get
+            {
+                var assembly = Assembly.GetAssembly(typeof(MainPage));
+
+                var pageTypes = assembly.GetTypes()
+                .Where(t => t.Namespace == "FScruiser.XF.Pages" && t.IsSubclassOf(typeof(Xamarin.Forms.Page)))
+                .Select(x => new object[] { x });
+
+                return  pageTypes;
+            }
+        }
+
         /// <summary>
         /// verify that all page classes initialize and there are no silly mistakes in the xaml
         /// </summary>
-        [Fact]
-        public void InitializePages()
+        [Theory]
+        [MemberData(nameof(PageTypes))]
+        public void CreatePage(Type pageType)
         {
-            var assembly = Assembly.GetAssembly(typeof(MainPage));
+            var page = Activator.CreateInstance(pageType) as Xamarin.Forms.Page;
 
-            var pageTypes = assembly.GetTypes()
-                .Where(t => t.Namespace == "FScruiser.XF.Pages" && t.IsSubclassOf(typeof(Xamarin.Forms.Page)));
+            page.Should().NotBeNull();
+        }
 
-            foreach (var t in pageTypes)
+        [Theory]
+        [MemberData(nameof(PageTypes))]
+        public void ResolveViewModel(Type pageType)
+        {
+            //get our page
+            var page = Activator.CreateInstance(pageType) as Xamarin.Forms.Page;
+
+            //call this method that causes Prism to resolve the viewmodel for our view
+            Prism.Mvvm.ViewModelLocationProvider.AutoWireViewModelChanged(page, (p, vm) =>
             {
-                Output.WriteLine(t.Name);
-                var page = Activator.CreateInstance(t) as Xamarin.Forms.Page;
+                p.Should().NotBeNull();
+                vm.Should().NotBeNull();
 
-                page.Should().NotBeNull();
-            }
+                Output.WriteLine($"ViewModelType:{vm.GetType().Name}");
+
+                ((Page)page).BindingContext = vm;
+            });
         }
     }
 }

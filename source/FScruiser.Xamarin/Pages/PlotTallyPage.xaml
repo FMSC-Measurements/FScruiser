@@ -5,10 +5,11 @@
              xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
              xmlns:tk_conv="clr-namespace:Xamarin.Toolkit.Converters;assembly=Xamarin.Toolkit.Converters"
              xmlns:my_behv="clr-namespace:FScruiser.XF.Behaviors"
+             xmlns:local_views="clr-namespace:FScruiser.XF.Views"
              x:Class="FScruiser.XF.Pages.PlotTallyPage"
              BackgroundColor ="White"
              x:Name="_page"
-             Title="{Binding PlotNumber, StringFormat='Plot Number {0}'}">
+             Title="{Binding PlotNumber, StringFormat='{}Plot Number {0}'}">
     <ContentPage.Resources>
         <ResourceDictionary>
             <Color x:Key="tallyIncruiseColor"></Color>
@@ -17,6 +18,8 @@
                                               x:TypeArguments="Color"
                                               TrueObject="{StaticResource primary_500}"
                                               FalseObject="DimGray"/>
+
+            <tk_conv:HasDataConverter x:Key="hasDataConverter" />
 
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -43,6 +46,7 @@
 
 
             <flow:FlowListView  x:Name="TallyListView" 
+                                IsVisible="{Binding TalliesFiltered, Converter={StaticResource hasDataConverter}}"
                                 FlowItemsSource="{Binding TalliesFiltered}"
                                 FlowItemTappedCommand="{Binding TallyCommand}"
                                 FlowColumnCount="3" 
@@ -57,12 +61,24 @@
 
                             <StackLayout HorizontalOptions="Fill" 
                                          VerticalOptions="Fill" Padding="3">
-                                <Label Text="{Binding TallyDescription}" 
+
+                                <local_views:PopulationIndicatorView 
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
+                                    StratumCode="{Binding StratumCode}"
+                                    SampleGroupCode="{Binding SampleGroupCode}"
+                                    Species="{Binding Species}"
+                                    LiveDead="{Binding LiveDead}"
+                                    Margin="5"
+                                    HeightRequest="20"
+                                    FontSize="Micro"/>
+
+                                <!--<Label Text="{Binding TallyDescription}" 
                                        HorizontalTextAlignment="Center"
                                        TextColor="White"/>
                                 <Label Text="{Binding TallyHotKey}"
                                        HorizontalTextAlignment="Center"
-                                       TextColor="White"/>
+                                       TextColor="White"/>-->
                             </StackLayout>
                             
                         </Frame>

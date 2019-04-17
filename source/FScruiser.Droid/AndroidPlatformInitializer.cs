@@ -6,7 +6,7 @@ using System;
 
 namespace FScruiser.Droid
 {
-    public class AndroidPlatformInitializer : Prism.IPlatformInitializer
+    public class AndroidPlatformInitializer : FScruiser.XF.BasePlatformInitializer
     {
         public AndroidPlatformInitializer(Activity hostActivity)
         {
@@ -15,8 +15,10 @@ namespace FScruiser.Droid
 
         public Activity HostActivity { get; protected set; }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry)
+        public override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            base.RegisterTypes(containerRegistry);
+
             containerRegistry.RegisterInstance<ISoundService>(new AndroidSoundService(HostActivity.ApplicationContext));
         }
     }

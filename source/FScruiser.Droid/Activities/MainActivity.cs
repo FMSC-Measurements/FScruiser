@@ -17,7 +17,10 @@ namespace FScruiser.Droid
 
             base.OnCreate(savedInstanceState);
 
+            global::Xamarin.Forms.Forms.SetFlags(new[] { "CollectionView_Experimental", "Shell_Experimental" });
             Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            Xamarin.Toolkit.Effects.Droid.Effects.Init();
+            DLToolkit.Forms.Controls.FlowListView.Init();
 
             var app = new App(new AndroidPlatformInitializer(this));
 

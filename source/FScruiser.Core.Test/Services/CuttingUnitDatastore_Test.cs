@@ -1,7 +1,7 @@
 ﻿using Bogus;
 using CruiseDAL;
-using CruiseDAL.DataObjects;
 using FluentAssertions;
+using FluentAssertions.Equivalency;
 using FScruiser.Models;
 using FScruiser.Services;
 using System;
@@ -17,632 +17,134 @@ namespace FScruiser.Core.Test.Services
         {
         }
 
-        private DAL CreateDatabase()
+        void InitializeDatabase(DAL database, string[] units, string[][] strata,
+    string[][] unit_strata, dynamic[] sampleGroups,
+    string[] species, string[][] tdvs, string[][] subPops)
         {
-            var database = new DAL();
-
             //Cutting Units
-            database.Insert(new CuttingUnitDO
+            foreach (var unit in units)
             {
-                Code = "u1",
-                Area = 0,
-            });
-
-            database.Insert(new CuttingUnitDO
-            {
-                Code = "u2",
-                Area = 0,
-            });
+                database.Execute(
+                    "INSERT INTO CuttingUnit (" +
+                    "Code" +
+                    ") VALUES " +
+                    $"('{unit}');");
+            }
 
             //Strata
-            database.Insert(new StratumDO
+            foreach (var st in strata)
             {
-                Code = "st1",
-                Method = "something",
-            });
-
-            database.Insert(new StratumDO
-            {
-                Code = "st2",
-                Method = "something",
-            });
+                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{st[0]}', '{st[1]}');");
+            }
 
             //Unit - Strata
-            database.Insert(new CuttingUnitStratumDO
+            foreach (var cust in unit_strata)
             {
-                CuttingUnit_CN = 1,
-                Stratum_CN = 1,
-            });
-
-            database.Insert(new CuttingUnitStratumDO
-            {
-                CuttingUnit_CN = 1,
-                Stratum_CN = 2,
-            });
-
-            database.Insert(new CuttingUnitStratumDO
-            {
-                CuttingUnit_CN = 2,
-                Stratum_CN = 2,
-            });
+                database.Execute(
+                    "INSERT INTO CuttingUnit_Stratum " +
+                    "(CuttingUnitCode, StratumCode) " +
+                    "VALUES " +
+                    $"('{cust[0]}','{cust[1]}');");
+            }
 
             //Sample Groups
-            database.Insert(new SampleGroupDO
+            foreach (var sg in sampleGroups)
             {
-                Stratum_CN = 1,
-                Code = "sg1",
-                CutLeave = "C",
-                UOM = "01",
-                PrimaryProduct = "01"
-            });
+                database.Execute(
+                    "INSERT INTO SampleGroup_V3 (" +
+                    "StratumCode, " +
+                    "SampleGroupCode," +
+                    "SamplingFrequency, " +
+                    "TallyBySubPop " +
+                    ") VALUES " +
+                    $"('{sg.StCode}', '{sg.SgCode}', {sg.Freq}, {sg.TallyBySp}); ");
+            }
 
-            database.Insert(new SampleGroupDO
-            {
-                Stratum_CN = 2,
-                Code = "sg2",
-                CutLeave = "C",
-                UOM = "01",
-                PrimaryProduct = "01"
-            });
 
             //TreeDefaults
 
-            database.Insert(new TreeDefaultValueDO
+            foreach (var sp in species)
             {
-                PrimaryProduct = "01",
-                Species = "sp1",
-                LiveDead = "L"
-            });
+                database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
+            }
 
-            database.Insert(new TreeDefaultValueDO
+            foreach (var tdv in tdvs)
             {
-                PrimaryProduct = "01",
-                Species = "sp1",
-                LiveDead = "D"
-            });
+                database.Execute(
+                    "INSERT INTO TreeDefaultValue (" +
+                    "Species, " +
+                    "LiveDead, " +
+                    "PrimaryProduct" +
+                    ") VALUES " +
+                    $"('{tdv[0]}', '{tdv[1]}', '{tdv[2]}');");
+            }
 
-            database.Insert(new TreeDefaultValueDO
+            foreach (var sub in subPops)
             {
-                PrimaryProduct = "01",
-                Species = "sp2",
-                LiveDead = "L"
-            });
+                database.Execute(
+                    "INSERT INTO SubPopulation (" +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead)" +
+                    "VALUES " +
+                    $"('{sub[0]}', '{sub[1]}', '{sub[2]}', '{sub[3]}');");
+            }
+        }
 
-            //samplegroup - TreeDefaults
-            database.Insert(new SampleGroupTreeDefaultValueDO
+        private DAL CreateDatabase()
+        {
+            var units = new string[] { "u1", "u2" };
+            var strata = new string[][]
             {
-                SampleGroup_CN = 1,
-                TreeDefaultValue_CN = 1
-            });
-
-            database.Insert(new SampleGroupTreeDefaultValueDO
+                new string[] {"st1", "" },
+                new string[] {"st2", "" },
+            };
+            var unit_strata = new string[][]
             {
-                SampleGroup_CN = 1,
-                TreeDefaultValue_CN = 2
-            });
+                new string[] {"u1", "st1" },
+                new string[] { "u1", "st2" },
+                new string[] { "u2", "st2" },
+            };
 
-            database.Insert(new SampleGroupTreeDefaultValueDO
+            var sampleGroups = new[]
             {
-                SampleGroup_CN = 1,
-                TreeDefaultValue_CN = 3
-            });
+                new{StCode = "st1", SgCode = "sg1", Freq = 101, TallyBySp = 1},
+                new{StCode = "st2", SgCode = "sg2", Freq = 101, TallyBySp = 0},
+            };
 
-            database.Insert(new TallyDO { Hotkey = "A", Description = "something" });
+            var species = new string[] { "sp1", "sp2", "sp3" };
 
-            database.Insert(new CountTreeDO()
+            var tdvs = new[]
             {
-                CuttingUnit_CN = 1,
-                SampleGroup_CN = 1,
-                Tally_CN = 1
-            });
+                // sp, L/D, Prod
+                new[] { "sp1", "L", "01" },
+                new[] { "sp1", "D", "01" },
+                new[] { "sp2", "L", "01" },
+                new[] { "sp3", "L", "01" },
+            };
 
-            database.Insert(new CountTreeDO()
+            var subPops = new string[][]
             {
-                CuttingUnit_CN = 1,
-                SampleGroup_CN = 1,
-                Tally_CN = 1,
-                TreeDefaultValue_CN = 1
-            });
+                // st, sg, sp, ld
+                new[] { "st1", "sg1", "sp1", "L" },
+                new[] { "st1", "sg1", "sp2", "L" },
+                new[] { "st1", "sg1", "sp3", "L" },
+            };
+
+
+            var database = new DAL();
+
+            //HACK: in the current db version there is a foreign key constraint on the Tree view in TreeCalculated values
+            //will be removed but for now lets just drop the TCV table
+            //database.Execute("Drop table TreeCalculatedValues;");
+
+            InitializeDatabase(database, units, strata, unit_strata, sampleGroups, species, tdvs, subPops);
 
             return database;
         }
 
-        #region plot
 
-        [Fact]
-        public void GetNextPlotNumber()
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                datastore.GetNextPlotNumber("u1").Should().Be(1, "unit with no plots, should return 1 for first plot number");
-
-                database.Insert(new PlotDO
-                {
-                    CuttingUnit_CN = 1,
-                    Stratum_CN = 1,
-                    CreatedBy = "someone",
-                    PlotNumber = 1
-                });
-
-                datastore.GetNextPlotNumber("u1").Should().Be(2, "unit with a plot, should return max plot number + 1");
-            }
-        }
-
-        [Fact]
-        public void IsPlotNumberAvalible()
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                datastore.IsPlotNumberAvalible("u1", 1).Should().BeTrue("no plots in unit yet");
-
-                database.Insert(new PlotDO
-                {
-                    CuttingUnit_CN = 1,
-                    Stratum_CN = 1,
-                    CreatedBy = "someone",
-                    PlotNumber = 1
-                });
-
-                datastore.IsPlotNumberAvalible("u1", 1).Should().BeFalse("we just inserted a plot");
-            }
-        }
-
-        [Fact]
-        public void GetPlotsByUnitCode()
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                datastore.GetPlotsByUnitCode("u1").Should().BeEmpty("we havn't added any plots yet");
-
-                database.Insert(new PlotDO
-                {
-                    CuttingUnit_CN = 1,
-                    Stratum_CN = 1,
-                    CreatedBy = "someone",
-                    PlotNumber = 1
-                });
-
-                datastore.GetPlotsByUnitCode("u1").Should().ContainSingle();
-            }
-        }
-
-        [Theory]
-        [InlineData("FIX")]
-        [InlineData("PCM")]
-        [InlineData("FCM")]
-        public void GetPlotStrataProxies(string method)
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                datastore.GetPlotStrataProxies("u1").Should().HaveCount(0);
-
-                database.Insert(new StratumDO() { Stratum_CN = 3, Code = "03", Method = CruiseDAL.Schema.CruiseMethods.FIX });
-                database.Insert(new CuttingUnitStratumDO() { Stratum_CN = 3, CuttingUnit_CN = 1 });
-
-                var result = datastore.GetPlotStrataProxies("u1").ToArray();
-
-                result.Should().HaveCount(1);
-            }
-        }
-
-        [Fact]
-        public void InsertStratumPlot()
-        {
-            var plotNumber = 1;
-            var stratumCode = "st1";
-            var unitCode = "u1";
-            var isEmpty = "True";
-            var kpi = 101;
-            var remarks = "something";
-
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var stratumPlot = new StratumPlot()
-                {
-                    PlotNumber = plotNumber,
-                    StratumCode = stratumCode,
-                    IsEmpty = isEmpty,
-                    KPI = kpi,
-                    Remarks = remarks
-                };
-
-                datastore.InsertStratumPlot(unitCode, stratumPlot);
-
-                var plot_guid = stratumPlot.Plot_GUID;
-                plot_guid.Should().NotBeNullOrEmpty();
-
-                datastore.IsPlotNumberAvalible(unitCode, plotNumber).Should().BeFalse("we just took that plot number");
-
-                var ourStratumPlot = datastore.GetStratumPlot(unitCode, stratumCode, plotNumber);
-                ourStratumPlot.Should().NotBeNull();
-                ourStratumPlot.Plot_GUID.Should().Be(plot_guid);
-                ourStratumPlot.PlotNumber.Should().Be(plotNumber);
-                ourStratumPlot.Remarks.Should().Be(remarks);
-                ourStratumPlot.KPI.Should().Be(kpi);
-                ourStratumPlot.IsEmpty.Should().Be(isEmpty);
-                ourStratumPlot.StratumCode.Should().Be(stratumCode);
-            }
-        }
-
-        [Fact]
-        public void UpdateStratumPlot()
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var stratumPlot = new StratumPlot()
-                {
-                    PlotNumber = 1,
-                    StratumCode = "st1"
-                };
-
-                datastore.InsertStratumPlot("u1", stratumPlot);
-
-                stratumPlot.Remarks = "hey";
-                datastore.UpdateStratumPlot(stratumPlot);
-
-                var ourStratumPlot = datastore.GetStratumPlot("u1", "st1", 1);
-
-                ourStratumPlot.Remarks.Should().Be("hey");
-            }
-        }
-
-        [Fact]
-        public void DeleteStratumPlot()
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var stratumPlot = new StratumPlot()
-                {
-                    PlotNumber = 1,
-                    StratumCode = "st1"
-                };
-
-                datastore.InsertStratumPlot("u1", stratumPlot);
-
-                var echo = datastore.GetStratumPlot("u1", "st1", 1);
-                echo.Should().NotBeNull("where's my echo");
-
-                datastore.DeleteStratumPlot(echo.Plot_GUID);
-            }
-        }
-
-        [Fact]
-        public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_no_tally_setup_noPlot()
-        {
-            var method = CruiseDAL.Schema.CruiseMethods.PNT;
-
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                database.Insert(new CuttingUnitDO
-                {
-                    Code = "u3",
-                    Area = 0
-                });
-
-                database.Insert(new StratumDO
-                {
-                    Code = "st3",
-                    Method = method
-                });
-
-                database.Insert(new StratumDO
-                {
-                    Code = "st4",
-                    Method = CruiseDAL.Schema.CruiseMethods.PCM
-                });
-
-                database.Insert(new CuttingUnitStratumDO
-                {
-                    CuttingUnit_CN = 3,
-                    Stratum_CN = 3
-                });
-
-                database.Insert(new CuttingUnitStratumDO
-                {
-                    CuttingUnit_CN = 3,
-                    Stratum_CN = 4
-                });
-
-                database.Insert(new SampleGroupDO
-                {
-                    Stratum_CN = 3,
-                    Code = "sg3",
-                    CutLeave = "C",
-                    UOM = "01",
-                    PrimaryProduct = "01"
-                });
-
-                database.Insert(new SampleGroupTreeDefaultValueDO
-                {
-                    SampleGroup_CN = 3,
-                    TreeDefaultValue_CN = 1
-                });
-
-                {
-                    //we are going to check that the tally population returned is vallid for a
-                    //tally population with no count tree record associated
-                    //it should return one tally pop per sample group in the unit, that is associated with a FIX or PNT stratum
-                    var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
-                    unit3tallyPops.Should().HaveCount(1);
-                    var unit3tallyPop = unit3tallyPops.Single();
-                    unit3tallyPop.CountTree_CN.Should().BeNull("countTree_CN");
-                    unit3tallyPop.Species.Should().BeNull("Species");
-                    unit3tallyPop.LiveDead.Should().BeNull("liveDead");
-                    unit3tallyPop.StratumCode.Should().Be("st3");
-                    unit3tallyPop.SampleGroupCode.Should().Be("sg3");
-                    unit3tallyPop.InCruise.Should().BeFalse();
-                }
-            }
-        }
-
-        [Fact]
-        public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_no_tally_setup()
-        {
-            var method = CruiseDAL.Schema.CruiseMethods.PNT;
-
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                database.Insert(new CuttingUnitDO
-                {
-                    Code = "u3",
-                    Area = 0
-                });
-
-                database.Insert(new StratumDO
-                {
-                    Code = "st3",
-                    Method = method
-                });
-
-                database.Insert(new StratumDO
-                {
-                    Code = "st4",
-                    Method = CruiseDAL.Schema.CruiseMethods.PCM
-                });
-
-                database.Insert(new CuttingUnitStratumDO
-                {
-                    CuttingUnit_CN = 3,
-                    Stratum_CN = 3
-                });
-
-                database.Insert(new CuttingUnitStratumDO
-                {
-                    CuttingUnit_CN = 3,
-                    Stratum_CN = 4
-                });
-
-                database.Insert(new SampleGroupDO
-                {
-                    Stratum_CN = 3,
-                    Code = "sg3",
-                    CutLeave = "C",
-                    UOM = "01",
-                    PrimaryProduct = "01"
-                });
-
-                database.Insert(new SampleGroupTreeDefaultValueDO
-                {
-                    SampleGroup_CN = 3,
-                    TreeDefaultValue_CN = 1
-                });
-
-                database.Insert(new PlotDO
-                {
-                    CuttingUnit_CN = 3,
-                    Stratum_CN = 3,
-                    PlotNumber = 1
-                });
-
-                {
-                    //we are going to check that the tally population returned is vallid for a
-                    //tally population with no count tree record associated
-                    //it should return one tally pop per sample group in the unit, that is associated with a FIX or PNT stratum
-                    var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
-                    unit3tallyPops.Should().HaveCount(1);
-                    var unit3tallyPop = unit3tallyPops.Single();
-                    unit3tallyPop.CountTree_CN.Should().BeNull("countTree_CN");
-                    unit3tallyPop.Species.Should().BeNull("Species");
-                    unit3tallyPop.LiveDead.Should().BeNull("liveDead");
-                    unit3tallyPop.StratumCode.Should().Be("st3");
-                    unit3tallyPop.SampleGroupCode.Should().Be("sg3");
-                    unit3tallyPop.InCruise.Should().BeTrue();
-                }
-            }
-        }
-
-        [Fact]
-        public void GetPlotTallyPopulationsByUnitCode_noPlot()
-        {
-            var method = CruiseDAL.Schema.CruiseMethods.PCM;
-
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                //set up two cutting units one (u3) will be given a count tree record
-                //the other (u4) will not,
-                //so that we can test situations where count tree records are missing for a unit
-                database.Insert(new CuttingUnitDO
-                {
-                    Code = "u3",
-                    Area = 0,
-                });
-
-                database.Insert(new CuttingUnitDO
-                {
-                    Code = "u4",
-                    Area = 0,
-                });
-
-                database.Insert(new StratumDO
-                {
-                    Code = "st3",
-                    Method = method,
-                });
-
-                database.Insert(new CuttingUnitStratumDO
-                {
-                    CuttingUnit_CN = 3,
-                    Stratum_CN = 3,
-                });
-
-                database.Insert(new CuttingUnitStratumDO
-                {
-                    CuttingUnit_CN = 4,
-                    Stratum_CN = 3,
-                });
-
-                database.Insert(new SampleGroupDO
-                {
-                    Stratum_CN = 3,
-                    Code = "sg3",
-                    CutLeave = "C",
-                    UOM = "01",
-                    PrimaryProduct = "01"
-                });
-
-                database.Insert(new SampleGroupTreeDefaultValueDO
-                {
-                    SampleGroup_CN = 3,
-                    TreeDefaultValue_CN = 1
-                });
-
-                database.Insert(new CountTreeDO()
-                {
-                    CuttingUnit_CN = 3,
-                    SampleGroup_CN = 3,
-                    Tally_CN = 1,
-                    TreeDefaultValue_CN = 1
-                });
-
-                //tally population should
-                var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
-                unit3tallyPops.Should().HaveCount(1);
-                var unit3tallyPop = unit3tallyPops.Single();
-                unit3tallyPop.CountTree_CN.Should().NotBeNull();
-                unit3tallyPop.Species.Should().Be("sp1");
-                unit3tallyPop.StratumCode.Should().Be("st3");
-                unit3tallyPop.SampleGroupCode.Should().Be("sg3");
-                unit3tallyPop.InCruise.Should().BeFalse();
-
-                var unit4tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u4", 1);
-                unit4tallyPops.Should().HaveCount(1);
-                var unit4tallyPop = unit4tallyPops.Single();
-                unit4tallyPop.CountTree_CN.Should().BeNull();
-                unit4tallyPop.InCruise.Should().BeFalse();
-            }
-        }
-
-        [Fact]
-        public void GetPlotTallyPopulationsByUnitCode()
-        {
-            var method = CruiseDAL.Schema.CruiseMethods.PCM;
-
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                //set up two cutting units one (u3) will be given a count tree record
-                //the other (u4) will not,
-                //so that we can test situations where count tree records are missing for a unit
-                database.Insert(new CuttingUnitDO
-                {
-                    Code = "u3",
-                    Area = 0,
-                });
-
-                database.Insert(new CuttingUnitDO
-                {
-                    Code = "u4",
-                    Area = 0,
-                });
-
-                database.Insert(new StratumDO
-                {
-                    Code = "st3",
-                    Method = method,
-                });
-
-                database.Insert(new CuttingUnitStratumDO
-                {
-                    CuttingUnit_CN = 3,
-                    Stratum_CN = 3,
-                });
-
-                database.Insert(new CuttingUnitStratumDO
-                {
-                    CuttingUnit_CN = 4,
-                    Stratum_CN = 3,
-                });
-
-                database.Insert(new SampleGroupDO
-                {
-                    Stratum_CN = 3,
-                    Code = "sg3",
-                    CutLeave = "C",
-                    UOM = "01",
-                    PrimaryProduct = "01"
-                });
-
-                database.Insert(new SampleGroupTreeDefaultValueDO
-                {
-                    SampleGroup_CN = 3,
-                    TreeDefaultValue_CN = 1
-                });
-
-                database.Insert(new CountTreeDO()
-                {
-                    CuttingUnit_CN = 3,
-                    SampleGroup_CN = 3,
-                    Tally_CN = 1,
-                    TreeDefaultValue_CN = 1
-                });
-
-                database.Insert(new PlotDO
-                {
-                    CuttingUnit_CN = 3,
-                    Stratum_CN = 3,
-                    PlotNumber = 1
-                });
-
-                //tally population should
-                var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
-                unit3tallyPops.Should().HaveCount(1);
-                var unit3tallyPop = unit3tallyPops.Single();
-                unit3tallyPop.CountTree_CN.Should().NotBeNull();
-                unit3tallyPop.Species.Should().Be("sp1");
-                unit3tallyPop.StratumCode.Should().Be("st3");
-                unit3tallyPop.SampleGroupCode.Should().Be("sg3");
-                unit3tallyPop.InCruise.Should().BeTrue();
-
-                var unit4tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u4", 1);
-                unit4tallyPops.Should().HaveCount(1);
-                var unit4tallyPop = unit4tallyPops.Single();
-                unit4tallyPop.CountTree_CN.Should().BeNull();
-                unit4tallyPop.InCruise.Should().BeFalse();
-            }
-        }
-
-        #endregion plot
 
         [Theory]
         [InlineData("u1", "st1", "st2")]
@@ -661,20 +163,208 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
-        [Fact]
-        public void GetTallyPopulationsByUnitCode_Test()
+        [Theory]
+        [InlineData("u1", "st1", "sg1", "sp1", "L", true)]
+        [InlineData("u1", "st1", "sg1", null, null, false)]
+        public void GetTallyPopulation(string unitCode, string stratum, string sampleGroup, string species, string liveDead, bool tallyBySubpop)
         {
-            var unitCode = "u1";
+            var tallyDescription = $"{stratum} {sampleGroup} {species} {liveDead}";
+            var hotKey = "A";
+            var method = CruiseDAL.Schema.CruiseMethods.FIX;
 
-            using (var database = CreateDatabase())
+            using (var database = new DAL())
             {
+                database.Execute($"INSERT INTO CuttingUnit (Code) VALUES ('{unitCode}');");
+
+                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{stratum}', '{method}');");
+
+                database.Execute($"INSERT INTO CuttingUnit_Stratum (CuttingUnitCode, StratumCode) VALUES " +
+                    $"('{unitCode}','{stratum}');");
+
+                database.Execute($"INSERT INTO SampleGroup_V3 (StratumCode, SampleGroupCode, SamplingFrequency, TallyBySubPop ) VALUES " +
+                    $"('{stratum}', '{sampleGroup}', 101, {tallyBySubpop});");
+
+                database.Execute($"INSERT INTO Species (Species) VALUES ('{((species == null || species == "") ? "dummy" : species)}');");
+
+                database.Execute(
+                "INSERT INTO SubPopulation (" +
+                "StratumCode, " +
+                "SampleGroupCode, " +
+                "Species, " +
+                "LiveDead)" +
+                "VALUES " +
+                $"('{stratum}', '{sampleGroup}', " +
+                $"'{((species == null || species == "") ? "dummy" : species)}', " +
+                $"'{((liveDead == null || liveDead == "") ? "L" : liveDead)}');");
+
+                database.Execute("INSERT INTO TallyDescription (StratumCode, SampleGroupCode, Species, LiveDead, Description) VALUES " +
+                    "(@p1, @p2, @p3, @p4, @p5);", new object[] { stratum, sampleGroup, species, liveDead, tallyDescription });
+
+                database.Execute("INSERT INTO TallyHotKey (StratumCode, SampleGroupCode, Species, LiveDead, HotKey) VALUES " +
+                    "(@p1, @p2, @p3, @p4, @p5);", new object[] { stratum, sampleGroup, species, liveDead, hotKey });
+
+                var datastore = new CuttingUnitDatastore(database);
+
+                var pop = datastore.GetTallyPopulation(unitCode, stratum, sampleGroup, species, liveDead);
+                pop.Should().NotBeNull();
+
+                VerifyTallyPopulation(pop);
+
+                pop.TallyDescription.Should().NotBeNullOrWhiteSpace();
+                pop.TallyHotKey.Should().NotBeNullOrWhiteSpace();
+                pop.Method.Should().NotBeNullOrWhiteSpace();
+            }
+        }
+
+        [Fact]
+        public void GetTallyPopulationsByUnitCode_with_tallybysubpop_Test()
+        {
+            string unitCode = "u1";
+            string stratum = "st1";
+            string sampleGroup = "sg1";
+            string[] species = new string[] { "sp1", "sp2" };
+            string liveDead = "L";
+
+            var tallyBySubpop = true;
+            //var method = CruiseDAL.Schema.CruiseMethods.FIX;
+
+            using (var database = new DAL())
+            {
+                database.Execute($"INSERT INTO CuttingUnit (Code) VALUES ('{unitCode}');");
+
+                database.Execute($"INSERT INTO Stratum (Code) VALUES ('{stratum}');");
+
+                database.Execute($"INSERT INTO CuttingUnit_Stratum (CuttingUnitCode, StratumCode) VALUES " +
+                    $"('{unitCode}','{stratum}');");
+
+                database.Execute($"INSERT INTO SampleGroup_V3 (StratumCode, SampleGroupCode, SamplingFrequency, TallyBySubPop ) VALUES " +
+                    $"('{stratum}', '{sampleGroup}', 101, {tallyBySubpop});");
+
+                foreach (var sp in species)
+                {
+                    database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
+
+                    database.Execute(
+                        "INSERT INTO SubPopulation (" +
+                        "StratumCode, " +
+                        "SampleGroupCode, " +
+                        "Species, " +
+                        "LiveDead)" +
+                        "VALUES " +
+                        $"('{stratum}', '{sampleGroup}', '{sp}', '{liveDead}');");
+                }
+
                 var datastore = new CuttingUnitDatastore(database);
 
                 var results = datastore.GetTallyPopulationsByUnitCode(unitCode);
-                results.Should().HaveCount(2);
+                results.Should().HaveCount(species.Count());
 
                 foreach (var pop in results)
                 {
+                    VerifyTallyPopulation(pop);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetTallyPopulationsByUnitCode_with_TallyBySG_Test()
+        {
+            string unitCode = "u1";
+            string stratum = "st1";
+            string sampleGroup = "sg1";
+            string[] species = new string[] { "sp1", "sp2" };
+            string liveDead = "L";
+
+            var tallyBySubpop = false;
+            //var method = CruiseDAL.Schema.CruiseMethods.FIX;
+
+            using (var database = new DAL())
+            {
+                database.Execute($"INSERT INTO CuttingUnit (Code) VALUES ('{unitCode}');");
+
+                database.Execute($"INSERT INTO Stratum (Code) VALUES ('{stratum}');");
+
+                database.Execute($"INSERT INTO CuttingUnit_Stratum (CuttingUnitCode, StratumCode) VALUES " +
+                    $"('{unitCode}','{stratum}');");
+
+                database.Execute($"INSERT INTO SampleGroup_V3 (StratumCode, SampleGroupCode, SamplingFrequency, TallyBySubPop ) VALUES " +
+                    $"('{stratum}', '{sampleGroup}', 101, {tallyBySubpop});");
+
+                foreach (var sp in species)
+                {
+                    database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
+
+                    database.Execute(
+                        "INSERT INTO SubPopulation (" +
+                        "StratumCode, " +
+                        "SampleGroupCode, " +
+                        "Species, " +
+                        "LiveDead)" +
+                        "VALUES " +
+                        $"('{stratum}', '{sampleGroup}', '{sp}', '{liveDead}');");
+                }
+
+                var datastore = new CuttingUnitDatastore(database);
+
+                var results = datastore.GetTallyPopulationsByUnitCode(unitCode);
+                results.Should().HaveCount(1);
+
+                foreach (var pop in results)
+                {
+                    VerifyTallyPopulation(pop);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetTallyPopulationsByUnitCode_Test_with_clicker_tally()
+        {
+            string unitCode = "u1";
+            string stratum = "st1";
+            string sampleGroup = "sg1";
+            string[] species = new string[] { "sp1", "sp2" };
+            string liveDead = "L";
+
+            var tallyBySubpop = false;
+
+            using (var database = new DAL())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                database.Execute($"INSERT INTO CuttingUnit (Code) VALUES ('{unitCode}');");
+
+                database.Execute($"INSERT INTO Stratum (Code) VALUES ('{stratum}');");
+
+                database.Execute($"INSERT INTO CuttingUnit_Stratum (CuttingUnitCode, StratumCode) VALUES " +
+                    $"('{unitCode}','{stratum}');");
+
+                database.Execute($"INSERT INTO SampleGroup_V3 (StratumCode, SampleGroupCode, SamplingFrequency, TallyBySubPop ) VALUES " +
+                    $"('{stratum}', '{sampleGroup}', 101, {tallyBySubpop});");
+
+                foreach (var sp in species)
+                {
+                    database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
+
+                    database.Execute(
+                        "INSERT INTO SubPopulation (" +
+                        "StratumCode, " +
+                        "SampleGroupCode, " +
+                        "Species, " +
+                        "LiveDead)" +
+                        "VALUES " +
+                        $"('{stratum}', '{sampleGroup}', '{sp}', '{liveDead}');");
+                }
+
+                database.Execute($"INSERT INTO SamplerState (StratumCode, SampleGroupCode, SampleSelectorType) " +
+                    $"SELECT StratumCode, SampleGroupCode, '{CruiseDAL.Schema.CruiseMethods.CLICKER_SAMPLER_TYPE}' AS SampleSelectorType FROM SampleGroup_V3;");
+
+                var results = datastore.GetTallyPopulationsByUnitCode(unitCode);
+                //results.Should().HaveCount(2);
+
+                foreach (var pop in results)
+                {
+                    pop.IsClickerTally.Should().BeTrue();
+
                     VerifyTallyPopulation(pop);
                 }
             }
@@ -689,65 +379,31 @@ namespace FScruiser.Core.Test.Services
 
             result.SampleGroupCode.Should().NotBeNullOrEmpty();
             result.StratumCode.Should().NotBeNullOrEmpty();
-            result.TallyDescription.Should().NotBeNullOrWhiteSpace();
-            result.TallyHotKey.Should().NotBeNullOrWhiteSpace();
-            result.Method.Should().NotBeNullOrWhiteSpace();
-        }
 
-        [Fact]
-        public void GetTallyPopulationsByUnitCode_with_species_Test()
-        {
-            var unitCode = "u1";
-            var species = "specialSepecies";
-
-            using (var database = CreateDatabase())
-            {
-                var treeDefaultValue_CN = (long)database.Insert(new TreeDefaultValueDO()
-                {
-                    PrimaryProduct = "01",
-                    LiveDead = "L",
-                    Species = species
-                });
-
-                database.Insert(new CountTreeDO
-                {
-                    Tally_CN = 1,
-                    CuttingUnit_CN = 1,
-                    SampleGroup_CN = 1,
-                    TreeDefaultValue_CN = treeDefaultValue_CN
-                });
-
-                var datastore = new CuttingUnitDatastore(database);
-
-                var results = datastore.GetTallyPopulationsByUnitCode(unitCode);
-
-                var expectedTallyPop = results.Where(x => x.Species == species).Single();
-
-                VerifyTallyPopulation(expectedTallyPop, species);
-            }
+            result.Frequency.Should().BeGreaterThan(0);
         }
 
         #region tree
 
         [Theory]
-        [InlineData("u1", "st1", null, "", "", null)]
-        [InlineData("u1", "st1", "sg1", "sp1", "L", "C")]
-        public void GetTreeStub(string unitCode, string stratumCode, string sgCode, string species, string liveDead, string countMeasure)
+        [InlineData("u1", "st1", null, "", "", Skip = "sampleGroup is required now")]
+        [InlineData("u1", "st1", "sg1", "sp1", "L")]
+        public void GetTreeStub(string unitCode, string stratumCode, string sgCode, string species, string liveDead)
         {
             using (var database = CreateDatabase())
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_GUID = datastore.CreateTree(unitCode, stratumCode, sgCode, species, liveDead, countMeasure);
+                var tree_GUID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead);
 
                 var tree = datastore.GetTreeStub(tree_GUID);
                 tree.Should().NotBeNull();
 
-                tree.Tree_GUID.Should().Be(tree_GUID);
+                tree.TreeID.Should().Be(tree_GUID);
                 tree.StratumCode.Should().Be(stratumCode);
                 tree.SampleGroupCode.Should().Be(sgCode);
                 tree.Species.Should().Be(species);
-                tree.CountOrMeasure.Should().Be(countMeasure);
+                //tree.CountOrMeasure.Should().Be(countMeasure);
             }
         }
 
@@ -759,32 +415,30 @@ namespace FScruiser.Core.Test.Services
             var sgCode = "sg1";
             var species = "sp1";
             var liveDead = "L";
-            var countMeasure = "C";
+            //var countMeasure = "C";
             var treeCount = 1;
 
             using (var database = CreateDatabase())
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_GUID = datastore.CreateTree(unitCode, stratumCode, sgCode, species, liveDead, countMeasure, treeCount);
+                var treeID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
 
-                var tree = datastore.GetTree(tree_GUID);
+                var tree = datastore.GetTree(treeID);
                 tree.Should().NotBeNull();
 
                 //tree.CuttingUnit_CN.Should().Be(1);
-                tree.Tree_GUID.Should().Be(tree_GUID);
+                tree.TreeID.Should().Be(treeID);
                 tree.StratumCode.Should().Be(stratumCode);
                 tree.SampleGroupCode.Should().Be(sgCode);
                 tree.Species.Should().Be(species);
                 tree.LiveDead.Should().Be(liveDead);
-                tree.CountOrMeasure.Should().Be(countMeasure);
-                tree.TreeCount.Should().Be(treeCount);
-
-                database.ExecuteScalar<int>("SELECT Stratum_CN FROM Tree WHERE Tree_GUID = @p1", tree_GUID.ToString()).Should().Be(1);
-                database.ExecuteScalar<int>("SELECT SampleGroup_CN FROM Tree WHERE Tree_GUID = @p1", tree_GUID.ToString()).Should().Be(1);
-                database.ExecuteScalar<int>("SELECT TreeDefaultValue_CN FROM Tree WHERE Tree_GUID = @p1", tree_GUID.ToString()).Should().Be(1);
+                //tree.CountOrMeasure.Should().Be(countMeasure);
+                //tree.TreeCount.Should().Be(treeCount);
             }
         }
+
+        
 
         [Fact]
         public void UpdateTree()
@@ -794,14 +448,13 @@ namespace FScruiser.Core.Test.Services
             var sgCode = "sg1";
             var species = "sp1";
             var liveDead = "L";
-            var countMeasure = "C";
             var treeCount = 1;
 
             using (var database = CreateDatabase())
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_GUID = datastore.CreateTree(unitCode, stratumCode, sgCode, species, liveDead, countMeasure, treeCount);
+                var tree_GUID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
 
                 var tree = datastore.GetTree(tree_GUID);
                 tree.Should().NotBeNull();
@@ -824,14 +477,13 @@ namespace FScruiser.Core.Test.Services
             var sgCode = "sg1";
             var species = "sp1";
             var liveDead = "L";
-            var countMeasure = "C";
             var treeCount = 1;
 
             using (var database = CreateDatabase())
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_GUID = datastore.CreateTree(unitCode, stratumCode, sgCode, species, liveDead, countMeasure, treeCount);
+                var tree_GUID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
 
                 var tree = datastore.GetTree(tree_GUID);
                 tree.Should().NotBeNull();
@@ -847,85 +499,145 @@ namespace FScruiser.Core.Test.Services
 
         #region tally entry
 
+        [Fact]
+        public void GetTallyEntry()
+        {
+            var unit = "u1";
+            var stratum = "st1";
+            var sampleGroup = "sg1";
+            var species = "sp1";
+            var liveDead = "L";
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var pop = datastore.GetTallyPopulation(unit, stratum, sampleGroup, species, liveDead);
+
+                datastore.InsertTallyAction(new TallyAction(unit, pop));
+
+                var tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
+
+                tallyEntries.Should().HaveCount(1);
+
+                datastore.InsertTallyLedger(new TallyLedger(unit, pop));
+
+                tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
+
+                tallyEntries.Should().HaveCount(2);
+            }
+        }
+
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("", "")]
-        [InlineData("sp1", "L")]
-        public void InsertTallyEntry(string species, string liveDead)
+        [InlineData("st2", "sg2", null, null, false)]
+        [InlineData("st2", "sg2", "", "", false)]// not tally by subpop
+        [InlineData("st1", "sg1", "sp1", "L", false)]// tally by subpop
+        public void InsertTallyEntry(string stratumCode, string sgCode, string species, string liveDead, bool isSample)
         {
             var unitCode = "u1";
-            var stratumCode = "st1";
-            var sgCode = "sg1";
-            var countMeasure = "C";
             var treeCount = 50;
 
             using (var database = CreateDatabase())
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var pop = datastore.GetTallyPopulationsByUnitCode(unitCode)
-                    .Where(x => (x.Species ?? "") == (species ?? ""))
-                    .FirstOrDefault();
+                var pop = datastore.GetTallyPopulation(unitCode, stratumCode, sgCode, species, liveDead);
 
                 pop.Should().NotBeNull();
 
-                var tallyEntry = new TallyEntry(unitCode, pop)
+                var tallyAction = new TallyAction(unitCode, pop)
                 {
-                    Tree_GUID = Guid.NewGuid().ToString(),
-                    //UnitCode = unitCode,
-                    //StratumCode = stratumCode,
-                    //SGCode = sgCode,
-                    //Species = species,
-                    //LiveDead = liveDead,
-                    CountOrMeasure = countMeasure,
-                    TreeCount = treeCount
+                    IsSample = isSample,
+                    TreeCount = treeCount,
                 };
 
-                datastore.InsertTallyEntry(tallyEntry);
+                var entry = datastore.InsertTallyAction(tallyAction);
 
-                tallyEntry.TallyLedgerID.Should().NotBeEmpty();
-                tallyEntry.TreeNumber.Should().NotBeNull();
+                entry.TallyLedgerID.Should().NotBeEmpty();
 
-                var resultTallyEntry = database.From<TallyEntry>()
-                    .LeftJoin("Tree", "USING (Tree_GUID)")
+                ValidateTallyEntry(entry, isSample);
+
+                var entryAgain = database.From<TallyEntry>()
+                    .LeftJoin("Tree_V3", "USING (TreeID)")
                     .Where("TallyLedgerID = @p1")
-                    .Query(tallyEntry.TallyLedgerID)
+                    .Query(entry.TallyLedgerID)
                     .FirstOrDefault();
 
-                resultTallyEntry.Should().NotBeNull();
-                resultTallyEntry.TreeNumber.Should().NotBeNull();
+                ValidateTallyEntry(entryAgain, isSample);
 
-                var tree = database.From<TreeDO>().Where("Tree_GUID = @p1").Query(tallyEntry.Tree_GUID).FirstOrDefault();
-                var stratum_CN = database.ExecuteScalar<long?>("SELECT Stratum_CN FROM Stratum WHERE Code = @p1;", stratumCode);
-                var sg_CN = database.ExecuteScalar<long?>("SELECT SampleGroup_CN FROM SampleGroup WHERE Code = @p1;", sgCode);
+                //var tree = database.From<Tree>().Where("TreeID = @p1").Query(entry.TreeID).FirstOrDefault();
 
-                tree.Should().NotBeNull();
-
-                tree.Tree_GUID.Should().Be(tallyEntry.Tree_GUID);
-                tree.Stratum_CN.Should().Be(stratum_CN);
-                tree.SampleGroup_CN.Should().Be(sg_CN);
-                tree.Species.Should().Be(species ?? "");
-                tree.LiveDead.Should().Be(liveDead ?? "");
-                tree.CountOrMeasure.Should().Be(countMeasure);
-                tree.TreeCount.Should().Be(treeCount);
-
-                if (string.IsNullOrWhiteSpace(species))
+                if (isSample)
                 {
-                    tree.TreeDefaultValue_CN.Should().BeNull();
-                }
-                else
-                {
-                    tree.TreeDefaultValue_CN.Should().NotBeNull();
-                }
+                    var tree = datastore.GetTree(entry.TreeID);
 
-                var countTree = database.From<CountTreeDO>().LeftJoin("TreeDefaultValue AS TDV", "USING (TreeDefaultValue_CN)")
-                    .Where("ifnull(TDV.Species, '') = ifnull(@p1, '')").Query(species).Single();
+                    tree.Should().NotBeNull();
 
-                countTree.TreeCount.Should().Be(treeCount);
+                    tree.TreeID.Should().Be(entry.TreeID);
+                    tree.StratumCode.Should().Be(stratumCode);
+                    tree.SampleGroupCode.Should().Be(sgCode);
+                    tree.Species.Should().Be(species ?? "");
+                    tree.LiveDead.Should().Be(liveDead ?? "");
+                    tree.CountOrMeasure.Should().Be(isSample ? "M" : "C");
+                }
 
                 var tallyPopulate = datastore.GetTallyPopulationsByUnitCode(unitCode).Where(x => (x.Species ?? "") == (species ?? "")).Single();
 
                 tallyPopulate.TreeCount.Should().Be(treeCount);
+            }
+        }
+
+        private void ValidateTallyEntry(TallyEntry entry, bool isSample, string entryType = "tally")
+        {
+            entry.Should().NotBeNull();
+            entry.TallyLedgerID.Should().NotBeNull();
+
+            if (isSample)
+            {
+                entry.TreeNumber.Should().NotBeNull();
+            }
+            else
+            {
+                entry.TreeNumber.Should().BeNull();
+            }
+
+            entry.EntryType.Should().BeEquivalentTo(entryType);
+        }
+
+        [Fact]
+        public void InsertTallyLedger()
+        {
+            string unitCode = "u1";
+            string stratum = "st1";
+            string sampleGroup = "sg1";
+            string species = "sp1";
+            string liveDead = "L";
+
+            int treeCountDiff = 1;
+            int kpi = 1;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var pop = datastore.GetTallyPopulation(unitCode, stratum, sampleGroup, species, liveDead);
+                pop.Should().NotBeNull();
+                VerifyTallyPopulation(pop);
+                pop.TreeCount.Should().Be(0);
+                pop.SumKPI.Should().Be(0);
+
+                var tallyLedger = new TallyLedger(unitCode, pop);
+                tallyLedger.TreeCount = treeCountDiff;
+                tallyLedger.KPI = 1;
+
+                datastore.InsertTallyLedger(tallyLedger);
+
+                database.ExecuteScalar<int>("SELECT count(*) FROM TallyLedger;").Should().Be(1);
+                database.ExecuteScalar<int>("SELECT sum(TreeCount) FROM TallyLedger;").Should().Be(treeCountDiff);
+
+                var popAfter = datastore.GetTallyPopulation(unitCode, stratum, sampleGroup, species, liveDead);
+                popAfter.TreeCount.Should().Be(treeCountDiff);
+                popAfter.SumKPI.Should().Be(kpi);
             }
         }
 
@@ -945,32 +657,27 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tallyEntry = new TallyEntry()
-                {
-                    TallyLedgerID = tallyLedgerID,
-                    UnitCode = unitCode,
-                    SampleGroupCode = sgCode,
-                    StratumCode = stratumCode,
-                    Species = species,
-                    LiveDead = liveDead,
-                    Tree_GUID = tree_guid,
-                    TreeCount = treeCount
-                };
-
-                datastore.InsertTallyEntry(tallyEntry);
-
-                datastore.DeleteTally(tallyEntry);
-
-                var tallyPop = datastore.GetTallyPopulationsByUnitCode(unitCode).Where(x => x.StratumCode == stratumCode
-                && x.SampleGroupCode == sgCode
-                && x.Species == species).Single();
+                var tallyPop = datastore.GetTallyPopulation(unitCode, stratumCode, sgCode, species, liveDead);
 
                 tallyPop.Should().NotBeNull("tallyPop");
 
-                tallyPop.TreeCount.Should().Be(0, "TreeCount");
-                tallyPop.SumKPI.Should().Be(0, "SumKPI");
+                var tallyEntry = new TallyAction(unitCode, tallyPop)
+                {
+                    TreeCount = treeCount
+                };
 
-                database.ExecuteScalar<int>("SELECT count(*) FROM Tree WHERE Tree_GUID = @p1", tree_guid).Should().Be(0, "tree should be deleted");
+                var entry = datastore.InsertTallyAction(tallyEntry);
+
+                datastore.DeleteTallyEntry(entry.TallyLedgerID);
+
+                var tallyPopAgain = datastore.GetTallyPopulationsByUnitCode(unitCode).Where(x => x.StratumCode == stratumCode
+                && x.SampleGroupCode == sgCode
+                && x.Species == species).Single();
+
+                tallyPopAgain.TreeCount.Should().Be(0, "TreeCount");
+                tallyPopAgain.SumKPI.Should().Be(0, "SumKPI");
+
+                database.ExecuteScalar<int>("SELECT count(*) FROM Tree_V3 WHERE TreeID = @p1", entry.TreeID).Should().Be(0, "tree should be deleted");
             }
         }
 
@@ -985,9 +692,9 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_guid = datastore.CreateTree("u1", "st1");
+                var tree_guid = datastore.CreateMeasureTree("u1", "st1", "sg1");
 
-                var log = new Log() { Tree_GUID = tree_guid };
+                var log = new Log() { TreeID = tree_guid };
 
                 var randomizer = new Randomizer(8675309);
 
@@ -1002,7 +709,7 @@ namespace FScruiser.Core.Test.Services
                 log.LargeEndDiameter = randomizer.Double();
                 log.Length = randomizer.Int();
                 log.LogNumber = randomizer.Int();
-                log.ModifiedBy = randomizer.String();
+                //log.ModifiedBy = randomizer.String();
                 log.NetBoardFoot = randomizer.Double();
                 log.NetCubicFoot = randomizer.Double();
                 log.PercentRecoverable = randomizer.Double();
@@ -1011,8 +718,8 @@ namespace FScruiser.Core.Test.Services
 
                 datastore.InsertLog(log);
 
-                log.Log_GUID.Should().NotBeNullOrWhiteSpace();
-                Guid.TryParse(log.Log_GUID, out Guid log_guid).Should().BeTrue();
+                log.LogID.Should().NotBeNullOrWhiteSpace();
+                Guid.TryParse(log.LogID, out Guid log_guid).Should().BeTrue();
                 log_guid.Should().NotBe(Guid.Empty);
             }
         }
@@ -1024,10 +731,9 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_guid = datastore.CreateTree("u1", "st1");
+                var tree_guid = datastore.CreateMeasureTree("u1", "st1", "sg1");
 
-
-                var log = new Log() { Tree_GUID = tree_guid, LogNumber = 1 };
+                var log = new Log() { TreeID = tree_guid, LogNumber = 1 };
                 datastore.InsertLog(log);
 
                 var randomizer = new Randomizer(8675309);
@@ -1043,7 +749,7 @@ namespace FScruiser.Core.Test.Services
                 log.LargeEndDiameter = randomizer.Double();
                 log.Length = randomizer.Int();
                 log.LogNumber = randomizer.Int();
-                log.ModifiedBy = randomizer.String(10);
+                //log.ModifiedBy = randomizer.String(10);
                 log.NetBoardFoot = randomizer.Double();
                 log.NetCubicFoot = randomizer.Double();
                 log.PercentRecoverable = randomizer.Double();
@@ -1052,9 +758,12 @@ namespace FScruiser.Core.Test.Services
 
                 datastore.UpdateLog(log);
 
-                var logAgain = datastore.GetLog(log.Log_GUID);
+                var logAgain = datastore.GetLog(log.LogID);
 
-                logAgain.Should().BeEquivalentTo(log);
+                var eqivConfig = new EquivalencyAssertionOptions<Log>();
+                eqivConfig.Excluding(x => x.CreatedBy);
+
+                logAgain.Should().BeEquivalentTo(log, config: x => x.Excluding(l => l.CreatedBy));
             }
         }
 
@@ -1065,19 +774,18 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_guid = datastore.CreateTree("u1", "st1");
+                var treeID = datastore.CreateMeasureTree("u1", "st1", "sg1");
 
-
-                var log = new Log() { Tree_GUID = tree_guid, LogNumber = 1 };
+                var log = new Log() { TreeID = treeID, LogNumber = 1 };
                 datastore.InsertLog(log);
 
-                datastore.DeleteLog(log.Log_GUID); 
+                datastore.DeleteLog(log.LogID);
 
-                var logAgain = datastore.GetLog(log.Log_GUID);
+                var logAgain = datastore.GetLog(log.LogID);
                 logAgain.Should().BeNull();
             }
         }
 
-        #endregion
+        #endregion logs
     }
 }

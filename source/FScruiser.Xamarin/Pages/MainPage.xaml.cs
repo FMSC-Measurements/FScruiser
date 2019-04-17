@@ -27,12 +27,7 @@ namespace FScruiser.XF.Pages
             {
                 InitializeComponent();
 
-                Prism.Mvvm.ViewModelLocator.SetAutowireViewModel(this, true);
-
                 MenuItemsListView.ItemSelected += ListView_ItemSelected;
-
-                //var viewModel = new MasterViewModel(Navigation);
-                //MasterPage.BindingContext = viewModel;
 
                 MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_OPENED, (sender, path) =>
                 {

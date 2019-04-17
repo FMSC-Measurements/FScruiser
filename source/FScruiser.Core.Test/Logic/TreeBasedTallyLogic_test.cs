@@ -1,5 +1,4 @@
-﻿using CruiseDAL.DataObjects;
-using CruiseDAL.Schema;
+﻿using CruiseDAL.Schema;
 using FluentAssertions;
 using FMSC.Sampling;
 using FScruiser.Logic;

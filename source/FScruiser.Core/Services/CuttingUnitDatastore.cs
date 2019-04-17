@@ -1,10 +1,8 @@
 ﻿using CruiseDAL;
-using CruiseDAL.DataObjects;
 using CruiseDAL.Schema;
 using FMSC.ORM.Core.SQL.QueryBuilder;
 using FMSC.ORM.EntityModel.Attributes;
 using FScruiser.Models;
-using FScruiser.Validation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,22 +14,10 @@ namespace FScruiser.Services
     {
         private const int NUMBER_OF_TALLY_ENTRIES_PERPAGE = 20;
 
-        private readonly string PLOT_METHODS = String.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray());
-
-        private const string CREATE_TREE_COMMAND = "INSERT INTO Tree " +
-                "(Tree_GUID, TreeNumber, CuttingUnit_CN, Stratum_CN, SampleGroup_CN, TreeDefaultValue_CN, Species, LiveDead, CountOrMeasure, TreeCount, KPI, STM) " +
-                "VALUES (@p1,\r\n " +
-                "(SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree JOIN CuttingUnit USING (CuttingUnit_CN) WHERE CuttingUnit.Code = @p2 AND Tree.Plot_CN IS NULL),\r\n " +
-                "(SELECT CuttingUnit_CN FROM CuttingUnit WHERE Code = @p2),\r\n " +
-                "(SELECT Stratum_CN FROM Stratum WHERE Code = @p3),\r\n " +
-                "(SELECT SampleGroup_CN FROM SampleGroup JOIN Stratum USING (Stratum_CN) WHERE SampleGroup.Code = @p4 AND Stratum.Code = @p3),\r\n " +
-                "(SELECT TreeDefaultValue_CN FROM SampleGroupTreeDefaultValue JOIN SampleGroup USING (SampleGroup_CN) JOIN Stratum USING (Stratum_CN) JOIN TreeDefaultValue USING (TreeDefaultValue_CN) WHERE SampleGroup.Code = @p4 AND Stratum.Code = @p3 AND TreeDefaultValue.Species = @p5 AND TreeDefaultValue.LiveDead = @p6),\r\n " +
-                "@p5,\r\n" + //species
-                "@p6,\r\n" + //liveDead
-                "@p7,\r\n " + //countMeasure
-                "@p8,\r\n  " + //treecount
-                "@p9,\r\n " + //kpi
-                "@p10);\r\n "; //stm
+        private readonly string PLOT_METHODS = String.Join(", ", CruiseMethods.PLOT_METHODS
+            .Append(CruiseMethods.THREEPPNT)
+            .Append(CruiseMethods.FIXCNT)
+            .Select(x => "'" + x + "'").ToArray());
 
         private DAL _database;
 
@@ -44,6 +30,9 @@ namespace FScruiser.Services
                 OnDatabaseChanged();
             }
         }
+
+        protected string CurrentTimeStamp => DateTime.Now.ToString();
+        protected string UserName => "AndroidUser";
 
         public CuttingUnitDatastore(string path)
         {
@@ -70,23 +59,25 @@ namespace FScruiser.Services
             return Database.ExecuteScalar<string>("SELECT Purpose FROM Sale LIMIT 1;");
         }
 
+        #region units
+
         public CuttingUnit_Ex GetUnit(string code)
         {
             var unit = Database.From<CuttingUnit_Ex>()
                 .Where("Code = @p1")
                 .Query(code).FirstOrDefault();
 
-            unit.HasPlotStrata = Database.ExecuteScalar<int>("SELECT count(*) FROM CuttingUnitStratum AS [cust] " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "WHERE CuttingUnit.Code = @p1 " +
-                $"AND Stratum.Method IN ({PLOT_METHODS});", code) > 0;
+            unit.HasPlotStrata = Database.ExecuteScalar<int>("SELECT count(*) FROM CuttingUnit_Stratum AS cust " +
+                "JOIN Stratum AS st ON cust.StratumCode = st.Code " +
+                "JOIN CuttingUnit AS cu ON cust.CuttingUnitCode = cu.Code " +
+                "WHERE cust.CuttingUnitCode = @p1 " +
+                $"AND st.Method IN ({PLOT_METHODS});", code) > 0;
 
-            unit.HasTreeStrata = Database.ExecuteScalar<int>("SELECT count(*) FROM CuttingUnitStratum AS [cust] " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "WHERE CuttingUnit.Code = @p1 " +
-                $"AND Stratum.Method NOT IN ({PLOT_METHODS});", code) > 0;
+            unit.HasTreeStrata = Database.ExecuteScalar<int>("SELECT count(*) FROM CuttingUnit_Stratum AS [cust] " +
+                "JOIN Stratum AS st ON cust.StratumCode = st.Code " +
+                "JOIN CuttingUnit AS cu ON cust.CuttingUnitCode = cu.Code " +
+                "WHERE cust.CuttingUnitCode = @p1 " +
+                $"AND st.Method NOT IN ({PLOT_METHODS});", code) > 0;
 
             return unit;
         }
@@ -97,28 +88,63 @@ namespace FScruiser.Services
                 .Query().ToArray();
         }
 
+        #endregion units
+
         #region plot
+
+        public Plot GetPlot(string plotID)
+        {
+            return Database.Query<Plot>(
+                "SELECT " +
+                    "p.PlotID, " +
+                    "p.CuttingUnitCode, " +
+                    "p.PlotNumber, " +
+                    "p.Slope, " +
+                    "p.Aspect, " +
+                    "p.Remarks, " +
+                    "p.XCoordinate, " +
+                    "p.YCoordinate, " +
+                    "p.ZCoordinate " +
+                "FROM Plot_V3 AS p " +
+                "WHERE PlotID = @p1;", new object[] { plotID })
+                .FirstOrDefault();
+        }
+
+        public Plot GetPlot(string cuttingUnitCode, int plotNumber)
+        {
+            return Database.Query<Plot>(
+                "SELECT " +
+                    "p.PlotID, " +
+                    "p.CuttingUnitCode, " +
+                    "p.PlotNumber, " +
+                    "p.Slope, " +
+                    "p.Aspect, " +
+                    "p.Remarks, " +
+                    "p.XCoordinate, " +
+                    "p.YCoordinate, " +
+                    "p.ZCoordinate " +
+                "FROM Plot_V3 AS p " +
+                "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2;", new object[] { cuttingUnitCode, plotNumber })
+                .FirstOrDefault();
+        }
 
         public int GetNextPlotNumber(string unitCode)
         {
-            return Database.ExecuteScalar<int>("SELECT ifnull(max(PlotNumber), 0) + 1 FROM Plot " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "WHERE CuttingUnit.Code = @p1;", unitCode);
+            return Database.ExecuteScalar<int>("SELECT ifnull(max(PlotNumber), 0) + 1 FROM Plot_V3 AS p " +
+                "JOIN CuttingUnit AS cu ON cu.Code = p.CuttingUnitCode " +
+                "WHERE p.CuttingUnitCode = @p1;", unitCode);
         }
 
         public bool IsPlotNumberAvalible(string unitCode, int plotNumber)
         {
-            return Database.ExecuteScalar<int>("SELECT count(*) FROM Plot " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "WHERE CuttingUnit.Code = @p1 AND PlotNumber = @p2;", unitCode, plotNumber) == 0;
+            return Database.ExecuteScalar<int>("SELECT count(*) FROM Plot_V3 AS p " +
+                "WHERE p.CuttingUnitCode = @p1 AND p.PlotNumber = @p2;", unitCode, plotNumber) == 0;
         }
 
         public IEnumerable<Plot> GetPlotsByUnitCode(string unit)
         {
-            return Database.Query<Plot>("SELECT PlotNumber, CuttingUnit_CN  FROM Plot " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "WHERE CuttingUnit.Code = @p1 " +
-                " GROUP BY PlotNumber, CuttingUnit_CN;"
+            return Database.Query<Plot>("SELECT *  FROM Plot_V3 " +
+                "WHERE CuttingUnitCode = @p1;"
                 , new object[] { unit });
         }
 
@@ -132,142 +158,316 @@ namespace FScruiser.Services
         //        , new object[] { unitCode, plotNumber }).FirstOrDefault();
         //}
 
-        public IEnumerable<StratumPlot> GetStratumPlots(string unitCode, int plotNumber, bool insertIfNotExists = false)
+        public IEnumerable<Plot_Stratum> GetPlot_Strata(string unitCode, int plotNumber, bool insertIfNotExists = false)
         {
-            var stratumPlots = new List<StratumPlot>();
-
-            var strata = GetPlotStrataProxies(unitCode).ToArray();
-
-            foreach (var stratum in strata)
-            {
-                var stratumPlot = GetStratumPlot(unitCode, stratum.Code, plotNumber, insertIfNotExists);
-
-                stratumPlots.Add(stratumPlot);
-            }
-
-            return stratumPlots.ToArray();
+            return Database.Query<Plot_Stratum>(
+                "SELECT " +
+                    "ps.Plot_Stratum_CN, " +
+                    "(CASE WHEN ps.Plot_Stratum_CN IS NOT NULL THEN 1 ELSE 0 END) AS InCruise, " +
+                    "st.Code AS StratumCode, " +
+                    "p.CuttingUnitCode, " +
+                    "p.PlotNumber, " +
+                    "st.BasalAreaFactor AS BAF, " +
+                    "st.FixedPlotSize AS FPS, " +
+                    "st.Method AS CruiseMethod, " +
+                    "st.KZ3PPNT AS KZ, " +
+                    "ps.IsEmpty," +
+                    "ps.KPI " +
+                "FROM Plot_V3 AS p " +
+                "JOIN CuttingUnit_Stratum AS cust USING (CuttingUnitCode) " +
+                "JOIN Stratum AS st ON cust.StratumCode = st.Code " +
+                "LEFT JOIN Plot_Stratum AS ps USING (CuttingUnitCode, StratumCode, PlotNumber) " +
+                "WHERE p.CuttingUnitCode = @p1 " +
+                "AND p.PlotNumber = @p2;",
+                new object[] { unitCode, plotNumber }).ToArray();
         }
 
-        public StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber, bool insertIfNotExists = false)
+        public Plot_Stratum GetPlot_Stratum(string unitCode, string stratumCode, int plotNumber)
         {
-            var stratumPlot = Database.Query<StratumPlot>("SELECT 1 AS InCruise, Stratum.Code AS StratumCode, Plot.* FROM Plot " +
-                    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                    "JOIN Stratum USING (Stratum_CN) " +
-                    "WHERE CuttingUnit.Code = @p1 " +
-                    "AND Stratum.Code = @p2 " +
-                    "AND PlotNumber = @p3;", new object[] { unitCode, stratumCode, plotNumber }).FirstOrDefault();
+            // we're going to read from the plot table instead of the stratum table
+            // because we want to return a dummy record with InCruise set to false
+            // when a plot_stratum record doesn't exist
+            return Database.Query<Plot_Stratum>(
+                "SELECT " +
+                    "ps.Plot_Stratum_CN, " +
+                    "(ps.Plot_Stratum_CN IS NOT NULL) AS InCruise, " +
+                    "p.PlotNumber, " +
+                    "st.Code AS StratumCode, " +
+                    "p.CuttingUnitCode, " +
+                    "st.BasalAreaFactor AS BAF, " +
+                    "st.FixedPlotSize AS FPS, " +
+                    "st.Method AS CruiseMethod, " +
+                    "st.KZ3PPNT AS KZ, " +
+                    "ps.IsEmpty," +
+                    "ps.KPI " +
+                "FROM Plot_V3 AS p " +
+                "JOIN CuttingUnit_Stratum AS cust USING (CuttingUnitCode) " +
+                "JOIN Stratum AS st ON cust.StratumCode = st.Code " +
+                "LEFT JOIN Plot_Stratum AS ps USING (CuttingUnitCode, StratumCode, PlotNumber) " +
+                "WHERE p.CuttingUnitCode = @p1 " +
+                "AND st.Code = @p2 " +
+                "AND p.PlotNumber = @p3; ",
+                new object[] { unitCode, stratumCode, plotNumber }).FirstOrDefault();
 
-            if (stratumPlot == null)
-            {
-                stratumPlot = new StratumPlot()
-                {
-                    PlotNumber = plotNumber,
-                    StratumCode = stratumCode,
-                    InCruise = false
-                };
+            //var stratumPlot = Database.Query<StratumPlot>(
+            //    "SELECT " +
+            //        "CAST (1 AS BOOLEAN) AS InCruise, " +
+            //        "ps.StratumCode, " +
+            //        "ps.CuttingUnitCode, " +
+            //        "st.BasalAreaFactor AS BAF, " +
+            //        "st.FixedPlotSize AS FPS, " +
+            //        "st.Method AS CruiseMethod, " +
+            //        "st.KZ3PPNT AS KZ, " +
+            //        "ps.* " +
+            //    "FROM Plot_Stratum " +
+            //    "JOIN Stratum AS st ON ps.StratumCode = st.Code " +
+            //    "WHERE ps.CuttingUnitCode = @p1 " +
+            //    "AND ps.StratumCode = @p2 " +
+            //    "AND ps.PlotNumber = @p3;", new object[] { unitCode, stratumCode, plotNumber }).FirstOrDefault();
 
-                if (insertIfNotExists)
-                {
-                    InsertStratumPlot(unitCode, stratumPlot);
-                    stratumPlot.InCruise = true;
-                }
-            }
-            else
-            {
-                stratumPlot.InCruise = true;
-            }
+            //if (stratumPlot == null)
+            //{
+            //    stratumPlot = Database.Query<StratumPlot>(
+            //        "SELECT " +
+            //            "CAST (0 AS BOOLEAN) AS InCruise, " +
+            //            "st.Code AS StratumCode, " +
+            //            "st.BasalAreaFactor AS BAF, " +
+            //            "st.FixedPlotSize AS FPS, " +
+            //            "st.Method AS CruiseMethod, " +
+            //            "st.KZ3PPNT AS KZ " +
+            //        "FROM Stratum AS st " +
+            //            "WHERE Stratum.Code = @p1;"
+            //            , new object[] { stratumCode }).FirstOrDefault();
 
-            return stratumPlot;
+            //    stratumPlot.UnitCode = unitCode;
+            //    stratumPlot.PlotNumber = plotNumber;
+            //}
+            //else
+            //{
+            //    stratumPlot.InCruise = true;
+            //}
+
+            //return stratumPlot;
         }
 
-        public void InsertStratumPlot(string unitCode, StratumPlot stratumPlot)
+        public string AddNewPlot(string cuttingUnitCode)
         {
-            string plot_guid = Guid.NewGuid().ToString();
+            var plotID = Guid.NewGuid().ToString();
 
-            Database.Execute("INSERT INTO Plot " +
-                   "(Plot_GUID, CuttingUnit_CN, Stratum_CN, PlotNumber, IsEmpty, Slope, KPI, Aspect, Remarks, XCoordinate, YCoordinate, CreatedBy) " +
-                   "VALUES (" +
-                   "@p1, " + //plot_guid
-                   "(SELECT CuttingUnit_CN FROM CuttingUnit WHERE Code = @p2), " + //unitCode
-                   "(SELECT Stratum_CN FROM Stratum WHERE Code = @p3), " + //stratumCode
-                   "@p4, " + //plotNumber
-                   "@p5, " + //isEmpty
-                   "(SELECT Slope FROM Plot JOIN CuttingUnit USING (CuttingUnit_CN) WHERE CuttingUnit.Code = @p2 AND PlotNumber = @p4 LIMIT 1), " + //slope
-                   "@p6, " + //kpi
-                   "(SELECT Aspect FROM Plot JOIN CuttingUnit USING (CuttingUnit_CN) WHERE CuttingUnit.Code = @p2 AND PlotNumber = @p4 LIMIT 1), " + //aspect
-                   "@p7, " + //remarks
-                   "(SELECT XCoordinate FROM Plot JOIN CuttingUnit USING (CuttingUnit_CN) WHERE CuttingUnit.Code = @p2 AND PlotNumber = @p4 LIMIT 1), " + //xcoord
-                   "(SELECT YCoordinate FROM Plot JOIN CuttingUnit USING (CuttingUnit_CN) WHERE CuttingUnit.Code = @p2 AND PlotNumber = @p4 LIMIT 1), " + //ycoord
-                   "@p8);", new object[] {
-                        plot_guid,
-                        unitCode,
-                        stratumPlot.StratumCode,
-                        stratumPlot.PlotNumber,
-                        stratumPlot.IsEmpty,
-                        stratumPlot.KPI,
-                        stratumPlot.Remarks,
-                        "AndroidUser"});
+            var plotNumber = GetNextPlotNumber(cuttingUnitCode);
 
-            stratumPlot.Plot_GUID = plot_guid;
-            stratumPlot.InCruise = true;
+            Database.Execute2(
+                "INSERT INTO Plot_V3 (" +
+                    "PlotID, " +
+                    "PlotNumber, " +
+                    "CuttingUnitCode, " +
+                    "CreatedBy" +
+                ") VALUES ( " +
+                    "@PlotID," +
+                    "@PlotNumber, " +
+                    "@CuttingUnitCode, " +
+                    "@CreatedBy " +
+                ");" +
+                "INSERT INTO Plot_Stratum (" +
+                    "CuttingUnitCode, " +
+                    "PlotNumber, " +
+                    "StratumCode, " +
+                    "CreatedBy " +
+                ")" +
+                "SELECT " +
+                    "p.CuttingUnitCode, " +
+                    "p.PlotNumber, " +
+                    "st.Code, " +
+                    "@CreatedBy AS CreatedBy " +
+                "FROM Plot_V3 AS p " +
+                "JOIN CuttingUnit_Stratum AS cust USING (CuttingUnitCode) " +
+                "JOIN Stratum AS st ON cust.StratumCode = st.Code " +
+                $"WHERE p.PlotID = @PlotID AND st.Method IN ({PLOT_METHODS}) " +
+                $"AND st.Method != '{CruiseMethods.THREEPPNT}';",
+                new { CuttingUnitCode = cuttingUnitCode, PlotID = plotID, PlotNumber = plotNumber, CreatedBy = UserName }); // dont automaticly add plot_stratum for 3ppnt methods
+
+            return plotID;
         }
 
-        public void UpdateStratumPlot(StratumPlot stratumPlot)
+        public void InsertPlot_Stratum(Plot_Stratum plotStratum)
         {
-            Database.Execute("UPDATE Plot SET " +
-                    "PlotNumber = @p2, " +
-                    "IsEmpty = @p3, " +
-                    "KPI = @p4, " +
-                    "Remarks = @p5, " +
-                    "Slope = @p6, " +
-                    "Aspect = @p7 " +
-                    "WHERE " +
-                    "Plot_GUID = @p1;",
-                    new object[] {
-                        stratumPlot.Plot_GUID,
-                        stratumPlot.PlotNumber,
-                        stratumPlot.IsEmpty,
-                        stratumPlot.KPI,
-                        stratumPlot.Remarks,
-                        stratumPlot.Slope,
-                        stratumPlot.Aspect
-                        });
+            var plot_stratum_CN = Database.ExecuteScalar2<long?>(
+                "INSERT INTO Plot_Stratum (" +
+                   "CuttingUnitCode, " +
+                   "PlotNumber, " +
+                   "StratumCode, " +
+                   "IsEmpty, " +
+                   "KPI, " +
+                   "ThreePRandomValue, " +
+                   "CreatedBy " +
+                ") VALUES (" +
+                    $"@CuttingUnitCode, " +
+                    $"@PlotNumber, " +
+                    $"@StratumCode, " +
+                    $"@IsEmpty, " +
+                    $"@KPI, " +
+                    $"@ThreePRandomValue, " +
+                    $"'{UserName}'" +
+                ");" +
+                "SELECT last_insert_rowid();",
+                plotStratum);
+
+            plotStratum.InCruise = true;
+            plotStratum.Plot_Stratum_CN = plot_stratum_CN;
         }
 
-        public void DeleteStratumPlot(string plot_guid)
+        public void UpdatePlot_Stratum(Plot_Stratum stratumPlot)
         {
-            Database.Execute("DELETE FROM Log WHERE Tree_CN IN (SELECT Tree_CN FROM Tree WHERE Plot_CN IN (SELECT Plot_CN FROM Plot WHERE Plot_GUID = @p1)); ", plot_guid);
-            Database.Execute("DELETE FROM Tree WHERE Plot_CN = (SELECT Plot_CN FROM Plot WHERE Plot_GUID = @p1); ", plot_guid);
-            Database.Execute("DELETE FROM Plot WHERE Plot_GUID = @p1;", plot_guid);
+            Database.Execute2(
+                "UPDATE Plot_Stratum SET " +
+                    "IsEmpty = @IsEmpty, " +
+                    "KPI = @KPI " +
+                "WHERE " +
+                "CuttingUnitCode = @CuttingUnitCode " +
+                "AND StratumCode = @StratumCode " +
+                "AND PlotNumber = @PlotNumber;",
+                stratumPlot);
+        }
+
+        public void AddPlotRemark(string cuttingUnitCode, int plotNumber, string remark)
+        {
+            Database.Execute(
+                "UPDATE Plot_V3 SET Remarks = Remarks || ', ' || @p3 " +
+                "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2;", cuttingUnitCode, plotNumber, remark);
+        }
+
+        public void DeletePlot_Stratum(string cuttingUnitCode, string stratumCode, int plotNumber)
+        {
+            Database.Execute("DELETE FROM Plot_Stratum WHERE CuttingUnitCode = @p1 AND StratumCode = @p2 AND PlotNumber = @p3; "
+                , cuttingUnitCode, stratumCode, plotNumber);
         }
 
         public void DeletePlot(string unitCode, int plotNumber)
         {
             Database.Execute(
-                "DELETE FROM Log WHERE Tree_CN IN " +
-                "(SELECT Tree_CN FROM Tree WHERE Plot_CN IN " +
-                "(SELECT Plot_CN FROM Plot WHERE " +
-                "CuttingUnit_CN = (SELECT CuttingUnit_CN FROM CuttingUnit WHERE Code = @p1) " +
-                "AND PlotNumber = @p2));" +
-
-                "DELETE FROM Tree WHERE Plot_CN IN " +
-                "(SELECT Plot_CN FROM Plot WHERE " +
-                "CuttingUnit_CN = (SELECT CuttingUnit_CN FROM CuttingUnit WHERE Code = @p1) " +
-                "AND PlotNumber = @p2);" +
-
-                "DELETE FROM Plot WHERE " +
-                "CuttingUnit_CN = (SELECT CuttingUnit_CN FROM CuttingUnit WHERE Code = @p1) " +
-                "AND PlotNumber = @p2;", new object[] { unitCode, plotNumber });
+                "DELETE FROM Plot_V3 WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2 ;", new object[] { unitCode, plotNumber });
         }
 
         public int GetNumTreeRecords(string unitCode, string stratumCode, int plotNumber)
         {
-            return Database.ExecuteScalar<int>("SELECT Count(*) FROM Tree " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "JOIN Plot USING (Plot_CN) " +
-                "WHERE CuttingUnit.Code = @p1 AND Stratum.Code = @p2 AND Plot.PlotNumber = @p3;",
+            return Database.ExecuteScalar<int>("SELECT Count(*) FROM Tree_V3 " +
+                "WHERE CuttingUnitCode = @p1 AND StratumCode = @p2 AND PlotNumber = @p3;",
                 unitCode, stratumCode, plotNumber);
+        }
+
+        public IEnumerable<FixCntTallyPopulation> GetFixCNTTallyPopulations(string stratumCode)
+        {
+            return Database.Query<FixCntTallyPopulation>(
+                "SELECT " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "Field, " +
+                    "Min, " +
+                    "Max, " +
+                    "IntervalSize " +
+                "FROM FixCNTTallyPopulation AF ftp " +
+                "JOIN FixCNTTallyClass AS tc USING (StratumCode) " +
+                "WHERE StratumCode = @p1;",
+                new object[] { stratumCode });
+        }
+
+        public Tree GetFixCNTTallyTree(string unitCode, int plotNumber,
+            string stratumCode, string sgCode, string species, string liveDead,
+            string fieldName, double value)
+        {
+            var fieldNameStr = fieldName.ToString();
+
+            return Database.Query<Tree>(
+                "SELECT " +
+                    "t.*, " +
+                    "tm.* " +
+                "FROM Tree_V3 AS t " +
+                "JOIN TreeMeasurment AS tm USING (TreeID) " +
+                $"WHERE tm.{fieldNameStr} = @p1 " +
+                    "AND t.PlotNumber = @p2 " +
+                    "AND t.CuttingUnitCode = @p3 " +
+                    "AND t.StratumCode = @p4" +
+                    "AND t.SampleGroupCode = @p5 " +
+                    "AND ifnull(t.Species, '') = ifnull(@p6, '') " +
+                    "AND ifnull(t.LiveDead, '') = ifnull(@p7, '') " +
+                "LIMIT 1;",
+                new object[] { value, plotNumber, unitCode, stratumCode, sgCode, species, liveDead })
+                .FirstOrDefault();
+        }
+
+        public Tree CreateFixCNTTallyTree(string unitCode, int plotNumber,
+            string stratumCode, string sgCode, string species, string liveDead,
+            string fieldName, double value, int treeCount = 0)
+        {
+            var tree_guid = Guid.NewGuid().ToString();
+
+            var fieldNameStr = fieldName.ToString();
+
+            Database.Execute2(
+                "INSERT INTO Tree_V3 (" +
+                    "TreeID, " +
+                    "TreeNumber, " +
+                    "CuttingUnitCode, " +
+                    "PlotNumber, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "CountOrMeasure " +
+                ") VALUES (" +
+                    "@TreeID,\r\n " + //treeID
+                    "(SELECT ifnull(max(TreeNumber), 0) + 1  " +
+                        "FROM Tree_V3 AS t1 " +
+                        "WHERE CuttingUnitCode = @CuttingUnitCode AND PlotNumber = @PlotNumber),\r\n " + //get highest tree number using unitCode and plot_cn
+                    "@CuttingUnitCode,\r\n " +
+                    "@PlotNumber,\r\n " + //plot_cn
+                    "@StratumCode,\r\n " + //stratum_cn
+                    "@SampleGroupCode,\r\n " + //sampleGroup_CN
+                    "@Species,\r\n" + //species
+                    "@LiveDead,\r\n" + //liveDead
+                    "'M'" +
+                ");" + //countMeasure
+
+                "INSERT INTO TreeMeasurment (" +
+                $"({fieldNameStr}) VALUES (@value);" +
+
+                "INSERT INTO TallyLedger (" +
+                    "TreeID, " +
+                    "CuttingUnitCode, " +
+                    "PlotNumber, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "TreeCount" +
+                ") VALUES (" +
+                    "@TreeID, " +
+                    "@CuttingUnitCode, " +
+                    "@PlotNumber, " +
+                    "@StratumCode, " +
+                    "@SampleGroupCode, " +
+                    "@Species, " +
+                    "@LiveDead, " +
+                    "@TreeCount" +
+                ");"
+                ,
+                new
+                {
+                    TreeID = tree_guid,
+                    CuttingUnitCode = unitCode,
+                    PlotNumber = plotNumber,
+                    StratumCode = stratumCode,
+                    SampleGroupCode = sgCode,
+                    Species = species,
+                    LiveDead = liveDead,
+                    TreeCount = treeCount
+                }
+            );
+
+            var tree = QueryTree_Base().Where("TreeID = @p1").Query(tree_guid).First();
+            return tree;
         }
 
         #endregion plot
@@ -276,30 +476,38 @@ namespace FScruiser.Services
 
         public IEnumerable<Stratum> GetStrataByUnitCode(string unitCode)
         {
-            return Database.From<Stratum>()
-                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
-                .Query(unitCode).ToArray();
+            return Database.Query<Stratum>(
+                "SELECT " +
+                "st.* " +
+                "FROM Stratum AS st " +
+                "JOIN CuttingUnit_Stratum AS cust ON st.Code = cust.StratumCode " +
+                $"WHERE CuttingUnitCode = @p1 AND st.Method NOT IN ({PLOT_METHODS})",
+                new object[] { unitCode })
+                .ToArray();
         }
 
         public IEnumerable<StratumProxy> GetStrataProxiesByUnitCode(string unitCode)
         {
-            return Database.From<StratumProxy>()
-                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
-                .Query(unitCode);
+            return Database.Query<StratumProxy>(
+                "SELECT " +
+                "st.* " +
+                "FROM Stratum AS st " +
+                "JOIN CuttingUnit_Stratum AS cust ON st.Code = cust.StratumCode " +
+                $"WHERE CuttingUnitCode = @p1 AND st.Method NOT IN ({PLOT_METHODS})",
+                new object[] { unitCode })
+                .ToArray();
         }
 
         public IEnumerable<StratumProxy> GetPlotStrataProxies(string unitCode)
         {
-            return Database.From<StratumProxy>()
-                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                //.Where($"CuttingUnit.Code = @p1")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method IN ({PLOT_METHODS})")
-                .Query(unitCode);
+            return Database.Query<StratumProxy>(
+                "SELECT " +
+                "st.* " +
+                "FROM Stratum AS st " +
+                "JOIN CuttingUnit_Stratum AS cust ON st.Code = cust.StratumCode " +
+                $"WHERE CuttingUnitCode = @p1 AND st.Method IN ({PLOT_METHODS})",
+                new object[] { unitCode })
+                .ToArray();
         }
 
         #endregion strata
@@ -322,38 +530,151 @@ namespace FScruiser.Services
 
         public SampleGroup GetSampleGroup(string stratumCode, string sgCode)
         {
-            return Database.From<SampleGroup>()
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum.Code = @p1 AND SampleGroup.Code = @p2")
-                .Query(stratumCode, sgCode).FirstOrDefault();
+            return Database.Query<SampleGroup>(
+                "SELECT " +
+                    "sg.*, " +
+                    "st.Method AS StratumMethod " +
+                "FROM SampleGroup_V3 AS sg " +
+                "JOIN Stratum AS st ON sg.StratumCode = st.Code " +
+                "WHERE sg.StratumCode = @p1 AND sg.SampleGroupCode = @p2;",
+                new object[] { stratumCode, sgCode })
+                .FirstOrDefault();
         }
 
         public IEnumerable<SampleGroupProxy> GetSampleGroupProxies(string stratumCode)
         {
             return Database.From<SampleGroupProxy>()
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum.Code = @p1")
+                .Where("StratumCode = @p1")
                 .Query(stratumCode);
         }
 
         public SampleGroupProxy GetSampleGroupProxy(string stratumCode, string sampleGroupCode)
         {
             return Database.From<SampleGroupProxy>()
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum.Code = @p1 AND SampleGroup.Code = @p2")
+                .Where("StratumCode = @p1 AND SampleGroupCode = @p2")
                 .Query(stratumCode, sampleGroupCode).FirstOrDefault();
         }
 
+        public SamplerState GetSamplerState(string stratumCode, string sampleGroupCode)
+        {
+            return Database.Query<SamplerState>(
+                "SELECT " +
+                    "sg.StratumCode," +
+                    "sg.SampleGroupCode, " +
+                    "st.Method, " +
+                    "sg.SamplingFrequency, " +
+                    "sg.InsuranceFrequency, " +
+                    "sg.KZ, " +
+                    "ss.SampleSelectorState, " +
+                    "ss.SampleSelectorType " +
+                "FROM SampleGroup_V3 AS sg " +
+                "JOIN Stratum AS st ON sg.StratumCode = st.Code " +
+                "LEFT JOIN SamplerState AS ss USING (StratumCode, SampleGroupCode) " +
+                "WHERE sg.StratumCode = @p1 " +
+                "AND sg.SampleGroupCode = @p2;",
+                new object[] { stratumCode, sampleGroupCode }).FirstOrDefault();
+        }
+
+        public void UpdateSamplerState(SamplerState samplerState)
+        {
+            Database.Execute2(
+                "INSERT INTO SamplerState ( " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "SampleSelectorType, " +
+                    "SampleSelectorState " +
+                ") VALUES ( " +
+                    "@StratumCode, " +
+                    "@SampleGroupCode, " +
+                    "@SampleSelectorType, " +
+                    "@SampleSelectorState" +
+                ") ON CONFLICT (StratumCode, SampleGroupCode) " +
+                "DO UPDATE SET " +
+                    "SampleSelectorType = @SampleSelectorType, " +
+                    "SampleSelectorState = @SampleSelectorState " +
+                "WHERE StratumCode = @StratumCode " +
+                "AND SampleGroupCode = @SampleGroupCode;",
+                samplerState);
+        }
+
+        private string SELECT_TALLYPOPULATION_CORE =
+            "WITH tallyPopTreeCounts AS (" +
+                "SELECT CuttingUnitCode, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "sum(TreeCount) AS TreeCount, " +
+                    "sum(KPI) AS SumKPI " +
+                "FROM TallyLedger AS tl " +
+                "GROUP BY " +
+                    "CuttingUnitCode, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "ifnull(Species, ''), " +
+                    "ifnull(LiveDead, ''))\r\n" +
+
+                "SELECT " +
+                    "tp.Description, " +
+                    "tp.StratumCode, " +
+                    "st.Method AS StratumMethod, " +
+                    "tp.SampleGroupCode, " +
+                    "tp.Species, " +
+                    "tp.LiveDead, " +
+                    "tp.HotKey, " +
+                    "ifnull(tl.TreeCount, 0) AS TreeCount, " +
+                    "ifnull(tl.SumKPI, 0) AS SumKPI, " +
+                    //"sum(tl.KPI) SumKPI, " +
+                    "sg.SamplingFrequency AS Frequency, " +
+                    "sg.MinKPI AS sgMinKPI, " +
+                    "sg.MaxKPI AS sgMaxKPI, " +
+                    $"ss.SampleSelectorType == '{CruiseMethods.CLICKER_SAMPLER_TYPE}' AS IsClickerTally " +
+                "FROM TallyPopulation AS tp " +
+                "JOIN SampleGroup_V3 AS sg USING (StratumCode, SampleGroupCode) " +
+                "Left JOIN SamplerState ss USING (StratumCode, SampleGroupCode) " +
+                "JOIN Stratum AS st ON tp.StratumCode = st.Code " +
+                "JOIN CuttingUnit_Stratum AS cust ON tp.StratumCode = cust.StratumCode AND cust.CuttingUnitCode = @p1 " +
+                "LEFT JOIN tallyPopTreeCounts AS tl " +
+                    "ON tl.CuttingUnitCode = @p1 " +
+                    "AND tp.StratumCode = tl.StratumCode " +
+                    "AND tp.SampleGroupCode = tl.SampleGroupCode " +
+                    "AND ifnull(tp.Species, '') = ifnull(tl.Species, '') " +
+                    "AND ifnull(tp.LiveDead, '') = ifnull(tl.LiveDead, '') ";
+
         public IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode)
         {
-            return Database.From<TallyPopulation>()
-                .Join("Tally", "USING (Tally_CN)")
-                .Join("SampleGroup", "USING (SampleGroup_CN)")
-                .LeftJoin("TreeDefaultValue", "USING (TreeDefaultValue_CN)")
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
-                .Query(unitCode).ToArray();
+            return Database.Query<TallyPopulation>(
+                SELECT_TALLYPOPULATION_CORE +
+                $"WHERE st.Method NOT IN ({PLOT_METHODS})"
+                , new object[] { unitCode }).ToArray();
+
+            //return Database.From<TallyPopulation>()
+            //    .Join("Tally", "USING (Tally_CN)")
+            //    .Join("SampleGroup", "USING (SampleGroup_CN)")
+            //    .LeftJoin("TreeDefaultValue", "USING (TreeDefaultValue_CN)")
+            //    .Join("Stratum", "USING (Stratum_CN)")
+            //    .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+            //    .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
+            //    .Query(unitCode).ToArray();
+        }
+
+        public TallyPopulation GetTallyPopulation(string unitCode, string stratumCode, string sampleGroupCode, string species, string liveDead)
+        {
+            //var tPops = Database.QueryGeneric(
+            //    "SELECT * FROM TallyPopulation AS tp " +
+            //    "WHERE tp.StratumCode = @p2 " +
+            //        "AND tp.SampleGroupCode = @p3 " +
+            //        "AND ifNull(tp.Species, '') = ifNull(@p4,'') " +
+            //        "AND ifNull(tp.LiveDead, '') = ifNull(@p5,'')"
+            //    , new  { p1 = unitCode, p2 = stratumCode, p3= sampleGroupCode, p4 = species, p5 = liveDead }).ToArray();
+
+            return Database.Query<TallyPopulation>(
+                SELECT_TALLYPOPULATION_CORE +
+                "WHERE tp.StratumCode = @p2 " +
+                    "AND tp.SampleGroupCode = @p3 " +
+                    "AND ifNull(tp.Species, '') = ifNull(@p4,'') " +
+                    "AND ifNull(tp.LiveDead, '') = ifNull(@p5,'')"
+                , new object[] { unitCode, stratumCode, sampleGroupCode, species, liveDead }).FirstOrDefault();
         }
 
         private class SampleGroupStratumInfo
@@ -368,92 +689,35 @@ namespace FScruiser.Services
             public string Method { get; set; }
         }
 
+        //TODO: update this method
         public IEnumerable<TallyPopulation_Plot> GetPlotTallyPopulationsByUnitCode(string unitCode, int plotNumber)
         {
-            //get all samplegroups in unit where stratum method is a plot based method
-            var sampleGroups = Database.Query<SampleGroupStratumInfo>("SELECT SampleGroup.Code AS SgCode, Stratum.Code AS StCode, Stratum.Method AS Method " +
-                "FROM SampleGroup " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "JOIN CuttingUnitStratum USING (Stratum_CN) " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                $"WHERE CuttingUnit.Code = @p1 AND Stratum.Method IN ({PLOT_METHODS});", new object[] { unitCode });
+            var tallyPops = Database.Query<TallyPopulation_Plot>(
+                SELECT_TALLYPOPULATION_CORE +
+                $"WHERE st.Method IN ({PLOT_METHODS})"
+                , new object[] { unitCode }).ToArray();
 
-            var tallyPopulations = new List<TallyPopulation_Plot>();
-
-            //for each sampleGroup get a list of tally populations, if there are none create a tally population if the cruis method is a single stage plot cruise method
-            foreach (var sg in sampleGroups)
+            foreach (var pop in tallyPops)
             {
-                //get tally populations by reading from the count tree table for all cutting units, allowing us to fill in gaps for units with missing count tree records.
-                var sgTallyPops = Database.Query<TallyPopulation_Plot>("SELECT SampleGroup_CN, Tally.Description AS TallyDescription, Tally.HotKey AS TallyHotKey, Stratum.Code AS StratumCode, Stratum.Method AS StratumMethod, " +
-                    "SampleGroup.Code AS SampleGroupCode, SampleGroup.SampleSelectorType AS sgSampleSelectorType, SampleGroup.MinKPI AS sgMinKPI, SampleGroup.MaxKPI AS sgMaxKPI, " +
-                    "TDV.Species AS tdvSpecies, TDV.LiveDead AS tdvLiveDead " +
-                    "FROM CountTree " +
-                    "JOIN Tally USING (Tally_CN) " +
-                    "JOIN SampleGroup USING (SampleGroup_CN) " +
-                    "LEFT JOIN TreeDefaultValue AS TDV USING (TreeDefaultValue_CN) " +
-                    "JOIN Stratum USING (Stratum_CN) " +
-                    $"WHERE SampleGroup.Code = @p1 AND Stratum.Code = @p2 AND Stratum.Method IN ({PLOT_METHODS}) " +
-                    "GROUP BY SampleGroup.Code, Stratum.Code;",
-                    new object[]
-                    {
-                        sg.SgCode, sg.StCode
-                    }).ToArray();
-
-                //if there are tally populations then go through them and
-                //check if they are in the cruise for this plot number
-                if (sgTallyPops.Any())
-                {
-                    foreach (var tallyPop in sgTallyPops)
-                    {
-                        tallyPop.CountTree_CN = Database.ExecuteScalar<long?>("SELECT CountTree_CN FROM CountTree " +
-                            "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                            "JOIN SampleGroup USING (SampleGroup_CN) " +
-                            "JOIN Stratum USING (Stratum_CN) " +
-                            "WHERE CuttingUnit.Code = @p1 AND Stratum.Code = @p2 AND SampleGroup.Code = @p3;"
-                            , new object[] { unitCode, sg.StCode, sg.SgCode });
-
-                        tallyPop.InCruise = GetIsTallyPopInCruise(unitCode, plotNumber, tallyPop.StratumCode);
-                    }
-                }
-                //if there are no tally populations in the sample group
-                //and the cruise method is a single stage plot method
-                else if (sg.Method == CruiseMethods.FIX || sg.Method == CruiseMethods.PNT)
-                {
-                    sgTallyPops = new TallyPopulation_Plot[]
-                    {
-                        new TallyPopulation_Plot()
-                        {
-                            InCruise = GetIsTallyPopInCruise(unitCode, plotNumber, sg.StCode),
-                            SampleGroupCode = sg.SgCode,
-                            StratumCode = sg.StCode,
-                            TallyDescription = sg.StCode + " | " + sg.SgCode,
-                            Method = sg.Method
-                        }
-                    };
-                }
-
-                tallyPopulations.AddRange(sgTallyPops);
+                pop.InCruise = GetIsTallyPopInCruise(unitCode, plotNumber, pop.StratumCode);
+                pop.IsEmpty = Database.ExecuteScalar<int>("SELECT ifnull(IsEmpty, 0) FROM Plot_Stratum " +
+                    "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2 AND StratumCode = @p3;",
+                    unitCode, plotNumber, pop.StratumCode) == 1;
             }
 
-            return tallyPopulations;
-
-            //return Database.From<TallyPopulation>()
-            //    .Join("Tally", "USING (Tally_CN)")
-            //    .Join("SampleGroup", "USING (SampleGroup_CN)")
-            //    .LeftJoin("TreeDefaultValue", "USING (TreeDefaultValue_CN)")
-            //    .Join("Stratum", "USING (Stratum_CN)")
-            //    .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-            //    .Where($"CuttingUnit.Code = @p1 AND Stratum.Method IN ({string.Join(", ", CruiseMethods.PLOT_METHODS.Select(x => "'" + x + "'").ToArray())})")
-            //    .Query(unitCode).ToArray();
+            return tallyPops;
         }
 
-        bool GetIsTallyPopInCruise(string unitCode, int plotNumber, string stratumCode)
+        private bool GetIsTallyPopInCruise(string unitCode, int plotNumber, string stratumCode)
         {
-            return Database.ExecuteScalar<bool?>("SELECT 1 FROM Plot " +
-                            "JOIN Stratum USING (Stratum_CN) " +
-                            "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                            "WHERE Stratum.Code = @p1 AND CuttingUnit.Code = @p2 AND PlotNumber = @p3;",
-                            stratumCode, unitCode, plotNumber) ?? false;
+            return Database.ExecuteScalar<bool?>(
+                "SELECT EXISTS (" +
+                    "SELECT * " +
+                    "FROM Plot_Stratum " +
+                    "WHERE StratumCode = @p1 " +
+                        "AND CuttingUnitCode = @p2 " +
+                        "AND PlotNumber = @p3);",
+                stratumCode, unitCode, plotNumber) ?? false;
         }
 
         #endregion sampleGroup
@@ -470,59 +734,43 @@ namespace FScruiser.Services
                 .Query(stratumCode, sampleGroupCode);
         }
 
-        //public IEnumerable<TreeDefaultValueDO> GetTreeDefaultsByUnitCode(string unitCode)
-        //{
-        //    return Database.From<TreeDefaultValueDO>()
-        //        .Join("SampleGroupTreeDefaultValue", "USING (TreeDefaultValue_CN)")
-        //        .Join("SampleGroup", "USING (SampleGroup_CN)")
-        //        .Join("CuttingUnitStratum", "USING (Stratum_CN)")
-        //        .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-        //        .Where("CuttingUnit.Code = @p1")
-        //        .GroupBy("TreeDefaultValue_CN")
-        //        .Query(unitCode).ToArray();
-        //}
-
-        //public IEnumerable<TreeDefaultValueDO> GetTreeDefaultsBySampleGroup(string sgCode)
-        //{
-        //    return Database.From<TreeDefaultValueDO>()
-        //        .Join("SampleGroupTreeDefaultValue", "USING (TreeDefaultValue_CN)")
-        //        .Join("SampleGroup", "USING (SampleGroup_CN)")
-        //        .Where("SampleGroup.Code = @p1")
-        //        .Query(sgCode).ToArray();
-        //}
-
-        //public IEnumerable<SampleGroupTreeDefaultValueDO> GetSampleGroupTreeDefaultMaps(string stratumCode, string sgCode)
-        //{
-        //    return Database.From<SampleGroupTreeDefaultValueDO>()
-        //        .Join("SampleGroup", "USING (SampleGroup_CN)")
-        //        .Join("Stratum", "USING (Stratum_CN)")
-        //        .Where("Stratum.Code = @p1 AND SampleGroup.Code = @p2")
-        //        .Query(stratumCode, sgCode).ToArray();
-        //}
-
         #endregion TreeDefaults
 
         #region TreeFields
 
-        public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode)
-        {
-            return Database.From<TreeFieldSetupDO>()
-                .Join("CuttingUnitStratum", "USING (Stratum_CN)")
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where($"CuttingUnit.Code = @p1 AND Stratum.Method NOT IN ({PLOT_METHODS})")
-                .GroupBy("Field")
-                .OrderBy("FieldOrder")
-                .Query(unitCode).ToArray();
-        }
+        //public IEnumerable<TreeFieldSetup> GetTreeFieldsByUnitCode(string unitCode)
+        //{
+        //    return Database.Query<TreeFieldSetup>(
+        //        "SELECT " +
+        //        "Field, " +
+        //        "Heading, " +
+        //        "min(FieldOrder) AS FieldOrder " +
+        //        "FROM TreeFieldSetup_V3 AS tfs " +
+        //        "JOIN CuttingUnit_Stratum AS cust USING (StratumCode) " +
+        //        "WHERE CuttingUnitCode = @p1 AND min(FieldOrder) >= 0 " +
+        //        "GROUP BY CuttingUnitCode, Field " +
+        //        "ORDER BY min(FieldOrder);",
+        //        new object[] { unitCode }).ToArray();
+        //}
 
-        public IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratumCode(string stratumCode)
+        public IEnumerable<TreeFieldSetup> GetTreeFieldsByStratumCode(string stratumCode)
         {
-            return Database.From<TreeFieldSetupDO>()
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum.Code == @p1")
-                .OrderBy("FieldOrder")
-                .Query(stratumCode);
+            return Database.Query<TreeFieldSetup>(
+                "SELECT " +
+                "Field, " +
+                "Heading, " +
+                "FieldOrder " +
+                "FROM TreeFieldSetup_V3 AS tfs " +
+                "WHERE StratumCode = @p1 AND FieldOrder >= 0 " +
+                "GROUP BY Field " +
+                "ORDER BY FieldOrder;",
+                new object[] { stratumCode }).ToArray();
+
+            //return Database.From<TreeFieldSetup>()
+            //    .Join("Stratum", "USING (Stratum_CN)")
+            //    .Where("Stratum.Code == @p1")
+            //    .OrderBy("FieldOrder")
+            //    .Query(stratumCode);
         }
 
         #endregion TreeFields
@@ -533,21 +781,19 @@ namespace FScruiser.Services
         {
             if (plotNumber != null)
             {
-                return Database.ExecuteScalar<int>("SELECT count(*) FROM Tree " +
-                    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                    "JOIN Plot USING (Plot_CN) " +
-                    "WHERE CuttingUnit.Code = @p1 " +
-                    "AND Plot.PlotNumber = @p2 " +
-                    "AND Tree.TreeNumber = @p3;",
+                return Database.ExecuteScalar<int>("SELECT count(*) FROM Tree_V3 " +
+                    "WHERE CuttingUnitCode = @p1 " +
+                    "AND PlotNumber = @p2 " +
+                    "AND TreeNumber = @p3;",
                     unit, plotNumber, treeNumber) > 0;
             }
             else
             {
                 return Database.ExecuteScalar<int>("SELECT count(*) FROM Tree " +
                     "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                    "WHERE CuttingUnit.Code = @p1 " +
-                    "AND Plot_CN IS NULL " +
-                    "AND Tree.TreeNumber = @p2;",
+                    "WHERE CuttingUnitCode = @p1 " +
+                    "AND PlotNumber IS NULL " +
+                    "AND TreeNumber = @p2;",
                     unit, treeNumber) > 0;
             }
         }
@@ -555,322 +801,564 @@ namespace FScruiser.Services
         public IEnumerable<Tree> GetTreesByUnitCode(string unitCode)
         {
             return QueryTree_Base()
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
+                //.Join("CuttingUnit", "USING (CuttingUnit_CN)")
+                .Where("CuttingUnit.Code = @p1 AND PlotNumber IS NULL")
                 .Query(unitCode).ToArray();
         }
 
-        public TreeStub GetTreeStub(string tree_GUID)
+        public TreeStub GetTreeStub(string treeID)
         {
             return QueryTreeStub()
-                .Where("Tree_GUID = @p1")
-                .Query(tree_GUID).FirstOrDefault();
+                .Where("TreeID = @p1")
+                .Query(treeID).FirstOrDefault();
         }
 
         public void UpdateTreeInitials(string tree_guid, string value)
         {
-            Database.Execute("UPDATE Tree SET " +
+            Database.Execute(
+                "UPDATE TreeMeasurment SET " +
                 "Initials = @p1 " +
-                "WHERE Tree_GUID = @p2",
+                "WHERE TreeID = @p2",
                 value, tree_guid);
         }
 
         public void DeleteTree(string tree_guid)
         {
-            Database.Execute("Delete FROM Tree WHERE Tree_GUID = @p1", tree_guid);
+            Database.Execute("Delete FROM Tree_V3 WHERE TreeID = @p1", tree_guid);
         }
 
         public void DeleteTree(Tree tree)
         {
-            DeleteTree(tree.Tree_GUID);
+            DeleteTree(tree.TreeID);
         }
 
         private IQuerryAcceptsJoin<TreeStub> QueryTreeStub()
         {
             return Database.From<TreeStub>()
-                .Join("Stratum", "USING (Stratum_CN)")
-                .LeftJoin("SampleGroup", "USING (SampleGroup_CN)");
+                .LeftJoin("TreeMeasurment", "USING (TreeID)");
         }
 
         public IEnumerable<TreeStub> GetTreeStubsByUnitCode(string unitCode)
         {
             return QueryTreeStub()
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
+                .Where("CuttingUnitCode = @p1 AND PlotNumber IS NULL")
                 .Query(unitCode);
         }
 
         public IEnumerable<TreeStub_Plot> GetPlotTreeProxies(string unitCode, int plotNumber)
         {
-            return Database.Query<TreeStub_Plot>("SELECT Tree_GUID, CuttingUnit.Code AS CuttingUnitCode, TreeNumber, Plot.PlotNumber AS PlotNumber, " +
-                "Stratum.Code AS StratumCode, SampleGroup.Code AS SgCode, Tree.Species, Tree.LiveDead, Tree.TreeCount, Tree.STM, Tree.KPI, " +
-                "max(TotalHeight, MerchHeightPrimary, UpperStemHeight) AS Height, " +
-                "max(DBH, DRC, DBHDoubleBarkThickness) AS Diameter, " +
-                "Tree.CountOrMeasure " +
-                "FROM Tree " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "LEFT JOIN SampleGroup USING (SampleGroup_CN) " +
-                "JOIN Plot USING (Plot_CN) " +
-                "WHERE CuttingUnit.Code = @p1 " +
-                "AND PlotNumber = @p2;", new object[] { unitCode, plotNumber });
+            return Database.Query<TreeStub_Plot>(
+                "SELECT " +
+                "t.TreeID, " +
+                "t.CuttingUnitCode, " +
+                "t.TreeNumber, " +
+                "t.PlotNumber, " +
+                "t.StratumCode, " +
+                "t.SampleGroupCode, " +
+                "t.Species, " +
+                "t.LiveDead, " +
+                "tl.TreeCount, " +
+                "tl.STM, " +
+                "tl.KPI, " +
+                "max(tm.TotalHeight, tm.MerchHeightPrimary, tm.UpperStemHeight) AS Height, " +
+                "max(tm.DBH, tm.DRC, tm.DBHDoubleBarkThickness) AS Diameter, " +
+                "t.CountOrMeasure " +
+                "FROM Tree_V3 AS t " +
+                "JOIN TallyLedger AS tl USING (TreeID) " +
+                "LEFT JOIN TreeMeasurment AS tm USING (TreeID) " +
+                "WHERE t.CuttingUnitCode = @p1 " +
+                "AND t.PlotNumber = @p2;", new object[] { unitCode, plotNumber });
         }
 
-        public Tree GetTree(string unitCode, int treeNumber)
+        //public Tree GetTree(string unitCode, int treeNumber)
+        //{
+        //    return QueryTree_Base()
+        //        .Join("CuttingUnit", "USING (CuttingUnit_CN)")
+        //        .Where("CuttingUnit.Code = @p1 AND TreeNumber = @p2")
+        //        .Query(unitCode, treeNumber).FirstOrDefault();
+        //}
+
+        public Tree_Ex GetTree(string treeID)
         {
             return QueryTree_Base()
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1 AND TreeNumber = @p2")
-                .Query(unitCode, treeNumber).FirstOrDefault();
+                .Where("Tree_V3.TreeID = @p1")
+                .Query(treeID).FirstOrDefault();
         }
 
-        public Tree GetTree(string tree_GUID)
+        private IQuerryAcceptsJoin<Tree_Ex> QueryTree_Base()
         {
-            return QueryTree_Base()
-                .Where("Tree_GUID = @p1")
-                .Query(tree_GUID).FirstOrDefault();
+            return Database.From<Tree_Ex>()
+               .LeftJoin("TreeMeasurment", "USING (TreeID)");
         }
 
-        private IQuerryAcceptsJoin<Tree> QueryTree_Base()
-        {
-            return Database.From<Tree>()
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-               .Join("Stratum", "USING (Stratum_CN)")
-               .LeftJoin("SampleGroup", "USING (SampleGroup_CN)")
-               .LeftJoin("Plot", "USING (Plot_CN)");
-        }
-
-        public string CreateTree(string unitCode, string stratumCode, string sampleGroupCode = null, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false)
+        // used for add tree
+        public string CreateMeasureTree(string unitCode, string stratumCode,
+            string sampleGroupCode = null, string species = null, string liveDead = "L",
+            int treeCount = 1, int kpi = 0, bool stm = false)
         {
             var tree_guid = Guid.NewGuid().ToString();
-            CreateTree(tree_guid, unitCode, stratumCode, sampleGroupCode, species, liveDead, countMeasure, treeCount, kpi, stm);
+            CreateMeasureTree(tree_guid, unitCode, stratumCode, sampleGroupCode, species, liveDead, treeCount, kpi, stm);
             return tree_guid;
         }
 
-        public string CreatePlotTree(string unitCode, int plotNumber, string stratumCode, string sampleGroupCode, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false)
+        protected void CreateMeasureTree(string treeID, string unitCode, string stratumCode,
+            string sampleGroupCode = null, string species = null, string liveDead = "L",
+            int treeCount = 1, int kpi = 0, bool stm = false)
+        {
+            var tallyLedgerID = treeID;
+
+            Database.Execute2(
+                "INSERT INTO Tree_V3 (" +
+                    "TreeID, " +
+                    "TreeNumber, " +
+                    "CuttingUnitCode, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "CountOrMeasure " +
+                ") VALUES ( " +
+                    "@TreeID, " +
+                    "(SELECT ifnull(max(TreeNumber), 0) +1 " +
+                        "FROM Tree_V3 " +
+                        "WHERE CuttingUnitCode = @CuttingUnitCode " +
+                        "AND PlotNumber IS NULL), " +
+                    "@CuttingUnitCode, " +
+                    "@StratumCode, " +
+                    "@SampleGroupCode, " +
+                    "@Species, " +
+                    "@LiveDead, " +
+                    "'M'" +
+                "); " +
+                "INSERT INTO TallyLedger ( " +
+                    "TallyLedgerID, " +
+                    "TreeID, " +
+                    "CuttingUnitCode, " +
+                    "StratumCode, " +
+                    "SampleGroupCode," +
+                    "Species, " +
+                    "LiveDead, " +
+                    "TreeCount, " +
+                    "KPI, " +
+                    "STM " +
+                ") VALUES ( " +
+                    "@TallyLedgerID, " +
+                    "@TreeID, " +
+                    "@CuttingUnitCode, " +
+                    "@StratumCode, " +
+                    "@SampleGroupCode, " +
+                    "@Species, " +
+                    "@LiveDead, " +
+                    "@TreeCount, " +
+                    "@KPI, " +
+                    "@STM" +
+                ");",
+                new
+                {
+                    TallyLedgerID = tallyLedgerID,
+                    TreeID = treeID,
+                    CuttingUnitCode = unitCode,
+                    StratumCode = stratumCode,
+                    SampleGroupCode = sampleGroupCode,
+                    Species = species,
+                    LiveDead = liveDead,
+                    TreeCount = treeCount,
+                    KPI = kpi,
+                    STM = stm,
+                });
+        }
+
+        public string CreatePlotTree(string unitCode, int plotNumber,
+            string stratumCode, string sampleGroupCode,
+            string species = null, string liveDead = "L",
+            string countMeasure = "M", int treeCount = 1,
+            int kpi = 0, bool stm = false)
         {
             var tree_guid = Guid.NewGuid().ToString();
             CreatePlotTree(tree_guid, unitCode, plotNumber, stratumCode, sampleGroupCode, species, liveDead, countMeasure, treeCount, kpi, stm);
             return tree_guid;
         }
 
-        public void CreatePlotTree(string tree_guid, string unitCode, int plotNumber, string stratumCode, string sampleGroupCode, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false)
+        protected void CreatePlotTree(string treeID, string unitCode, int plotNumber,
+            string stratumCode, string sampleGroupCode,
+            string species = null, string liveDead = "L",
+            string countMeasure = "M", int treeCount = 1,
+            int kpi = 0, bool stm = false)
         {
-            var plot_cn = Database.ExecuteScalar<int?>("SELECT Plot_CN FROM Plot " +
-                "JOIN CuttingUnit_CN USING (CuttingUnit_CN) " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "WHERE CuttingUnit.Code = @p1 " +
-                "AND Stratum.Code = @p2 " +
-                "AND PlotNumber = @p3;", new object[] { unitCode, stratumCode, plotNumber });
+            var tallyLedgerID = treeID;
 
-            if (plot_cn == null) { throw new InvalidOperationException($"Plot # {plotNumber} could not be found"); }
-
-            Database.Execute("INSERT INTO Tree " +
-                "(Tree_GUID, TreeNumber, CuttingUnit_CN, Plot_CN, Stratum_CN, SampleGroup_CN, TreeDefaultValue_CN, Species, LiveDead, CountOrMeasure, TreeCount, KPI, STM) " +
-                "VALUES (@p1,\r\n " +
-                "(SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree JOIN CuttingUnit USING (CuttingUnit_CN) WHERE CuttingUnit.Code = @p2 AND Tree.Plot_CN = @p3),\r\n " +
-                "(SELECT CuttingUnit_CN FROM CuttingUnit WHERE Code = @p2),\r\n " +
-                "@p3,\r\n " +
-                "(SELECT Stratum_CN FROM Stratum WHERE Code = @p4),\r\n " +
-                "(SELECT SampleGroup_CN FROM SampleGroup JOIN Stratum USING (Stratum_CN) WHERE SampleGroup.Code = @p5 AND Stratum.Code = @p4),\r\n " +
-                "(SELECT TreeDefaultValue_CN FROM SampleGroupTreeDefaultValue JOIN SampleGroup USING (SampleGroup_CN) JOIN Stratum USING (Stratum_CN) JOIN TreeDefaultValue USING (TreeDefaultValue_CN) WHERE SampleGroup.Code = @p5 AND Stratum.Code = @p4 AND TreeDefaultValue.Species = @p6 AND TreeDefaultValue.LiveDead = @p7),\r\n " +
-                "@p6,\r\n" + //species
-                "@p7,\r\n" + //liveDead
-                "@p8,\r\n " + //countMeasure
-                "@p9,\r\n  " + //treecount
-                "@p10,\r\n " + //kpi
-                "@p11);\r\n " //stm
-                , new object[]
+            Database.Execute2(
+                "INSERT INTO Tree_V3 ( " +
+                    "TreeID, " +
+                    "TreeNumber, " +
+                    "CuttingUnitCode, " +
+                    "PlotNumber, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "CountOrMeasure " +
+                ") VALUES (" +
+                    "@TreeID,\r\n " +
+                    "(SELECT ifnull(max(TreeNumber), 0) + 1 FROM Tree_V3 WHERE CuttingUnitCode = @CuttingUnitCode AND PlotNumber = @PlotNumber),\r\n " +
+                    "@CuttingUnitCode,\r\n " +
+                    "@PlotNumber,\r\n " +
+                    "@StratumCode,\r\n " +
+                    "@SampleGroupCode,\r\n " +
+                    "@Species,\r\n" + //species
+                    "@LiveDead,\r\n" + //liveDead
+                    "@CountOrMeasure);\r\n" + //countMeasure
+                "INSERT INTO TallyLedger ( " +
+                    "TallyLedgerID, " +
+                    "TreeID, " +
+                    "CuttingUnitCode, " +
+                    "PlotNumber, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "TreeCount, " +
+                    "KPI, " +
+                    "STM" +
+                ") VALUES ( " +
+                    "@TallyLedgerID," +
+                    "@TreeID, " +
+                    "@CuttingUnitCode, " +
+                    "@PlotNumber, " +
+                    "@StratumCode, " +
+                    "@SampleGroupCode, " +
+                    "@Species, " +
+                    "@LiveDead, " +
+                    "@TreeCount, " +
+                    "@KPI, " +
+                    "@STM " +
+                ");"
+                , new
                 {
-                    tree_guid
-                    , unitCode
-                    , plot_cn
-                    , stratumCode
-                    , sampleGroupCode
-                    , species ?? ""
-                    , liveDead ?? ""
-                    , countMeasure
-                    , treeCount
-                    , kpi
-                    , (stm) ? "Y" : "N"
+                    TallyLedgerID = tallyLedgerID,
+                    TreeID = treeID,
+                    CuttingUnitCode = unitCode,
+                    PlotNumber = plotNumber,
+                    StratumCode = stratumCode,
+                    SampleGroupCode = sampleGroupCode,
+                    Species = species ?? "",
+                    LiveDead = liveDead ?? "",
+                    CountOrMeasure = countMeasure,
+                    TreeCount = treeCount,
+                    KPI = kpi,
+                    STM = (stm) ? "Y" : "N",
                 }
             );
         }
 
-        protected void CreateTree(string tree_guid, string unitCode, string stratumCode, string sampleGroupCode = null, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false)
-        {
-            Database.Execute(CREATE_TREE_COMMAND
-                , tree_guid,
-                unitCode,
-                stratumCode,
-                sampleGroupCode,
-                species ?? "",
-                liveDead ?? "",
-                countMeasure,
-                treeCount,
-                kpi,
-                (stm) ? "Y" : "N");
-        }
-
         public int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon)
         {
-            if (!isRecon)
+            if (isRecon)
             {
-                return Database.ExecuteScalar<int>("SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree " +
-                    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                    "JOIN Plot USING (Plot_CN) " +
-                    "WHERE CuttingUnit.Code = @p1 AND Plot.PlotNumber = @p2;"
-                    , unitCode, plotNumber);
+                // if cruise is a recon cruise we do number trees seperatly for each stratum
+                return Database.ExecuteScalar<int>("SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree_V3 " +
+                    "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2 AND StratumCode = @p3;"
+                    , unitCode, plotNumber, stratumCode);
             }
             else
             {
-                return Database.ExecuteScalar<int>("SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree " +
-                    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                    "JOIN Plot USING (Plot_CN) " +
-                    "JOIN Stratum USING (Stratum_CN) " +
-                    "WHERE CuttingUnit.Code = @p1 AND PlotNumber = @p2 AND Stratum.Code = @p3;"
-                    , unitCode, plotNumber, stratumCode);
+                return Database.ExecuteScalar<int>("SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree_V3 " +
+                    "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2;"
+                    , unitCode, plotNumber);
             }
         }
 
         public void InsertTree(TreeStub_Plot tree)
         {
-            var tree_guid = tree.Tree_GUID ?? Guid.NewGuid().ToString();
+            var treeID = tree.TreeID ?? Guid.NewGuid().ToString();
 
-            int? plot_cn = Database.ExecuteScalar<int?>("SELECT Plot_CN FROM Plot " +
-                    "JOIN Stratum USING (Stratum_CN) " +
-                    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                    "WHERE PlotNumber = @p1 " +
-                    "AND Stratum.Code = @p2 " +
-                    "AND CuttingUnit.Code = @p3;", tree.PlotNumber, tree.StratumCode, tree.CuttingUnitCode);
-
-            if (plot_cn == null) { throw new InvalidOperationException($"Plot_CN value not found for Plot {tree.PlotNumber} and Stratum {tree.StratumCode}"); }
-
-            Database.Execute("INSERT INTO TREE " +
-                "(Tree_GUID, TreeNumber, CuttingUnit_CN, Plot_CN, Stratum_CN, SampleGroup_CN, TreeDefaultValue_CN, Species, LiveDead, CountOrMeasure, TreeCount, KPI, STM) " +
-                "VALUES (@p1,\r\n " +
-                "@p2,\r\n " +
-                "(SELECT CuttingUnit_CN FROM CuttingUnit WHERE Code = @p3),\r\n " +
-                "@p4,\r\n " +
-                "(SELECT Stratum_CN FROM Stratum WHERE Code = @p5),\r\n " +
-                "(SELECT SampleGroup_CN FROM SampleGroup JOIN Stratum USING (Stratum_CN) WHERE SampleGroup.Code = @p6 AND Stratum.Code = @p5),\r\n " +
-                "(SELECT TreeDefaultValue_CN FROM SampleGroupTreeDefaultValue JOIN SampleGroup USING (SampleGroup_CN) JOIN Stratum USING (Stratum_CN) JOIN TreeDefaultValue USING (TreeDefaultValue_CN) WHERE SampleGroup.Code = @p6 AND Stratum.Code = @p5 AND TreeDefaultValue.Species = @p6 AND TreeDefaultValue.LiveDead = @p8),\r\n " +
-                "@p7,\r\n" + //species
-                "@p8,\r\n" + //liveDead
-                "@p9,\r\n " + //countMeasure
-                "@p10,\r\n  " + //treecount
-                "@p11,\r\n " + //kpi
-                "@p12);" //stm
-                , new object[]
+            Database.Execute2(
+                "INSERT INTO Tree_V3 ( " +
+                    "TreeID, " +
+                    "TreeNumber, " +
+                    "CuttingUnitCode, " +
+                    "PlotNumber, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "CountOrMeasure " +
+                ") VALUES ( " +
+                    "@TreeID,\r\n " +
+                    "@TreeNumber,\r\n " +
+                    "@CuttingUnitCode,\r\n " +
+                    "@PlotNumber,\r\n " +
+                    "@StratumCode,\r\n " +
+                    "@SampleGroupCode,\r\n " +
+                    "@Species,\r\n" + // species
+                    "@LiveDead,\r\n" + // liveDead
+                    "@CountOrMeasure " + // countMeasure
+                "); " +
+                "INSERT INTO TallyLedger ( " +
+                    "TallyLedgerID, " +
+                    "TreeID, " +
+                    "CuttingUnitCode, " +
+                    "PlotNumber, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "TreeCount, " +
+                    "KPI, " +
+                    "STM " +
+                ") VALUES ( " +
+                    "@TreeID, " +
+                    "@TreeID, " +
+                    "@CuttingUnitCode, " +
+                    "@PlotNumber, " +
+                    "@StratumCode, " +
+                    "@SampleGroupCode, " +
+                    "@Species, " +
+                    "@LiveDead, " +
+                    "@TreeCount, " +
+                    "@KPI, " +
+                    "@STM " +
+                "); "
+                , new
                 {
-                    tree_guid
-                    , tree.TreeNumber
-                    , tree.CuttingUnitCode
-                    , plot_cn
-                    , tree.StratumCode
-                    , tree.SampleGroupCode
-                    , tree.Species ?? ""
-                    , tree.LiveDead ?? ""
-                    , tree.CountOrMeasure
-                    , tree.TreeCount
-                    , tree.KPI
-                    , tree.STM
+                    TreeID = treeID,
+                    tree.TreeNumber,
+                    tree.CuttingUnitCode,
+                    tree.PlotNumber,
+                    tree.StratumCode,
+                    tree.SampleGroupCode,
+                    tree.Species,
+                    tree.LiveDead,
+                    tree.CountOrMeasure,
+                    tree.TreeCount,
+                    tree.KPI,
+                    tree.STM,
                 });
+
+            tree.TreeID = treeID;
         }
 
-        public void UpdateTree(Tree tree)
+        private const string UPSERT_TREEMEASURMENT_COMMAND =
+            "INSERT INTO TreeMeasurment ( " +
+                "TreeID, " +
+
+                "SeenDefectPrimary," +
+                "SeenDefectSecondary, " +
+                "RecoverablePrimary, " +
+                "HiddenPrimary, " +
+                "Grade, " +
+
+                "HeightToFirstLiveLimb, " +
+                "PoleLength, " +
+                "ClearFace, " +
+                "CrownRatio, " +
+                "DBH, " +
+
+                "DRC, " +
+                "TotalHeight, " +
+                "MerchHeightPrimary, " +
+                "MerchHeightSecondary, " +
+                "FormClass, " +
+
+                "UpperStemDiameter, " +
+                "UpperStemHeight, " +
+                "DBHDoubleBarkThickness, " +
+                "TopDIBPrimary, " +
+                "TopDIBSecondary, " +
+
+                "DefectCode, " +
+                "DiameterAtDefect, " +
+                "VoidPercent, " +
+                "Slope, " +
+                "Aspect, " +
+
+                "Remarks, " +
+                "IsFallBuckScale, " +
+                "Initials, " +
+                "CreatedBy" +
+
+            ") VALUES ( " +
+                "@TreeID, " +
+
+                "@SeenDefectPrimary, " +
+                "@SeenDefectSecondary, " +
+                "@RecoverablePrimary, " +
+                "@HiddenPrimary, " +
+                "@Grade, " +
+
+                "@HeightToFirstLiveLimb, " +
+                "@PoleLength, " +
+                "@ClearFace, " +
+                "@CrownRatio, " +
+                "@DBH, " +
+
+                "@DRC, " +
+                "@TotalHeight, " +
+                "@MerchHeightPrimary, " +
+                "@MerchHeightSecondary, " +
+                "@FormClass, " +
+
+                "@UpperStemDiameter, " +
+                "@UpperStemHeight, " +
+                "@DBHDoubleBarkThickness, " +
+                "@TopDIBPrimary, " +
+                "@TopDIBSecondary, " +
+
+                "@DefectCode, " +
+                "@DiameterAtDefect, " +
+                "@VoidPercent, " +
+                "@Slope, " +
+                "@Aspect, " +
+
+                "@Remarks, " +
+                "@IsFallBuckScale, " +
+                "@Initials, " +
+                "@UserName ) " +
+            "ON CONFLICT (TreeID) DO UPDATE SET " +
+
+                "SeenDefectPrimary = @SeenDefectPrimary, " +
+                "SeenDefectSecondary = @SeenDefectSecondary, " +
+                "RecoverablePrimary = @RecoverablePrimary, " +
+                "HiddenPrimary = @HiddenPrimary, " +
+                "Grade = @Grade, " +
+
+                "HeightToFirstLiveLimb = @HeightToFirstLiveLimb, " +
+                "PoleLength = @PoleLength, " +
+                "ClearFace = @ClearFace, " +
+                "CrownRatio = @CrownRatio, " +
+                "DBH = @DBH, " +
+
+                "DRC = @DRC, " +
+                "TotalHeight = @TotalHeight, " +
+                "MerchHeightPrimary = @MerchHeightPrimary, " +
+                "MerchHeightSecondary = @MerchHeightSecondary, " +
+                "FormClass = @FormClass, " +
+
+                "UpperStemDiameter = @UpperStemDiameter, " +
+                "UpperStemHeight = @UpperStemHeight, " +
+                "DBHDoubleBarkThickness = @DBHDoubleBarkThickness, " +
+                "TopDIBPrimary = @TopDIBPrimary, " +
+                "TopDIBSecondary = @TopDIBSecondary, " +
+
+                "DefectCode = @DefectCode, " +
+                "DiameterAtDefect = @DiameterAtDefect, " +
+                "VoidPercent = @VoidPercent, " +
+                "Slope = @Slope, " +
+                "Aspect = @Aspect, " +
+
+                "Remarks = @Remarks, " +
+                "IsFallBuckScale = @IsFallBuckScale, " +
+                "Initials = @Initials, " +
+
+                "ModifiedBy = @UserName " +
+            "WHERE TreeID = @TreeID;";
+
+        public void UpdateTree(Tree_Ex tree)
         {
             //if (tree.IsPersisted == false) { throw new InvalidOperationException("tree is not persisted before calling update"); }
             //Database.Update(tree);
 
-            Database.Execute("UPDATE Tree SET \r\n" +
-                "Stratum_CN = (SELECT Stratum_CN FROM Stratum WHERE Code = @p1), " +
-                "SampleGroup_CN = (SELECT SampleGroup_CN FROM SampleGroup JOIN Stratum USING (Stratum_CN) WHERE Stratum.Code = @p1 AND SampleGroup.Code = @p2), " +
-                "TreeDefaultValue_CN = " +
-                    "(SELECT TreeDefaultValue_CN FROM TreeDefaultValue AS [tdv] " +
-                    "JOIN SampleGroupTreeDefaultValue AS [sgtdv] USING (TreeDefaultValue_CN) " +
-                    "JOIN SampleGroup USING (SampleGroup_CN) " +
-                    "JOIN Stratum USING (Stratum_CN) " +
-                    "WHERE Stratum.Code = @p1 AND SampleGroup.Code = @p2 AND [tdv].Species = @p3 AND [tdv].LiveDead = @p4), " +
-                "Species = @p3," +
-                "LiveDead = @p4, " +
-                "CountOrMeasure = @p5, " +
-                "TreeCount = @p6, " +
-                "KPI = @p7, " +
-                "STM = @p8, " +
-                "SeenDefectPrimary = @p9, " +
-                "SeenDefectSecondary = @p10, " +
-                "RecoverablePrimary = @p11, " +
-                "HiddenPrimary = @p12, " +
-                "Initials = @p13, " +
-                "Grade = @p14, " +
-                "HeightToFirstLiveLimb = @p15, " +
-                "PoleLength = @p16, " +
-                "ClearFace = @p17, " +
-                "CrownRatio = @p18, " +
-                "DBH = @p19, " +
-                "DRC = @p20, " +
-                "TotalHeight = @p21, " +
-                "MerchHeightPrimary = @p22, " +
-                "MerchHeightSecondary = @p23, " +
-                "FormClass = @p24, " +
-                "UpperStemDiameter = @p25, " +
-                "UpperStemHeight = @p26, " +
-                "DBHDoubleBarkThickness = @p27, " +
-                "TopDIBPrimary = @p28, " +
-                "TopDIBSecondary = @p29, " +
-                "DefectCode = @p30, " +
-                "DiameterAtDefect = @p31, " +
-                "VoidPercent = @p32, " +
-                "Slope = @p33, " +
-                "Aspect = @p34, " +
-                "Remarks = @p35, " +
-                "IsFallBuckScale = @p36, " +
-                "ModifiedBy = @p37, " +
-                "ModifiedDate = @p38 " +
-                "WHERE Tree_GUID = @p39;",
-                tree.StratumCode,
-                tree.SampleGroupCode,
-                tree.Species ?? "",
-                tree.LiveDead ?? "",
-                tree.CountOrMeasure ?? "",
-                tree.TreeCount,
-                tree.KPI,
-                tree.STM,
-                tree.SeenDefectPrimary,
-                tree.SeenDefectSecondary,
-                tree.RecoverablePrimary,
-                tree.HiddenPrimary,
-                tree.Initials,
-                tree.Grade,
-                tree.HeightToFirstLiveLimb,
-                tree.PoleLength,
-                tree.ClearFace,
-                tree.CrownRatio,
-                tree.DBH,
-                tree.DRC,
-                tree.TotalHeight,
-                tree.MerchHeightPrimary,
-                tree.MerchHeightSecondary,
-                tree.FormClass,
-                tree.UpperStemDiameter,
-                tree.UpperStemHeight,
-                tree.DBHDoubleBarkThickness,
-                tree.TopDIBPrimary,
-                tree.TopDIBSecondary,
-                tree.DefectCode,
-                tree.DiameterAtDefect,
-                tree.VoidPercent,
-                tree.Slope,
-                tree.Aspect,
-                tree.Remarks,
-                tree.IsFallBuckScale,
-                "mobile user ",
-                DateTime.Now,
-                tree.Tree_GUID);
+            Database.Execute2(
+                "UPDATE Tree_V3 SET \r\n" +
+                    "StratumCode = @StratumCode, " +
+                    "SampleGroupCode = @SampleGroupCode, " +
+                    "Species = @Species," +
+                    "LiveDead = @LiveDead " +
+                "WHERE TreeID = @TreeID; " +
+                UPSERT_TREEMEASURMENT_COMMAND,
+                new
+                {
+                    tree.TreeID,
+                    tree.StratumCode,
+                    tree.SampleGroupCode,
+                    Species = tree.Species,
+                    LiveDead = tree.LiveDead,
+                    CountOrMeasure = tree.CountOrMeasure ?? "",
+
+                    tree.SeenDefectPrimary,
+                    tree.SeenDefectSecondary,
+                    tree.RecoverablePrimary,
+                    tree.HiddenPrimary,
+                    tree.Grade,
+
+                    tree.HeightToFirstLiveLimb,
+                    tree.PoleLength,
+                    tree.ClearFace,
+                    tree.CrownRatio,
+                    tree.DBH,
+
+                    tree.DRC,
+                    tree.TotalHeight,
+                    tree.MerchHeightPrimary,
+                    tree.MerchHeightSecondary,
+                    tree.FormClass,
+
+                    tree.UpperStemDiameter,
+                    tree.UpperStemHeight,
+                    tree.DBHDoubleBarkThickness,
+                    tree.TopDIBPrimary,
+                    tree.TopDIBSecondary,
+
+                    tree.DefectCode,
+                    tree.DiameterAtDefect,
+                    tree.VoidPercent,
+                    tree.Slope,
+                    tree.Aspect,
+
+                    tree.Remarks,
+                    tree.IsFallBuckScale,
+                    tree.Initials,
+                    UserName,
+                });
         }
 
-        public Task UpdateTreeAsync(Tree tree)
+        public void UpsertTreeMeasurments(TreeMeasurment mes)
+        {
+            Database.Execute2(
+                UPSERT_TREEMEASURMENT_COMMAND,
+                new
+                {
+                    mes.TreeID,
+
+                    mes.SeenDefectPrimary,
+                    mes.SeenDefectSecondary,
+                    mes.RecoverablePrimary,
+                    mes.HiddenPrimary,
+                    mes.Grade,
+
+                    mes.HeightToFirstLiveLimb,
+                    mes.PoleLength,
+                    mes.ClearFace,
+                    mes.CrownRatio,
+                    mes.DBH,
+
+                    mes.DRC,
+                    mes.TotalHeight,
+                    mes.MerchHeightPrimary,
+                    mes.MerchHeightSecondary,
+                    mes.FormClass,
+
+                    mes.UpperStemDiameter,
+                    mes.UpperStemHeight,
+                    mes.DBHDoubleBarkThickness,
+                    mes.TopDIBPrimary,
+                    mes.TopDIBSecondary,
+
+                    mes.DefectCode,
+                    mes.DiameterAtDefect,
+                    mes.VoidPercent,
+                    mes.Slope,
+                    mes.Aspect,
+
+                    mes.Remarks,
+                    mes.IsFallBuckScale,
+                    mes.Initials,
+                    UserName,
+                }
+                );
+        }
+
+        public Task UpdateTreeAsync(Tree_Ex tree)
         {
             return Task.Run(() => UpdateTree(tree));
         }
@@ -913,35 +1401,102 @@ namespace FScruiser.Services
 
         #region Tree Audits and ErrorLog
 
-        public IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead)
+        public IEnumerable<TreeError> GetTreeErrorsByUnit(string cuttingUnitCode)
         {
-            return Database.Query<TreeAuditRule>("SELECT * FROM TreeAuditValue " +
-                "JOIN TreeDefaultValueTreeAuditValue USING (TreeAuditValue_CN) " +
-                "JOIN TreeDefaultValue AS TDV USING (TreeDefaultValue_CN) " +
-                "JOIN SampleGroup ON TDV.PrimaryProduct = SampleGroup.PrimaryProduct " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "WHERE Stratum.Code = @p1 " +
-                "AND SampleGroup.Code = @p2 " +
-                "AND TDV.Species = @p3 " +
-                "AND TDV.LiveDead = @p4;", new object[] { stratum, sampleGroup, species, livedead });
+            return Database.Query<TreeError>(
+                "SELECT " +
+                "te.TreeID, " +
+                "te.Field, " +
+                "te.Message, " +
+                "te.Resolution " +
+                "FROM TreeAuditError AS te " +
+                "JOIN Tree_V3 AS t USING (TreeID) " +
+                "LEFT JOIN TreeAuditResolution AS ter USING (TreeAuditRuleID, TreeID) " +
+                "WHERE t.CuttingUnitCode = @p1 AND PlotNumber IS NULL;",
+                new object[] { cuttingUnitCode });
         }
 
-        public void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors)
+        public IEnumerable<TreeError> GetTreeErrorsByUnit(string cuttingUnitCode, int PlotNumber)
         {
-            Database.Execute("DELETE FROM ErrorLog WHERE TableName = 'Tree' " +
-                "AND CN_Number = (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1) " +
-                "AND Suppress = 0;", tree_GUID);
-
-            foreach (var error in errors)
-            {
-                Database.Execute("INSERT OR IGNORE INTO ErrorLog (TableName, CN_Number, ColumnName, Level, Message, Program) " +
-                    "VALUES ('Tree', (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1), @p2, @p3, @p4, 'FScruiser');",
-                    tree_GUID,
-                    error.Property,
-                    error.Level.ToString(),
-                    error.Message);
-            }
+            return Database.Query<TreeError>(
+                "SELECT " +
+                "te.TreeID, " +
+                "te.Field, " +
+                "te.Message, " +
+                "te.Resolution " +
+                "FROM TreeAuditError AS te " +
+                "JOIN Tree_V3 AS t USING (TreeID) " +
+                "LEFT JOIN TreeAuditResolution AS ter USING (TreeAuditRuleID, TreeID) " +
+                "WHERE t.CuttingUnitCode = @p1 AND PlotNumber = @plotNumber;",
+                new object[] { cuttingUnitCode, PlotNumber });
         }
+
+        public IEnumerable<TreeError> GetTreeErrors(string treeID)
+        {
+            return Database.Query<TreeError>(
+                "SELECT " +
+                "te.TreeID, " +
+                "te.Field, " +
+                "te.Message, " +
+                "te.Resolution " +
+                "FROM TreeAuditError AS te " +
+                "LEFT JOIN TreeAuditResolution AS ter USING (TreeAuditRuleID, TreeID) " +
+                "WHERE te.TreeID = @p1;",
+                new object[] { treeID });
+        }
+
+        public IEnumerable<LogError> GetLogErrorsByLog(string logID)
+        {
+            return Database.Query<LogError>(
+                "SELECT " +
+                "LogID, Message " +
+                "FROM LogGradeError " +
+                "WHERE LogID = @p1;",
+                new object[] { logID })
+                .ToArray();
+        }
+
+        public IEnumerable<LogError> GetLogErrorsByTree(string treeID)
+        {
+            return Database.Query<LogError>(
+                "SELECT " +
+                "LogID, Message " +
+                "FROM LogGradeError " +
+                "JOIN Log_V3 USING (LogID) " +
+                "WHERE TreeID  = @p1;",
+                new object[] { treeID })
+                .ToArray();
+        }
+
+        //public IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead)
+        //{
+        //    return Database.Query<TreeAuditRule>("SELECT * FROM TreeAuditValue " +
+        //        "JOIN TreeDefaultValueTreeAuditValue USING (TreeAuditValue_CN) " +
+        //        "JOIN TreeDefaultValue AS TDV USING (TreeDefaultValue_CN) " +
+        //        "JOIN SampleGroup ON TDV.PrimaryProduct = SampleGroup.PrimaryProduct " +
+        //        "JOIN Stratum USING (Stratum_CN) " +
+        //        "WHERE Stratum.Code = @p1 " +
+        //        "AND SampleGroup.Code = @p2 " +
+        //        "AND TDV.Species = @p3 " +
+        //        "AND TDV.LiveDead = @p4;", new object[] { stratum, sampleGroup, species, livedead });
+        //}
+
+        //public void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors)
+        //{
+        //    Database.Execute("DELETE FROM ErrorLog WHERE TableName = 'Tree' " +
+        //        "AND CN_Number = (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1) " +
+        //        "AND Suppress = 0;", tree_GUID);
+
+        //    foreach (var error in errors)
+        //    {
+        //        Database.Execute("INSERT OR IGNORE INTO ErrorLog (TableName, CN_Number, ColumnName, Level, Message, Program) " +
+        //            "VALUES ('Tree', (SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1), @p2, @p3, @p4, 'FScruiser');",
+        //            tree_GUID,
+        //            error.Property,
+        //            error.Level.ToString(),
+        //            error.Message);
+        //    }
+        //}
 
         #endregion Tree Audits and ErrorLog
 
@@ -949,88 +1504,250 @@ namespace FScruiser.Services
 
         public IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode)
         {
-            return Database.From<TallyEntry>()
-                .LeftJoin("Tree", "USING (Tree_GUID)")
-                //.Where("UnitCode = @p1 AND PlotNumber IS NULL ")
-                .Where("UnitCode = @p1")
-                .OrderBy("TimeStamp DESC")
-                .Limit(NUMBER_OF_TALLY_ENTRIES_PERPAGE, 0 * NUMBER_OF_TALLY_ENTRIES_PERPAGE)
-                .Query(unitCode);
+            return Database.Query<TallyEntry>(
+                "SELECT " +
+                    "tl.TreeID, " +
+                    "tl.TallyLedgerID, " +
+                    "tl.CuttingUnitCode, " +
+                    "tl.StratumCode, " +
+                    "tl.SampleGroupCode, " +
+                    "tl.Species, " +
+                    "tl.LiveDead, " +
+                    "TreeCount, " +
+                    "Reason, " +
+                    "KPI, " +
+                    "EntryType, " +
+                    "Remarks, " +
+                    "Signature, " +
+                    "tl.CreatedDate, " +
+                    "t.TreeNumber, " +
+                    "tl.STM " +
+                "FROM TallyLedger AS tl " +
+                "LEFT JOIN Tree_V3 AS t USING (TreeID) " +
+                "WHERE tl.CuttingUnitCode = @p1 " +
+                "ORDER BY tl.CreatedDate DESC;",
+                new object[] { unitCode })
+                .ToArray();
+
+            //From<TallyEntry>()
+            ////.Where("UnitCode = @p1 AND PlotNumber IS NULL ")
+            //.Where("UnitCode = @p1")
+            //.OrderBy("TimeStamp DESC")
+            //.Limit(NUMBER_OF_TALLY_ENTRIES_PERPAGE, 0 * NUMBER_OF_TALLY_ENTRIES_PERPAGE)
+            //.Query(unitCode);
         }
 
         public IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber)
         {
-            return Database.From<TallyEntry>()
-                .LeftJoin("Tree", "USING (Tree_GUID)")
-                .Where("UnitCode = @p1 AND PlotNumber = @p2 ")
-                .OrderBy("TimeStamp DESC")
-                .Query(unitCode, plotNumber);
+            return Database.Query<TallyEntry>(
+                "SELECT " +
+                    "TreeID, " +
+                    "TallyLedgerID, " +
+                    "CuttingUnitCode, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "Species, " +
+                    "LiveDead, " +
+                    "TreeCount, " +
+                    "Reason, " +
+                    "KPI, " +
+                    "EntryType, " +
+                    "Remarks, " +
+                    "Signature, " +
+                    "CreatedDate, " +
+                    "t.TreeNumber, " +
+                    "tl.STM " +
+                "FROM TallyLedger AS tl " +
+                "LEFT JOIN Tree_V3 USING (TreeID) " +
+                "WHERE tl.CuttingUnitCode = @p1;",
+                new object[] { unitCode })
+                .ToArray();
+
+            //return Database.From<TallyEntry>()
+            //    .LeftJoin("Tree", "USING (Tree_GUID)")
+            //    .Where("UnitCode = @p1 AND PlotNumber = @p2 ")
+            //    .OrderBy("TimeStamp DESC")
+            //    .Query(unitCode, plotNumber);
         }
 
-        public void InsertTallyEntry(TallyEntry entry)
+        public void InsertTallyLedger(TallyLedger tallyLedger)
         {
+            var tallyLedgerID = tallyLedger.TallyLedgerID ?? Guid.NewGuid().ToString();
+
+            Database.Execute2(
+                "INSERT INTO TallyLedger (" +
+                    "TallyLedgerID, " +
+                    "CuttingUnitCode, " +
+                    "StratumCode, " +
+                    "SampleGroupCode, " +
+                    "PlotNumber, " +
+                    "Species, " +
+                    "LiveDead," +
+                    "TreeCount, " +
+                    "KPI, " +
+                    "ThreePRandomValue, " +
+                    "TreeID, " +
+                    "CreatedBy, " +
+                    "Reason, " +
+                    "Signature, " +
+                    "Remarks, " +
+                    "EntryType" +
+                ") VALUES ( " +
+                    "@TallyLedgerID, " +
+                    "@CuttingUnitCode, " +
+                    "@StratumCode, " +
+                    "@SampleGroupCode, " +
+                    "@PlotNumber, " +
+                    "@Species, " +
+                    "@LiveDead, " +
+                    "@TreeCount, " +
+                    "@KPI, " +
+                    "@ThreePRandomValue, " +
+                    "@TreeID, " +
+                    "@CreatedBy, " +
+                    "@Reason, " +
+                    "@Signature, " +
+                    "@Remarks, " +
+                    "@EntryType" +
+                ");",
+                new
+                {
+                    TallyLedgerID = tallyLedgerID,
+                    tallyLedger.CuttingUnitCode,
+                    tallyLedger.StratumCode,
+                    tallyLedger.SampleGroupCode,
+                    tallyLedger.PlotNumber,
+                    tallyLedger.Species,
+                    tallyLedger.LiveDead,
+                    tallyLedger.TreeCount,
+                    tallyLedger.KPI,
+                    tallyLedger.ThreePRandomValue,
+                    tallyLedger.TreeID,
+                    tallyLedger.CreatedBy,
+                    tallyLedger.Reason,
+                    tallyLedger.Signature,
+                    tallyLedger.Remarks,
+                    tallyLedger.EntryType,
+                });
+
+            tallyLedger.TallyLedgerID = tallyLedgerID;
+        }
+
+        public TallyEntry InsertTallyAction(TallyAction atn)
+        {
+            if (atn.IsInsuranceSample == true && atn.IsSample == false) { throw new InvalidOperationException("If action is insurance sample it must be sample aswell"); }
+
             Database.BeginTransaction();
             try
             {
-                if (entry.HasTree)
+                var tallyEntry = new TallyEntry(atn);
+
+                tallyEntry.TallyLedgerID = Guid.NewGuid().ToString();
+
+                if (atn.IsSample)
                 {
-                    CreateTree(entry.Tree_GUID, entry.UnitCode, entry.StratumCode, entry.SampleGroupCode, entry.Species, entry.LiveDead, entry.CountOrMeasure, entry.TreeCount, entry.KPI, entry.IsSTM);
-                    entry.TreeNumber = Database.ExecuteScalar<long>("SELECT TreeNumber FROM Tree WHERE Tree_GUID = @p1;", entry.Tree_GUID);
+                    tallyEntry.TreeID = tallyEntry.TallyLedgerID;
+
+                    tallyEntry.TreeNumber = Database.ExecuteScalar2<int>(
+                        "SELECT " +
+                        "ifnull(max(TreeNumber), 0) + 1 " +
+                        "FROM Tree_V3 " +
+                        "WHERE CuttingUnitCode = @CuttingUnitCode " +
+                        "AND ifnull(PlotNumber, -1) = ifnull(@PlotNumber, -1)",
+                        new { atn.CuttingUnitCode, atn.PlotNumber });
+
+                    Database.Execute2(
+                        "INSERT INTO Tree_V3 ( " +
+                            "TreeID, " +
+                            "CuttingUnitCode, " +
+                            "PlotNumber, " +
+                            "StratumCode, " +
+                            "SampleGroupCode, " +
+                            "Species, " +
+                            "LiveDead, " +
+                            "TreeNumber, " +
+                            "CountOrMeasure, " +
+                            "CreatedBy " +
+                        ") VALUES ( " +
+                            "@TreeID, " +
+                            "@CuttingUnitCode, " +
+                            "@PlotNumber, " +
+                            "@StratumCode, " +
+                            "@SampleGroupCode, " +
+                            "@Species, " +
+                            "@LiveDead, " +
+                            "@TreeNumber," +
+                            "@CountOrMeasure," +
+                            "@UserName " +
+                        ");",
+                        new
+                        {
+                            tallyEntry.TreeID,
+                            tallyEntry.TreeNumber,
+                            atn.CuttingUnitCode,
+                            atn.PlotNumber,
+                            atn.StratumCode,
+                            atn.SampleGroupCode,
+                            atn.Species,
+                            atn.LiveDead,
+                            CountOrMeasure = (atn.IsInsuranceSample ? "I" : "M"),
+                            UserName,
+                        });
                 }
 
-                entry.TallyLedgerID = Guid.NewGuid().ToString();
-                entry.TimeStamp = DateTime.Now;
-
-                Database.Insert(entry);
-
-                var countTree_CN = Database.ExecuteScalar<int?>("SELECT CountTree_CN FROM CountTree " +
-                    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                    "JOIN SampleGroup USING (SampleGroup_CN) " +
-                    "JOIN Stratum USING (Stratum_CN) " +
-                    "LEFT JOIN TreeDefaultValue as TDV USING (TreeDefaultValue_CN) " +
-                    "WHERE CuttingUnit.Code = @p1 " +
-                    "AND Stratum.Code = @p2 " +
-                    "AND SampleGroup.Code = @p3 " +
-                    "AND ifnull(TDV.Species,'') = @p4 " +
-                    "AND ifnull(TDV.LiveDead, '') = @p5; "
-                    , entry.UnitCode
-                    , entry.StratumCode
-                    , entry.SampleGroupCode
-                    , entry.Species ?? ""
-                    , entry.LiveDead ?? "");
-
-                Database.Execute("UPDATE CountTree " +
-                    "SET TreeCount = TreeCount + @p1, " +
-                    "SumKPI = SumKPI + @p2 " +
-                    "WHERE CountTree_CN = @p3;",
-                    entry.TreeCount,
-                    entry.KPI,
-                    countTree_CN);
-
-                //Database.Execute(
-                //    "UPDATE CountTree SET " +
-                //    "TreeCount = TreeCount + @p1, " +
-                //    "SumKPI = SumKPI + @p2 " +
-                //    "WHERE CountTree_CN IN (" +
-                //    "SELECT CountTree_CN FROM CountTree " +
-                //    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                //    "JOIN SampleGroup USING (SampleGroup_CN) " +
-                //    "JOIN Stratum USING (Stratum_CN) " +
-                //    "LEFT JOIN TreeDefaultValue as TDV USING (TreeDefaultValue_CN) " +
-                //    "WHERE CuttingUnit.Code = @p3 " +
-                //    "AND Stratum.Code = @p4 " +
-                //    "AND SampleGroup.Code = @p5 " +
-                //    "AND ifnull(TDV.Species,'') = ifnull(@p6, '') " +
-                //    "AND ifnull(TDV.LiveDead, '') = ifnull(@p7, ''); "
-                //    , entry.TreeCount
-                //    , entry.KPI
-                //    , entry.UnitCode
-                //    , entry.StratumCode
-                //    , entry.SGCode
-                //    , entry.Species
-                //    , entry.LiveDead);
+                Database.Execute2(
+                    "INSERT INTO TallyLedger ( " +
+                        "TreeID, " +
+                        "TallyLedgerID, " +
+                        "CuttingUnitCode, " +
+                        "PlotNumber, " +
+                        "StratumCode, " +
+                        "SampleGroupCode, " +
+                        "Species, " +
+                        "LiveDead, " +
+                        "TreeCount, " +
+                        "KPI, " +
+                        "STM, " +
+                        "ThreePRandomValue, " +
+                        "EntryType, " +
+                        "CreatedBy" +
+                    ") VALUES ( " +
+                        "@TreeID, " +
+                        "@TallyLedgerID, " +
+                        "@CuttingUnitCode, " +
+                        "@PlotNumber, " +
+                        "@StratumCode, " +
+                        "@SampleGroupCode, " +
+                        "@Species, " +
+                        "@LiveDead, " +
+                        "@TreeCount, " +
+                        "@KPI, " +
+                        "@STM, " +
+                        "@ThreePRandomValue," +
+                        "@EntryType," +
+                        "@CreatedBy" +
+                    ");",
+                    new
+                    {
+                        tallyEntry.TreeID,
+                        tallyEntry.TallyLedgerID,
+                        atn.CuttingUnitCode,
+                        atn.PlotNumber,
+                        atn.StratumCode,
+                        atn.SampleGroupCode,
+                        atn.Species,
+                        atn.LiveDead,
+                        atn.TreeCount,
+                        atn.KPI,
+                        atn.STM,
+                        atn.ThreePRandomValue,
+                        atn.EntryType,
+                        CreatedBy = UserName,
+                    });
 
                 Database.CommitTransaction();
+
+                return tallyEntry;
             }
             catch
             {
@@ -1039,41 +1756,13 @@ namespace FScruiser.Services
             }
         }
 
-        public void DeleteTally(TallyEntry entry)
+        public void DeleteTallyEntry(string tallyLedgerID)
         {
             Database.BeginTransaction();
             try
             {
-                Database.Execute("DELETE FROM TallyLedger WHERE TallyLedgerID = @p1;", entry.TallyLedgerID);
-
-                if (entry.HasTree)
-                {
-                    Database.Execute("DELETE FROM Tree WHERE Tree_GUID = @p1;", entry.Tree_GUID);
-                }
-
-                Database.Execute(
-                        "UPDATE CountTree SET " +
-                        "TreeCount = TreeCount - @p1, " +
-                        "SumKPI = SumKPI - @p2 " +
-                        "WHERE CountTree_CN IN (" +
-                        "SELECT CountTree_CN FROM CountTree " +
-                        "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                        "JOIN SampleGroup USING (SampleGroup_CN) " +
-                        "JOIN Stratum USING (Stratum_CN) " +
-                        "LEFT JOIN TreeDefaultValue as TDV USING (TreeDefaultValue_CN) " +
-                        "WHERE CuttingUnit.Code = @p3 " +
-                        "AND Stratum.Code = @p4 " +
-                        "AND SampleGroup.Code = @p5 " +
-                        "AND ifnull(TDV.Species,'') = ifnull(@p6, '') " +
-                        "AND ifnull(TDV.LiveDead, '') = ifnull(@p7, '') " +
-                        "AND ifnull(Component_CN, 0) == 0); "
-                        , entry.TreeCount
-                        , entry.KPI
-                        , entry.UnitCode
-                        , entry.StratumCode
-                        , entry.SampleGroupCode
-                        , entry.Species
-                        , entry.LiveDead);
+                Database.Execute("DELETE FROM TREE_V3 WHERE TreeID IN (SELECT TreeID FROM TallyLedger WHERE TallyLedgerID = @p1);", tallyLedgerID);
+                Database.Execute("DELETE FROM TallyLedger WHERE TallyLedgerID = @p1;", tallyLedgerID);
 
                 Database.CommitTransaction();
             }
@@ -1088,81 +1777,117 @@ namespace FScruiser.Services
 
         #region Log
 
-        public IEnumerable<Log> GetLogs(string tree_guid)
+        public IEnumerable<Log> GetLogs(string treeID)
         {
             return Database.From<Log>()
-                .Join("Tree", "USING (Tree_CN)")
-                .Where("Tree.Tree_GUID = @p1")
-                .Query(tree_guid).ToArray();
+                .Where("TreeID = @p1")
+                .Query(treeID).ToArray();
         }
 
-        public Log GetLog(string log_guid)
+        public Log GetLog(string logID)
         {
             return Database.From<Log>()
-                .Join("Tree", "USING (Tree_CN)")
-                .Where("Log_GUID = @p1")
-                .Query(log_guid).FirstOrDefault();
+                .Where("LogID = @p1")
+                .Query(logID).FirstOrDefault();
         }
 
-        public Log GetLog(string tree_guid, int logNumber)
+        public Log GetLog(string treeID, int logNumber)
         {
             return Database.From<Log>()
-                .Join("Tree", "USING (Tree_CN)")
-                .Where("Tree.Tree_GUID = @p1 AND LogNumber = @p2")
-                .Query(tree_guid, logNumber).FirstOrDefault();
+                .Where("TreeID = @p1 AND LogNumber = @p2")
+                .Query(treeID, logNumber).FirstOrDefault();
         }
 
         public void InsertLog(Log log)
         {
-            var log_guid = Guid.NewGuid().ToString();
-            var createdBy = log.CreatedBy ?? "Android Device";
+            var logID = Guid.NewGuid().ToString();
 
-            var tree_cn = Database.ExecuteScalar<long>("SELECT Tree_CN FROM Tree WHERE Tree_GUID = @p1", log.Tree_GUID);
-            var logNumber = Database.ExecuteScalar<int>("SELECT ifnull(max(LogNumber), 0) + 1 FROM Log WHERE Tree_CN = @p1", tree_cn);
+            var logNumber = Database.ExecuteScalar<int>("SELECT ifnull(max(LogNumber), 0) + 1 FROM Log WHERE Tree_CN = @p1", log.TreeID);
 
-            Database.Execute("INSERT INTO Log " +
-                "(Log_GUID, " +
-                "Tree_CN, " +
-                "LogNumber, " + //
-                "Grade, " +
-                "SeenDefect, " +
-                "PercentRecoverable, " + //
-                "Length, " +
-                "ExportGrade, " +
-                "SmallEndDiameter, " + //
-                "LargeEndDiameter, " +
-                "GrossBoardFoot, " +
-                "NetBoardFoot, " + //
-                "GrossCubicFoot, " +
-                "NetCubicFoot, " +
-                "BoardFootRemoved, " + //
-                "CubicFootRemoved, " +
-                "DIBClass, " +
-                "BarkThickness, " + //
-                "CreatedBy) " +
-                "VALUES " +
-                "(@p1, @p2, @p3," +
-                "@p4, @p5, @p6, " +
-                "@p7, @p8, @p9, " +
-                "@p10, @p11, @p12, " +
-                "@p13, @p14, @p15, " +
-                "@p16, @p17, @p18, @p19);",
-                log_guid, tree_cn, logNumber,
-                log.Grade, log.SeenDefect, log.PercentRecoverable,
-                log.Length, log.ExportGrade, log.SmallEndDiameter,
-                log.LargeEndDiameter, log.GrossBoardFoot, log.NetBoardFoot,
-                log.GrossCubicFoot, log.NetCubicFoot, log.BoardFootRemoved,
-                log.CubicFootRemoved, log.DIBClass, log.BarkThickness,
-                createdBy);
+            Database.Execute2(
+                "INSERT INTO Log_V3 ( " +
+                    "LogID , " +
+                    "TreeID, " +
+                    "LogNumber, " +
+
+                    "Grade, " +
+                    "SeenDefect, " +
+                    "PercentRecoverable, " +
+                    "Length, " +
+                    "ExportGrade, " +
+
+                    "SmallEndDiameter, " +
+                    "LargeEndDiameter, " +
+                    "GrossBoardFoot, " +
+                    "NetBoardFoot, " +
+                    "GrossCubicFoot, " +
+
+                    "NetCubicFoot, " +
+                    "BoardFootRemoved, " +
+                    "CubicFootRemoved, " +
+                    "DIBClass, " +
+                    "BarkThickness, " +
+
+                    "CreatedBy " +
+                ") VALUES ( " +
+                    "@LogID, " +
+                    "@TreeID, " +
+                    "@LogNumber, " +
+
+                    "@Grade, " +
+                    "@SeenDefect, " +
+                    "@PercentRecoverable, " +
+                    "@Length," +
+                    "@ExportGrade, " +
+
+                    "@SmallEndDiameter, " +
+                    "@LargeEndDiameter, " +
+                    "@GrossBoardFoot, " +
+                    "@NetBoardFoot, " +
+                    "@GrossCubicFoot, " +
+
+                    "@NetCubicFoot, " +
+                    "@BoardFootRemoved, " +
+                    "@CubicFootRemoved, " +
+                    "@DIBClass, " +
+                    "@BarkThickness, " +
+
+                    "@CreatedBy" +
+                ");",
+                new
+                {
+                    LogID = logID,
+                    log.TreeID,
+                    LogNumber = logNumber,
+
+                    log.Grade,
+                    log.SeenDefect,
+                    log.PercentRecoverable,
+                    log.Length,
+                    log.ExportGrade,
+
+                    log.SmallEndDiameter,
+                    log.LargeEndDiameter,
+                    log.GrossBoardFoot,
+                    log.NetBoardFoot,
+                    log.GrossCubicFoot,
+
+                    log.NetCubicFoot,
+                    log.BoardFootRemoved,
+                    log.CubicFootRemoved,
+                    log.DIBClass,
+                    log.BarkThickness,
+
+                    CreatedBy = UserName,
+                });
 
             log.LogNumber = logNumber;
-            log.CreatedBy = createdBy;
-            log.Log_GUID = log_guid;
+            log.LogID = logID;
         }
 
         public void UpdateLog(Log log)
         {
-            Database.Execute("UPDATE Log SET " +
+            Database.Execute("UPDATE Log_V3 SET " +
                 "LogNumber = @p1, " +
                 "Grade = @p2, " +
                 "SeenDefect = @p3, " +
@@ -1180,7 +1905,7 @@ namespace FScruiser.Services
                 "DIBClass = @p15, " +
                 "BarkThickness = @p16, " +
                 "ModifiedBy = @p17 " +
-                "WHERE Log_GUID = @p18;",
+                "WHERE LogID = @p18;",
                 log.LogNumber,
                 log.Grade,
                 log.SeenDefect,
@@ -1197,33 +1922,30 @@ namespace FScruiser.Services
                 log.CubicFootRemoved,
                 log.DIBClass,
                 log.BarkThickness,
-                log.ModifiedBy,
-                log.Log_GUID);
+                UserName,
+                log.LogID);
         }
 
-        public void DeleteLog(string log_guid)
+        public void DeleteLog(string logID)
         {
-            Database.Execute("DELETE FROM Log WHERE Log_GUID = @p1;", log_guid);
+            Database.Execute("DELETE FROM Log_V3 WHERE LogID = @p1;", logID);
         }
 
         private static readonly LogFieldSetup[] DEFAULT_LOG_FIELDS = new LogFieldSetup[]{
             new LogFieldSetup(){
-                Field = CruiseDAL.Schema.LOG.LOGNUMBER, Heading = "LogNum"},
+                Field = nameof(Log.LogNumber), Heading = "LogNum"},
             new LogFieldSetup(){
-                Field = CruiseDAL.Schema.LOG.GRADE, Heading = "Grade"},
+                Field = nameof(Log.Grade), Heading = "Grade"},
             new LogFieldSetup() {
-                Field = CruiseDAL.Schema.LOG.SEENDEFECT, Heading = "PctSeenDef"}
+                Field = nameof(Log.SeenDefect), Heading = "PctSeenDef"}
         };
 
-        public IEnumerable<LogFieldSetup> GetLogFields(string tree_guid)
+        public IEnumerable<LogFieldSetup> GetLogFields(string treeID)
         {
-            var tree_stratum_CN = Database.ExecuteScalar<int>("SELECT Stratum_CN FROM Tree WHERE Tree_GUID = @p1;", tree_guid);
-
             var fields = Database.From<LogFieldSetup>()
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum_CN = @p1")
+                .Where("StratumCode = (SELECT StratumCode FROM Tree_V3 WHERE TreeID = @p1)")
                 .OrderBy("FieldOrder")
-                .Query(tree_stratum_CN).ToArray();
+                .Query(treeID).ToArray();
 
             if (fields.Length == 0)
             {
@@ -1239,13 +1961,10 @@ namespace FScruiser.Services
 
         public void LogMessage(string message, string level)
         {
-            var msg = new MessageLogDO
-            {
-                Message = message,
-                Level = level
-            };
+            Database.LogMessage(message, level);
 
-            Database.Insert(msg);
+            //Database.Execute2("INSERT INTO MessageLog (Message, Level) VALUES (@message, @level);",
+            //    new { Message = message, Level = level });
         }
     }
 }

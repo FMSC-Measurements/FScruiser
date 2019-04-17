@@ -1,5 +1,4 @@
-﻿using CruiseDAL.DataObjects;
-using FScruiser.Models;
+﻿using FScruiser.Models;
 using FScruiser.Validation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,29 +15,47 @@ namespace FScruiser.Services
 
         #region plots
 
+        Plot GetPlot(string plotID);
+
+        Plot GetPlot(string cuttingUnitCode, int plotNumber);
+
         int GetNextPlotNumber(string unitCode);
 
         bool IsPlotNumberAvalible(string unitCode, int plotNumber);
 
         IEnumerable<Plot> GetPlotsByUnitCode(string unitCode);
 
+        string AddNewPlot(string cuttingUnitCode);
+
         //Plot GetPlot(string unitCode, int plotNumber);
 
         //void UpsertStratumPlot(string unit, StratumPlot stratumPlot);
 
-        IEnumerable<StratumPlot> GetStratumPlots(string unitCode, int plotNumber, bool insertIfNotExists = false);
+        IEnumerable<Plot_Stratum> GetPlot_Strata(string unitCode, int plotNumber, bool insertIfNotExists = false);
 
-        StratumPlot GetStratumPlot(string unitCode, string stratumCode, int plotNumber, bool insertIfNotExists = false);
+        Plot_Stratum GetPlot_Stratum(string unitCode, string stratumCode, int plotNumber);
 
-        void InsertStratumPlot(string unitCode, StratumPlot stratumPlot);
+        void InsertPlot_Stratum(Plot_Stratum stratumPlot);
 
-        void UpdateStratumPlot(StratumPlot stratumPlot);
+        void UpdatePlot_Stratum(Plot_Stratum stratumPlot);
 
-        void DeleteStratumPlot(string plot_guid);
+        void AddPlotRemark(string cuttingUnitCode, int plotNumber, string remark);
+
+        void DeletePlot_Stratum(string cuttingUnitCode, string stratumCode, int plotNumber);
 
         void DeletePlot(string unitCode, int plotNumber);
 
         int GetNumTreeRecords(string unitCode, string stratumCode, int plotNumber);
+
+        IEnumerable<FixCntTallyPopulation> GetFixCNTTallyPopulations(string stratumCode);
+
+        Tree GetFixCNTTallyTree( string unitCode, int plotNumber, 
+            string stratumCode, string sgCode, string species, string liveDead,
+            string fieldName, double value);
+
+        Tree CreateFixCNTTallyTree( string unitCode, int plotNumber, 
+            string stratumCode, string sgCode, string species, string liveDead,
+            string fieldName, double value, int treeCount = 0);
 
         #endregion plots
 
@@ -62,23 +79,43 @@ namespace FScruiser.Services
 
         SampleGroupProxy GetSampleGroupProxy(string stratumCode, string sampleGroupCode);
 
+        SamplerState GetSamplerState(string stratumCode, string sampleGroupCode);
+
+        void UpdateSamplerState(SamplerState samplerState);
+
         #endregion sampleGroups
 
         IEnumerable<TreeDefaultProxy> GetTreeDefaultProxies(string stratumCode, string sampleGroupCode);
 
         IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode);
 
+        TallyPopulation GetTallyPopulation(string unitCode, string stratumCode, string sampleGroupCode, string species, string liveDead);
+
         IEnumerable<TallyPopulation_Plot> GetPlotTallyPopulationsByUnitCode(string unitCode, int plotNumber);
 
         #region treeFields
 
-        IEnumerable<TreeFieldSetupDO> GetTreeFieldsByUnitCode(string unitCode);
+        //IEnumerable<TreeFieldSetup> GetTreeFieldsByUnitCode(string unitCode);
 
-        IEnumerable<TreeFieldSetupDO> GetTreeFieldsByStratumCode(string stratum);
+        IEnumerable<TreeFieldSetup> GetTreeFieldsByStratumCode(string stratum);
 
         #endregion treeFields
 
-        IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead);
+        #region validation 
+
+        IEnumerable<TreeError> GetTreeErrorsByUnit(string cuttingUnitCode);
+
+        IEnumerable<TreeError> GetTreeErrorsByUnit(string cuttingUnitCode, int PlotNumber);
+
+        IEnumerable<TreeError> GetTreeErrors(string treeID);
+
+        IEnumerable<LogError> GetLogErrorsByLog(string logID);
+
+        IEnumerable<LogError> GetLogErrorsByTree(string treeID);
+
+        //IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead);
+
+        #endregion
 
         #region tree
 
@@ -86,9 +123,11 @@ namespace FScruiser.Services
 
         int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon);
 
-        string CreateTree(string unitCode, string stratumCode, string sampleGroupCode = null, string species = null, string liveDead = "L", string countMeasure = "M", int treeCount = 1, int kpi = 0, bool stm = false);
+        string CreateMeasureTree(string unitCode, string stratumCode, 
+            string sampleGroupCode = null, string species = null, string liveDead = "L", 
+            int treeCount = 1, int kpi = 0, bool stm = false);
 
-        Tree GetTree(string tree_GUID);
+        Tree_Ex GetTree(string tree_GUID);
 
         TreeStub GetTreeStub(string tree_GUID);
 
@@ -100,13 +139,11 @@ namespace FScruiser.Services
 
         void InsertTree(TreeStub_Plot tree);
 
-        void UpdateTree(Tree tree);
+        void UpdateTree(Tree_Ex tree);
 
         void UpdateTreeInitials(string tree_guid, string value);
 
-        void UpdateTreeErrors(string tree_GUID, IEnumerable<ValidationError> errors);
-
-        Task UpdateTreeAsync(Tree tree);
+        Task UpdateTreeAsync(Tree_Ex tree);
 
         void DeleteTree(Tree tree);
 
@@ -138,13 +175,18 @@ namespace FScruiser.Services
 
         #endregion logs
 
+        #region Tally Entries
         IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
 
         IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber);
 
-        void InsertTallyEntry(TallyEntry entry);
+        TallyEntry InsertTallyAction(TallyAction entry);
 
-        void DeleteTally(TallyEntry tallyEntry);
+        void InsertTallyLedger(TallyLedger tallyLedger);
+
+        void DeleteTallyEntry(string tallyLedgerID);
+
+        #endregion
 
         void LogMessage(string message, string level);
     }

@@ -12,6 +12,7 @@ namespace FScruiser.XF.Services
     public class XamarinDialogService : IDialogService
     {
         private TaskCompletionSource<int?> _askKpiTcs;
+        private TaskCompletionSource<AskTreeCountResult> _askTreeCountTcs;
         private IApplicationProvider _applicationProvider;
         private IContainerExtension _container;
 
@@ -43,8 +44,7 @@ namespace FScruiser.XF.Services
 
         public async Task<string> AskCruiserAsync()
         {
-            var tallySettings = _container.Resolve<ITallySettingsDataService>();
-            var cruisers = tallySettings.Cruisers.ToArray();
+            var cruisers = GetCruisers();
 
             if (cruisers.Count() == 0) { return null; }
 
@@ -73,31 +73,32 @@ namespace FScruiser.XF.Services
 
             var view = new AskKpiPage() { MinKPI = min, MaxKPI = max };
 
-            void handelClose(object sender, AskKPIResult ea)
+            void handelClose(object sender, object output)
             {
+                var reslut = output as AskKPIResult;
+
+                var tcs = System.Threading.Interlocked.Exchange(ref _askKpiTcs, null);//_askKpiTcs = null; return original value of _askKpiTcs
+
+                view.OnClosed -= handelClose;
+
+                if (reslut.DialogResult == DialogResult.Cancel)
                 {
-                    var tcs = System.Threading.Interlocked.Exchange(ref _askKpiTcs, null);//_askKpiTcs = null; return original value of _askKpiTcs
-
-                    view.HandleClosed -= handelClose;
-
-                    if (ea.DialogResult == DialogResult.Cancel)
-                    {
-                        tcs?.SetResult(null);
-                    }
-                    else if (ea.IsSTM)
-                    {
-                        tcs?.SetResult(-1);
-                    }
-                    else
-                    {
-                        tcs?.SetResult(ea.KPI);
-                    }
+                    tcs?.SetResult(null);
+                }
+                else if (reslut.IsSTM)
+                {
+                    tcs?.SetResult(-1);
+                }
+                else
+                {
+                    tcs?.SetResult(reslut.KPI);
                 }
             }
 
-            view.HandleClosed += handelClose;
+            view.OnClosed += handelClose;
 
             GetCurrentPage().Navigation.PushModalAsync(view);
+
 
             return _askKpiTcs.Task;
         }
@@ -105,6 +106,47 @@ namespace FScruiser.XF.Services
         public Task<bool> AskYesNoAsync(string message, string caption, bool defaultNo = false)
         {
             return App.Current.MainPage.DisplayAlert(caption, message, "Yes", "No");
+        }
+
+        public Task<AskTreeCountResult> AskTreeCount(int? defaultTreeCount)
+        {
+            var newTcs = new TaskCompletionSource<AskTreeCountResult>();
+
+            if (System.Threading.Interlocked.CompareExchange(ref _askTreeCountTcs, newTcs, null) != null)//if _askKpiTcs == null then _askKpiTcs = newTcs; return origianl value of _askKpiTcs
+            {
+                throw new InvalidOperationException("only one dialog can be active at a time");
+            }
+
+            var view = new ClickerTreeCountEntryDialog(defaultTreeCount);
+
+            void handelClose(object sender, object output)
+            {
+                var tcs = System.Threading.Interlocked.Exchange(ref _askTreeCountTcs, null);//_askKpiTcs = null; return original value of _askKpiTcs
+
+                view.OnClosed -= handelClose;
+
+                if (view.DialogResult == DialogResult.Cancel)
+                {
+                    tcs?.SetResult(null);
+                }
+                else
+                {
+                    tcs?.SetResult(output as AskTreeCountResult);
+                }
+            }
+
+            view.OnClosed += handelClose;
+
+            GetCurrentPage().Navigation.PushModalAsync(view);
+
+            return _askTreeCountTcs.Task;
+        }
+
+        private string[] GetCruisers()
+        {
+            var tallySettings = _container.Resolve<ITallySettingsDataService>();
+            var cruisers = tallySettings.Cruisers.ToArray();
+            return cruisers;
         }
 
         public Task ShowMessageAsync(string message, string caption = null)

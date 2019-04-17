@@ -59,13 +59,13 @@ namespace FScruiser.XF.ViewCells
         {
             TreeViewModel?.SaveTree();
             var tree = BindingContext as TreeStub_Plot;
-            MessagingCenter.Send<object, string>(this, Messages.EDIT_TREE_CLICKED, tree?.Tree_GUID);
+            MessagingCenter.Send<object, string>(this, Messages.EDIT_TREE_CLICKED, tree?.TreeID);
         }
 
         protected void _deleteButton_Clicked(object sender, EventArgs e)
         {
             var tree = BindingContext as TreeStub_Plot;
-            MessagingCenter.Send<object, string>(this, Messages.DELETE_TREE_CLICKED, tree?.Tree_GUID);
+            MessagingCenter.Send<object, string>(this, Messages.DELETE_TREE_CLICKED, tree?.TreeID);
         }
 
         private void _treeViewModel_ErrorsAndWarningsChanged(object sender, EventArgs e)
@@ -79,7 +79,7 @@ namespace FScruiser.XF.ViewCells
 
         }
 
-        private void _treeViewModel_TreeFieldsChanged(object sender, System.Collections.Generic.IEnumerable<CruiseDAL.DataObjects.TreeFieldSetupDO> e)
+        private void _treeViewModel_TreeFieldsChanged(object sender, IEnumerable<TreeFieldSetup> e)
         {
             var view = MakeEditControlContainer(TreeViewModel.TreeFields);
 
@@ -119,7 +119,7 @@ namespace FScruiser.XF.ViewCells
             var tree = BindingContext as TreeStub_Plot;
             if (tree != null)
             {
-                TreeViewModel?.OnNavigatedTo(new Prism.Navigation.NavigationParameters() { { "Tree_Guid", tree.Tree_GUID } });
+                TreeViewModel?.OnNavigatedTo(new Prism.Navigation.NavigationParameters() { { "Tree_Guid", tree.TreeID } });
 
                 //TreeViewModel?.Init(tree.Tree_GUID);
             }
@@ -130,7 +130,7 @@ namespace FScruiser.XF.ViewCells
             _treeEditPanel.IsVisible = isSelected;
         }
 
-        private View MakeEditControlContainer(System.Collections.Generic.IEnumerable<CruiseDAL.DataObjects.TreeFieldSetupDO> treeFields)
+        private View MakeEditControlContainer(IEnumerable<TreeFieldSetup> treeFields)
         {
             var grid = new Grid();
 

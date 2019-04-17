@@ -1,27 +1,31 @@
 ﻿using FScruiser.Services;
+using FScruiser.XF.Services;
+using Moq;
 using Prism.Ioc;
 using System;
+using Xunit.Abstractions;
 
 namespace FScruiser.XF
 {
     public class TestPlatformInitializer : Prism.IPlatformInitializer
     {
-        //private ISoundService SoundService { get; }
 
-        public TestPlatformInitializer()
-        { }
+        public Xunit.Abstractions.ITestOutputHelper TestOutput { get; set; }
+        public TestDialogService TestDialogService { get; private set; }
 
-        //public TestPlatformInitializer(ISoundService soundService) : this()
-        //{
-        //    SoundService = soundService ?? throw new ArgumentNullException(nameof(soundService));
-        //}
+        public TestPlatformInitializer(ITestOutputHelper testOutput)
+        {
+            TestOutput = testOutput ?? throw new ArgumentNullException(nameof(testOutput));
+        }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            //if (SoundService != null)
-            //{
-            //    containerRegistry.RegisterInstance<ISoundService>(SoundService);
-            //}
+            var mockSoundService = new Mock<ISoundService>();
+            var mockDialogService = new Mock<IDialogService>();
+
+            containerRegistry.RegisterInstance<ISoundService>(mockSoundService.Object);
+            containerRegistry.RegisterInstance<IDialogService>(mockDialogService.Object);
+            containerRegistry.RegisterInstance<Prism.Logging.ILoggerFacade>(new TestLogger(TestOutput));
         }
     }
 }

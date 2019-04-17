@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("LogFieldSetup")]
+    [EntitySource("LogFieldSetup_V3")]
     public class LogFieldSetup
     {
         [Field("Field")]

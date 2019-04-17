@@ -7,31 +7,33 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Tree")]
+    [EntitySource("Tree_V3")]
     public class TreeStub
     {
-        [Field("Tree_GUID")]
-        public string Tree_GUID { get; set; }
+        [Field("TreeID")]
+        public string TreeID { get; set; }
 
         [Field("TreeNumber")]
         public int TreeNumber { get; set; }
 
-        [Field(Alias ="StratumCode", SQLExpression ="Stratum.Code")]
+        [Field("StratumCode")]
         public string StratumCode { get; set; }
 
-        [Field(Alias = "SgCode", SQLExpression = "SampleGroup.Code")]
+        [Field("SampleGroupCode")]
         public string SampleGroupCode { get; set; }
 
         [Field("Species")]
         public string Species { get; set; }
 
-        [Field(Alias = "Height", SQLExpression = "max(TotalHeight, MerchHeightPrimary, UpperStemHeight)")]
+        [Field(Alias = "Height", SQLExpression = "max(TreeMeasurment.TotalHeight, TreeMeasurment.MerchHeightPrimary, TreeMeasurment.UpperStemHeight)")]
         public int Height { get; set; }
 
-        [Field(Alias = "Diameter", SQLExpression = "max(DBH, DRC, DBHDoubleBarkThickness)")]
+        [Field(Alias = "Diameter", SQLExpression = "max(TreeMeasurment.DBH, TreeMeasurment.DRC, TreeMeasurment.DBHDoubleBarkThickness)")]
         public int Diameter { get; set; }
 
         [Field(Name = "CountOrMeasure")]
         public string CountOrMeasure { get; set; }
+
+        public int Errors { get; set; }
     }
 }

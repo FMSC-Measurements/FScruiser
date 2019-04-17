@@ -10,6 +10,8 @@
             <Color x:Key="fs_brown">#312418</Color>
             <Color x:Key="primary_500">#345E36</Color>
             <Color x:Key="fs_green">#345E36</Color>
+            
+            <!-- Dodger blue -->
             <Color x:Key="accent">#1E90FF</Color>
             <Color x:Key="accentText">Blue</Color>
             

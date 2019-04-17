@@ -1,17 +1,15 @@
-﻿using CruiseDAL.DataObjects;
-using CruiseDAL.Enums;
-using FMSC.ORM.EntityModel.Attributes;
+﻿using FMSC.ORM.EntityModel.Attributes;
 using FMSC.Sampling;
 using System;
 using System.Xml.Serialization;
 
 namespace FScruiser.Models
 {
-    [EntitySource("SampleGroup")]
+    [EntitySource("SampleGroup_V3")]
     public class SampleGroup
     {
-        [Field(Name = "Code")]
-        public string Code { get; set; }
+        [Field(Name = "SampleGroupCode")]
+        public string SampleGroupCode { get; set; }
 
         [Field(Name = "SamplingFrequency")]
         public long SamplingFrequency { get; set; }
@@ -31,11 +29,11 @@ namespace FScruiser.Models
         [Field(Name = "Description")]
         public string Description { get; set; }
 
-        [Field(Name = "SampleSelectorType")]
-        public string SampleSelectorType { get; set; }
+        //[Field(Name = "SampleSelectorType")]
+        //public string SampleSelectorType { get; set; }
 
-        [Field(Name = "SampleSelectorState")]
-        public string SampleSelectorState { get; set; }
+        //[Field(Name = "SampleSelectorState")]
+        //public string SampleSelectorState { get; set; }
 
         [Field(Name = "MinKPI")]
         public long MinKPI { get; set; }
@@ -43,10 +41,10 @@ namespace FScruiser.Models
         [Field(Name = "MaxKPI")]
         public virtual long MaxKPI { get; set; }
 
-        [Field(SQLExpression = "Stratum.Code", Alias = "StratumCode", PersistanceFlags = PersistanceFlags.Never)]
+        [Field("StratumCode")]
         public string StratumCode { get; set; }
 
-        [Field(SQLExpression = "Stratum.Method", Alias = "Method", PersistanceFlags = PersistanceFlags.Never)]
+        [Field("StratumMethod")]
         public string Method { get; set; }
     }
 }

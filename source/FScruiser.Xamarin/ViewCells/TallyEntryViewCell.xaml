@@ -2,27 +2,45 @@
 <local:TallyEntryViewCell_Base xmlns="http://xamarin.com/schemas/2014/forms" 
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FScruiser.XF.ViewCells.TallyEntryViewCell"
-          xmlns:local="clr-namespace:FScruiser.XF.ViewCells">
+          xmlns:local="clr-namespace:FScruiser.XF.ViewCells"
+          xmlns:local_views="clr-namespace:FScruiser.XF.Views">
     <ViewCell.View>
         <ContentView BackgroundColor="Silver">
-            <Frame BackgroundColor="White" CornerRadius="5" BorderColor="White" Margin="2,5,2,0" Padding="0">
-                <StackLayout>
-                    <StackLayout Orientation="Horizontal">
-                        <StackLayout.Resources>
-                            <ResourceDictionary>
-                                <Style TargetType="Label">
-                                    <Setter Property="TextColor" Value="{StaticResource black_70}" />
-                                </Style>
-                            </ResourceDictionary>
-                        </StackLayout.Resources>
-                        <Label Text="{Binding StratumCode, StringFormat='St:{0}'}" FontSize="20" VerticalTextAlignment="Center" />
-                        <Label Text="{Binding TallyDescription, StringFormat='| {0}'}" FontSize="30" VerticalTextAlignment="Center" />
-                    </StackLayout>
+            <Frame 
+                BackgroundColor="White" 
+                CornerRadius="5" 
+                BorderColor="White" 
+                Margin="2,5,2,0" 
+                Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <local_views:PopulationIndicatorView
+                        Grid.Row="0" Grid.Column="0"
+                        StratumCode="{Binding StratumCode}"
+                        SampleGroupCode="{Binding SampleGroupCode}"
+                        Species="{Binding Species}"
+                        LiveDead="{Binding LiveDead}"
+                        Margin="5"
+                        HeightRequest="30"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Start"
+                        FontSize="Small"/>
 
                     <!--<StackLayout x:Name="_treeEditPanel" IsVisible="False">
                 <Label Text="Hello Expanded"  />
             </StackLayout>-->
-                    <Grid x:Name="_drawer" IsVisible="False">
+                    <Grid x:Name="_drawer" 
+                          Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                          IsVisible="False">
+                        
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto" />
@@ -35,7 +53,7 @@
 
                         <Button Grid.Row="1" Grid.Column="1" x:Name="_untallyButton" Text="Untally"/>
                     </Grid>
-                </StackLayout>
+                </Grid>
             </Frame>
         </ContentView>
     </ViewCell.View>

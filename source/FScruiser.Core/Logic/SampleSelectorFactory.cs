@@ -1,5 +1,4 @@
-﻿using CruiseDAL.DataObjects;
-using CruiseDAL.Schema;
+﻿using CruiseDAL.Schema;
 using FMSC.Sampling;
 using FScruiser.Models;
 using System;
@@ -8,60 +7,21 @@ using System.Xml.Serialization;
 
 namespace FScruiser.Logic
 {
-    public class ClickerSelecter : SampleSelecter, IFrequencyBasedSelecter
-    {
-        public int Frequency { get; set; }
-
-        public override SampleItem NextItem()
-        {
-            return new boolItem() { IsSelected = true };
-        }
-
-        public override bool Ready(bool throwException)
-        {
-            return true;
-        }
-    }
-
-    public class ZeroFrequencySelecter : SampleSelecter, IFrequencyBasedSelecter
-    {
-        public int Frequency {
-            get => 0;
-            set => throw new InvalidOperationException();
-        }
-
-        public override SampleItem NextItem()
-        {
-            return (boolItem)null;
-        }
-
-        public override bool Ready(bool throwException)
-        {
-            return true;
-        }
-    }
-
-    public class FrequencyMismatchException : Exception
-    {
-        public FrequencyMismatchException(string message) : base(message)
-        { }
-    }
-
     public class SampleSelectorFactory
     {
-        public static SampleSelecter MakeSampleSelecter(SampleGroup sampleGroup)
+        public static SampleSelecter MakeSampleSelecter(SamplerState samplerState)
         {
-            var method = sampleGroup.Method;
+            var method = samplerState.Method;
 
             if (method == "100"
                 || method == "FIX"
                 || method == "PNT"
                 || method == "FIXCNT")
-            { return null; }
+            { return new HundredPCTSelector(); }
 
-            if (!string.IsNullOrEmpty(sampleGroup.SampleSelectorState))
+            if (!string.IsNullOrEmpty(samplerState.SampleSelectorState))
             {
-                var selector = InitializePersistedSampler(sampleGroup);
+                var selector = InitializePersistedSampler(samplerState);
                 if (selector != null)
                 { return selector; }
             }
@@ -75,17 +35,17 @@ namespace FScruiser.Logic
             {
                 case "STR":
                     {
-                        if (String.Equals(sampleGroup.SampleSelectorType, CruiseMethods.SYSTEMATIC_SAMPLER_TYPE))
+                        if (String.Equals(samplerState.SampleSelectorType, CruiseMethods.SYSTEMATIC_SAMPLER_TYPE))
                         {
-                            return MakeSystematicSampleSelector(sampleGroup);
+                            return MakeSystematicSampleSelector(samplerState);
                         }
-                        else if (String.Equals(sampleGroup.SampleSelectorType, CruiseMethods.CLICKER_SAMPLER_TYPE))
+                        else if (String.Equals(samplerState.SampleSelectorType, CruiseMethods.CLICKER_SAMPLER_TYPE))
                         {
-                            return new ClickerSelecter { Frequency = (int)sampleGroup.SamplingFrequency };
+                            return new ClickerSelecter { Frequency = (int)samplerState.SamplingFrequency };
                         }
                         else
                         {
-                            return MakeBlockSampleSelector(sampleGroup);
+                            return MakeBlockSampleSelector(samplerState);
                         }
                     }
                 case "3P":
@@ -93,12 +53,12 @@ namespace FScruiser.Logic
                 case "P3P":
                 case "F3P":
                     {
-                        return MakeThreePSampleSelector(sampleGroup);
+                        return MakeThreePSampleSelector(samplerState);
                     }
                 case "FCM":
                 case "PCM":
                     {
-                        return MakeSystematicSampleSelector(sampleGroup);
+                        return MakeSystematicSampleSelector(samplerState);
                     }
                 default:
                     {
@@ -122,21 +82,21 @@ namespace FScruiser.Logic
         //        if (selector != null)
         //        { return selector; }
         //    }
-        public static SampleSelecter MakeThreePSampleSelector(SampleGroup sampleGroup)
+        public static SampleSelecter MakeThreePSampleSelector(SamplerState samplerState)
         {
             SampleSelecter selecter = null;
-            int iFrequency = (int)sampleGroup.InsuranceFrequency;
-            int kz = (int)sampleGroup.KZ;
+            int iFrequency = (int)samplerState.InsuranceFrequency;
+            int kz = (int)samplerState.KZ;
             int maxKPI = 100000;
             selecter = new FMSC.Sampling.ThreePSelecter(kz, maxKPI, iFrequency);
             return selecter;
         }
 
-        public static SampleSelecter MakeSystematicSampleSelector(SampleGroup sampleGroup)
+        public static SampleSelecter MakeSystematicSampleSelector(SamplerState samplerState)
         {
             SampleSelecter selecter = null;
-            int iFrequency = (int)sampleGroup.InsuranceFrequency;
-            int frequency = (int)sampleGroup.SamplingFrequency;
+            int iFrequency = (int)samplerState.InsuranceFrequency;
+            int frequency = (int)samplerState.SamplingFrequency;
             if (frequency == 0) { selecter = new ZeroFrequencySelecter(); }
             else
             {
@@ -145,11 +105,11 @@ namespace FScruiser.Logic
             return selecter;
         }
 
-        public static SampleSelecter MakeBlockSampleSelector(SampleGroup sampleGroup)
+        public static SampleSelecter MakeBlockSampleSelector(SamplerState samplerState)
         {
             SampleSelecter selecter = null;
-            int iFrequency = (int)sampleGroup.InsuranceFrequency;
-            int frequency = (int)sampleGroup.SamplingFrequency;
+            int iFrequency = (int)samplerState.InsuranceFrequency;
+            int frequency = (int)samplerState.SamplingFrequency;
             if (frequency == 0) { selecter = null; }
             else
             {
@@ -162,16 +122,16 @@ namespace FScruiser.Logic
         //    //{
         //    //    return null;
         //    //}
-        private static bool ValidateFreqSelecter(SampleGroup sampleGroup, IFrequencyBasedSelecter freqSelecter)
+        private static bool ValidateFreqSelecter(SamplerState samplerState, IFrequencyBasedSelecter freqSelecter)
         {
             //ensure sampler frequency matches sample group freqency
             if (freqSelecter != null
-                && freqSelecter.Frequency != sampleGroup.SamplingFrequency
-                || freqSelecter.ITreeFrequency != sampleGroup.InsuranceFrequency)
+                && freqSelecter.Frequency != samplerState.SamplingFrequency
+                || freqSelecter.ITreeFrequency != samplerState.InsuranceFrequency)
             {
                 //older versions of FMSC.Sampling would use -1 instead of 0 if InsuranceFrequency was 0
                 if (freqSelecter.ITreeFrequency == -1
-                    && sampleGroup.InsuranceFrequency == 0)
+                    && samplerState.InsuranceFrequency == 0)
                 { return true; }
 
                 return false;
@@ -214,12 +174,12 @@ namespace FScruiser.Logic
         //            }
         //    }
         //}
-        private static SampleSelecter InitializePersistedSampler(SampleGroup sampleGroup)
+        private static SampleSelecter InitializePersistedSampler(SamplerState samplerState)
         {
             SampleSelecter selecter;
             try
             {
-                selecter = DeserializeSamplerState(sampleGroup);
+                selecter = DeserializeSamplerState(samplerState);
             }
             catch (Exception e)
             {
@@ -230,12 +190,12 @@ namespace FScruiser.Logic
 
             if (selecter != null && selecter is IFrequencyBasedSelecter)
             {
-                if (!ValidateFreqSelecter(sampleGroup, (IFrequencyBasedSelecter)selecter))
+                if (!ValidateFreqSelecter(samplerState, (IFrequencyBasedSelecter)selecter))
                 {
                     string message = string.Format("Frequency missmatch on SG:{0} Sf={1} If={2}; SelectorState: Sf={3} If={4};",
-                            sampleGroup.Code,
-                            sampleGroup.SamplingFrequency,
-                            sampleGroup.InsuranceFrequency,
+                            samplerState.SampleGroupCode,
+                            samplerState.SamplingFrequency,
+                            samplerState.InsuranceFrequency,
                             ((FMSC.Sampling.IFrequencyBasedSelecter)selecter).Frequency,
                             ((FMSC.Sampling.IFrequencyBasedSelecter)selecter).ITreeFrequency);
 
@@ -260,15 +220,15 @@ namespace FScruiser.Logic
 
         /// <exception cref="InvalidOperationException">An error occurred during deserialization. The original exception is available
         ///using the System.Exception.InnerException property.</exception>
-        public static SampleSelecter DeserializeSamplerState(SampleGroup sampleGroup)
+        public static SampleSelecter DeserializeSamplerState(SamplerState samplerState)
         {
-            switch (sampleGroup.SampleSelectorType)
+            switch (samplerState.SampleSelectorType)
             {
                 case "Block":
                 case "BlockSelecter":
                     {
                         var serializer = new XmlSerializer(typeof(BlockSelecter));
-                        using (var reader = new StringReader(sampleGroup.SampleSelectorState))
+                        using (var reader = new StringReader(samplerState.SampleSelectorState))
                         {
                             return (SampleSelecter)serializer.Deserialize(reader);
                         }
@@ -276,13 +236,13 @@ namespace FScruiser.Logic
                 case "SRS":
                 case "SRSSelecter":
                     {
-                        return new SRSSelecter((int)sampleGroup.SamplingFrequency, (int)sampleGroup.InsuranceFrequency);
+                        return new SRSSelecter((int)samplerState.SamplingFrequency, (int)samplerState.InsuranceFrequency);
                     }
                 case "Systematic":
                 case "SystematicSelecter":
                     {
                         var serializer = new XmlSerializer(typeof(SystematicSelecter));
-                        using (var reader = new StringReader(sampleGroup.SampleSelectorState))
+                        using (var reader = new StringReader(samplerState.SampleSelectorState))
                         {
                             return (SampleSelecter)serializer.Deserialize(reader);
                         }
@@ -290,7 +250,7 @@ namespace FScruiser.Logic
                 case "ThreeP":
                 case "ThreePSelecter":
                     {
-                        return new ThreePSelecter((int)sampleGroup.KZ, 10000, (int)sampleGroup.InsuranceFrequency);
+                        return new ThreePSelecter((int)samplerState.KZ, 10000, (int)samplerState.InsuranceFrequency);
                     }
                 default: { return null; }
             }
@@ -298,18 +258,18 @@ namespace FScruiser.Logic
 
         /// <exception cref="InvalidOperationException">An error occurred during serialization. The original exception is available
         ///using the System.Exception.InnerException property.</exception>
-        public static void SerializeSamplerState(SampleGroup sampleGroup, SampleSelecter selector)
+        public static void SerializeSamplerState(SamplerState samplerState, SampleSelecter selector)
         {
             if (selector == null) { throw new ArgumentNullException(nameof(selector)); }
-            if (sampleGroup == null) { throw new ArgumentNullException(nameof(sampleGroup)); }
+            if (samplerState == null) { throw new ArgumentNullException(nameof(samplerState)); }
 
             if (selector != null && (selector is BlockSelecter || selector is SystematicSelecter))
             {
                 XmlSerializer serializer = new XmlSerializer(selector.GetType());
                 StringWriter writer = new StringWriter();
                 serializer.Serialize(writer, selector);
-                sampleGroup.SampleSelectorState = writer.ToString();
-                sampleGroup.SampleSelectorType = selector.GetType().Name;
+                samplerState.SampleSelectorState = writer.ToString();
+                samplerState.SampleSelectorType = selector.GetType().Name;
             }
         }
     }

@@ -38,7 +38,7 @@ namespace FScruiser.XF.ViewModels
 
             Log = Datastore.GetLog(log_guid);
 
-            LogFields = Datastore.GetLogFields(Log.Tree_GUID);
+            LogFields = Datastore.GetLogFields(Log.TreeID);
         }
 
         public override void OnNavigatedFrom(INavigationParameters parameters)

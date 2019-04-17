@@ -1,7 +1,9 @@
 ﻿using FScruiser.Models;
 using FScruiser.Services;
+using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
 using Prism.Navigation;
+using Prism.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
@@ -16,8 +18,10 @@ namespace FScruiser.XF.ViewModels
 
         public string UnitCode { get; set; }
 
-        public IEnumerable<Plot> Plots { get; protected set; }
+        public bool HasFixCNTStrata { get; set; }
 
+        public IEnumerable<Plot> Plots { get; protected set; }
+        public IPageDialogService DialogService { get; }
         public ICuttingUnitDatastore Datastore { get; set; }
 
         public ICommand AddPlotCommand => _addPlotCommand ?? (_addPlotCommand = new Command(AddPlot));
@@ -25,8 +29,10 @@ namespace FScruiser.XF.ViewModels
         public ICommand EditPlotCommand => _editPlotCommand ?? (_editPlotCommand = new Command<Plot>(ShowEditPlot));
 
         public PlotListViewModel(INavigationService navigationService
+            , IPageDialogService dialogService
             , ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
         {
+            DialogService = dialogService;
             Datastore = datastoreProvider.CuttingUnitDatastore;
         }
 
@@ -36,22 +42,48 @@ namespace FScruiser.XF.ViewModels
 
             Plots = Datastore.GetPlotsByUnitCode(UnitCode).ToArray();
             RaisePropertyChanged(nameof(Plots));
+
+            HasFixCNTStrata = Datastore.GetPlotStrataProxies(UnitCode)
+                .Any(x => x.Method == CruiseDAL.Schema.CruiseMethods.FIXCNT);
         }
 
 
         public void AddPlot(object obj)
         {
-            NavigationService.NavigateAsync($"PlotEdit?UnitCode={UnitCode}&IsAddingPlot=true");
+            var plotID = Datastore.AddNewPlot(UnitCode);
+            NavigationService.NavigateAsync($"PlotEdit?{NavParams.PlotID}={plotID}");
         }
 
         public void ShowEditPlot(Plot plot)
         {
-            NavigationService.NavigateAsync($"PlotEdit?UnitCode={UnitCode}&PlotNumber={plot.PlotNumber}");
+            NavigationService.NavigateAsync($"PlotEdit?{NavParams.PlotID}={plot.PlotID}");
         }
 
-        public void ShowTallyPlot(Plot plot)
+        public async void ShowTallyPlot(Plot plot)
         {
-            NavigationService.NavigateAsync($"PlotTally?UnitCode={UnitCode}&PlotNumber={plot.PlotNumber}");
+            var fixCNTstrata = Datastore.GetPlotStrataProxies(UnitCode).Where(x => x.Method == CruiseDAL.Schema.CruiseMethods.FIXCNT).ToArray();
+
+            if (fixCNTstrata.Any()
+                && await DialogService.DisplayAlertAsync("Show FixCNT Tally Page?", "", "FixCNT", "Standard"))
+            {
+                string stratum = null;
+                if(fixCNTstrata.Count() == 1)
+                {
+                    stratum = fixCNTstrata.Single().Code;
+                }
+                else
+                {
+                    stratum = await DialogService.DisplayActionSheetAsync("Select Stratum", "Cancel", "", fixCNTstrata.Select(x => x.Code).ToArray());
+                }
+
+                if(stratum == null || stratum == "Cancel") { return; }
+
+                await NavigationService.NavigateAsync($"FixCNTTally?{NavParams.UNIT}={UnitCode}&{NavParams.STRATUM}={stratum}&{NavParams.PLOT_NUMBER}={plot.PlotNumber}");
+            }
+            else
+            {
+                await NavigationService.NavigateAsync($"PlotTally?{NavParams.UNIT}={UnitCode}&{NavParams.PLOT_NUMBER}={plot.PlotNumber}");
+            }
         }
 
         

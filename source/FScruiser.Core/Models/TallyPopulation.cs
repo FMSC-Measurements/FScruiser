@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace FScruiser.Models
 {
-    [EntitySource("CountTree")]
     public class TallyPopulation : TallyPopulation_Base
     {
         int _treeCount;
@@ -25,5 +24,15 @@ namespace FScruiser.Models
             get { return _sumKPI; }
             set { SetValue(ref _sumKPI, value); }
         }
+
+        [Field("IsClickerTally")]
+        public bool IsClickerTally
+        {
+            get;
+            set;
+        }
+
+        [Field("Frequency")]
+        public int Frequency { get; set; }
     }
 }
