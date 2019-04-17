@@ -52,8 +52,18 @@ namespace FScruiser.Logic
 
             if(pop.IsClickerTally)
             {
-                return CreateTally(unitCode, pop, isSample: true, 
-                    isInsuranceSample: false, treeCount: pop.Frequency);
+                var clickerTallyResult = await dialogService.AskTreeCount(pop.Frequency);
+                if(clickerTallyResult != null && clickerTallyResult.TreeCount.HasValue)
+                {
+                    return CreateTally(unitCode, pop, isSample: true,
+                    isInsuranceSample: false, treeCount: clickerTallyResult.TreeCount.Value);
+                }
+                else
+                {
+                    return null;
+                }
+
+                
             }
 
             var sampler = samplerService.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
@@ -164,7 +174,7 @@ namespace FScruiser.Logic
             }
         }
 
-        public static TallyAction TallyStandard(string unitCode, 
+        private static TallyAction TallyStandard(string unitCode, 
             TallyPopulation pop,
             ISampleSelectorDataService samplerService)
         {

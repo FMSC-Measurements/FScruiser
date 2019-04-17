@@ -7,45 +7,6 @@ using System.Xml.Serialization;
 
 namespace FScruiser.Logic
 {
-    public class ClickerSelecter : SampleSelecter, IFrequencyBasedSelecter
-    {
-        public int Frequency { get; set; }
-
-        public override SampleItem NextItem()
-        {
-            return new boolItem() { IsSelected = true };
-        }
-
-        public override bool Ready(bool throwException)
-        {
-            return true;
-        }
-    }
-
-    public class ZeroFrequencySelecter : SampleSelecter, IFrequencyBasedSelecter
-    {
-        public int Frequency {
-            get => 0;
-            set => throw new InvalidOperationException();
-        }
-
-        public override SampleItem NextItem()
-        {
-            return (boolItem)null;
-        }
-
-        public override bool Ready(bool throwException)
-        {
-            return true;
-        }
-    }
-
-    public class FrequencyMismatchException : Exception
-    {
-        public FrequencyMismatchException(string message) : base(message)
-        { }
-    }
-
     public class SampleSelectorFactory
     {
         public static SampleSelecter MakeSampleSelecter(SamplerState samplerState)
@@ -56,7 +17,7 @@ namespace FScruiser.Logic
                 || method == "FIX"
                 || method == "PNT"
                 || method == "FIXCNT")
-            { return null; }
+            { return new HundredPCTSelector(); }
 
             if (!string.IsNullOrEmpty(samplerState.SampleSelectorState))
             {

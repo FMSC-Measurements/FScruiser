@@ -16,6 +16,15 @@ namespace FScruiser.Services
 
         Task<bool> AskYesNoAsync(string message, String caption, bool defaultNo = false);
 
+        Task<AskTreeCountResult> AskTreeCount(int? defaultTreeCount);
+
         Task ShowMessageAsync(string message, string caption = null);
+    }
+
+    public class AskTreeCountResult
+    {
+        //public string Cruiser { get; set; }
+
+        public int? TreeCount { get; set; }
     }
 }

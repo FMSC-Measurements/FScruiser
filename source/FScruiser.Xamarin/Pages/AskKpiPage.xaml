@@ -1,12 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FScruiser.XF.Pages.AskKpiPage">
+<pages:DialogPage
+            xmlns="http://xamarin.com/schemas/2014/forms"
+            xmlns:pages="clr-namespace:FScruiser.XF.Pages"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="FScruiser.XF.Pages.AskKpiPage">
+    
     <ContentPage.Resources>
         <ResourceDictionary>
             <Style x:Key="buttonBase" TargetType="Button">
                 <Setter Property="FontSize" Value="30" />
-                <Setter Property="TextColor" Value="#E1ffffff" /><!--90% transparent white-->
+                <Setter Property="TextColor" Value="#E1ffffff" /><!-- 90% transparent white -->
                 <Setter Property="Margin" Value="0,0,0,0" />
                 <Setter Property="BorderRadius" Value="0" />
                 <!--<Setter Property="VerticalTextAlignment" Value="Center" />
@@ -69,4 +72,4 @@
             <Button Text="STM" BackgroundColor="Green" Grid.Row="5" Grid.Column="3" Grid.ColumnSpan="1" Style="{StaticResource buttonBase}"/>
         </Grid>
     </ContentPage.Content>
-</ContentPage>
+</pages:DialogPage>

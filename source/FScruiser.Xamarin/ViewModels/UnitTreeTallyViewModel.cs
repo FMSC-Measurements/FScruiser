@@ -1,4 +1,5 @@
-﻿using FScruiser.Logic;
+﻿using CruiseDAL.Schema;
+using FScruiser.Logic;
 using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.Util;
@@ -155,12 +156,13 @@ namespace FScruiser.XF.ViewModels
 
         private void ShowTallyMenu(TallyPopulation obj)
         {
-            NavigationService.NavigateAsync($"TreeCountEdit?{NavParams.UNIT}={UnitCode}&{NavParams.STRATUM}={obj.StratumCode}&{NavParams.SAMPLE_GROUP}={obj.SampleGroupCode}&{NavParams.SPECIES}={obj.Species}&{NavParams.LIVE_DEAD}={obj.LiveDead}");
+            NavigationService.NavigateAsync($"TreeCountEdit?{NavParams.UNIT}={UnitCode}&{NavParams.STRATUM}={obj.StratumCode}&{NavParams.SAMPLE_GROUP}={obj.SampleGroupCode}&{NavParams.SPECIES}={obj.Species}&{NavParams.LIVE_DEAD}={obj.LiveDead}",
+                useModalNavigation: true);
         }
 
-        public void EditTree(string tree_guid)
+        public void EditTree(string treeID)
         {
-            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { "Tree_Guid", tree_guid } }, useModalNavigation: true);
+            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { NavParams.TreeID, treeID } }, useModalNavigation: true);
         }
 
         public async Task TallyAsync(TallyPopulation pop)
@@ -170,6 +172,7 @@ namespace FScruiser.XF.ViewModels
 
             // record action to the database,
             // database will assign tree a tree number if there is a tree
+            // action might be null if user dosn't enter kpi or tree count for clicker entry
             if (action == null) { return; }
             var entry = Datastore.InsertTallyAction(action);
 
@@ -192,13 +195,15 @@ namespace FScruiser.XF.ViewModels
             SoundService.SignalTally();
             if (action.IsSample)
             {
+                var method = population.Method;
+
                 if (action.IsInsuranceSample)
                 {
-                    SoundService.SignalMeasureTree();
+                    SoundService.SignalInsuranceTree();
                 }
                 else
                 {
-                    SoundService.SignalInsuranceTree();
+                    SoundService.SignalMeasureTree();
                 }
 
                 if (TallySettings.EnableCruiserPopup)
@@ -209,7 +214,7 @@ namespace FScruiser.XF.ViewModels
                         Datastore.UpdateTreeInitials(entry.TreeID, cruiser);
                     }
                 }
-                else
+                else if(method != CruiseMethods.H_PCT)
                 {
                     var sampleType = (action.IsInsuranceSample) ? "Insurance Tree" : "Measure Tree";
                     await DialogService.ShowMessageAsync("Tree #" + entry.TreeNumber.ToString(), sampleType);
