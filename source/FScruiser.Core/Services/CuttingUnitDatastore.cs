@@ -755,7 +755,7 @@ namespace FScruiser.Services
 
         public IEnumerable<TreeFieldSetup> GetTreeFieldsByStratumCode(string stratumCode)
         {
-            return Database.Query<TreeFieldSetup>(
+            var treeFields = Database.Query<TreeFieldSetup>(
                 "SELECT " +
                 "Field, " +
                 "Heading, " +
@@ -764,7 +764,18 @@ namespace FScruiser.Services
                 "WHERE StratumCode = @p1 AND FieldOrder >= 0 " +
                 "GROUP BY Field " +
                 "ORDER BY FieldOrder;",
-                new object[] { stratumCode }).ToArray();
+                new object[] { stratumCode }).ToList();
+
+            treeFields.InsertRange(0, new TreeFieldSetup[]
+            {
+                //new TreeFieldSetup { Field = nameof(Tree_Ex.TreeNumber), Heading = "Tree #" },
+                new TreeFieldSetup { Field = nameof(Tree_Ex.Species), Heading = "Species" },
+                //new TreeFieldSetup { Field = nameof(Tree_Ex.LiveDead), Heading = "Live Dead" },
+                new TreeFieldSetup { Field = nameof(Tree_Ex.StratumCode), Heading = "St" },
+                new TreeFieldSetup { Field = nameof(Tree_Ex.SampleGroupCode), Heading = "Sg" },
+            });
+
+            return treeFields;
 
             //return Database.From<TreeFieldSetup>()
             //    .Join("Stratum", "USING (Stratum_CN)")
