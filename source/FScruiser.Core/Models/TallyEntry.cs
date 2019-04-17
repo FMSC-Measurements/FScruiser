@@ -43,6 +43,12 @@ namespace FScruiser.Models
         [Field("EntryType")]
         public string EntryType { get; set; }
 
+        [Field("TreeCount")]
+        public int TreeCount { get; set; }
+
+        [Field("Reason")]
+        public string Reason { get; set; }
+
         [Field("TreeNumber", SourceName = "Tree_V3")]
         public int? TreeNumber { get; set; }
 

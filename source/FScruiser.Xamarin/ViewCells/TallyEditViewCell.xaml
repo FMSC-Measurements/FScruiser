@@ -1,44 +1,55 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ViewCell xmlns="http://xamarin.com/schemas/2014/forms" 
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FScruiser.XF.ViewCells.TallyEditViewCell">
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          x:Class="FScruiser.XF.ViewCells.TallyEditViewCell"
+          xmlns:local_views="clr-namespace:FScruiser.XF.Views">
     <ViewCell.View>
         <ContentView BackgroundColor="Silver">
-            
-            <Frame BackgroundColor="Orange" 
-                   CornerRadius="5" 
-                   BorderColor="White" 
-                   Margin="2,5,2,0" 
+
+            <Frame BackgroundColor="Orange"
+                   CornerRadius="5"
+                   BorderColor="White"
+                   Margin="2,5,2,0"
                    Padding="0">
 
-                <StackLayout Orientation="Horizontal"
-                             Padding="7,0,0,0">
+                <Grid HeightRequest="50">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50" />
+                    </Grid.RowDefinitions>
 
-                    <StackLayout.Resources>
-                        <ResourceDictionary>
-                            <Style TargetType="Label">
-                                <Setter Property="TextColor" Value="{StaticResource black_70}" />
-                            </Style>
-                        </ResourceDictionary>
-                    </StackLayout.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                    <Label Text="{Binding StratumCode, StringFormat='{}St:{0}'}" 
-                           FontSize="20" 
-                           VerticalTextAlignment="Center" />
+                    <local_views:PopulationIndicatorView
+                        Grid.Row="0" Grid.Column="0"
+                        StratumCode="{Binding StratumCode}"
+                        SampleGroupCode="{Binding SampleGroupCode}"
+                        Species="{Binding Species}"
+                        LiveDead="{Binding LiveDead}"
+                        Margin="5"
+                        HeightRequest="30"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Start"
+                        FontSize="Small" />
 
-                    <Label Text="{Binding TallyDescription, StringFormat='{}| {0}'}" 
-                           FontSize="30" 
-                           VerticalTextAlignment="Center" />
-
-                    <Label Text="{Binding Reason}"
-                           FontSize="30"
-                           VerticalTextAlignment="Center"/>
+                    <Label 
+                        Grid.Row="0" Grid.Column="1"
+                        Text="{Binding TreeCount, StringFormat='{}Tree Counts{0}'}"
+                        FontSize="Large"
+                        VerticalTextAlignment="Center" />
                     
-                    <Label Text="{Binding TreeCount}"
-                           FontSize="30"
-                           VerticalTextAlignment="Center"/>
+                    <Label 
+                        Grid.Row="0" Grid.Column="2"
+                        Text="{Binding Reason}"
+                        FontSize="Large"
+                        VerticalTextAlignment="Center" />
 
-                </StackLayout>
+                    
+                </Grid>
+                
             </Frame>
         </ContentView>
     </ViewCell.View>

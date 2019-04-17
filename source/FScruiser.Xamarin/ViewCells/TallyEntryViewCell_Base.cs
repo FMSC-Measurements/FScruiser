@@ -8,7 +8,6 @@ namespace FScruiser.XF.ViewCells
 
         protected TallyEntryViewCell_Base()
         {
-            
         }
 
         public bool IsSelected

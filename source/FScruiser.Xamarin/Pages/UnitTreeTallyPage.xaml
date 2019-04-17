@@ -1,11 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:FScruiser.XF.Pages"
-             xmlns:views="clr-namespace:FScruiser.XF.Views"
              xmlns:cells="clr-namespace:FScruiser.XF.ViewCells"
              xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
              xmlns:my_behv="clr-namespace:FScruiser.XF.Behaviors"
+             xmlns:local_views="clr-namespace:FScruiser.XF.Views"
              x:Class="FScruiser.XF.Pages.UnitTreeTallyPage"
              BackgroundColor ="White"
              x:Name="_page">
@@ -15,13 +14,22 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Content>
-        <StackLayout>
-            <ListView x:Name="_tallyFeedListView" 
-                      HasUnevenRows="True"
-                      ItemsSource="{Binding TallyFeed}" 
-                      ItemSelected="TallyFeedListView_ItemSelected"
-                      CachingStrategy="RetainElement"
-                      SeparatorColor="Silver">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="7*"/>
+                <RowDefinition Height="3*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ListView
+                        Grid.Row="0" Grid.Column="0"
+                        x:Name="_tallyFeedListView" 
+                        HasUnevenRows="True"
+                        ItemsSource="{Binding TallyFeed}" 
+                        ItemSelected="TallyFeedListView_ItemSelected"
+                        CachingStrategy="RetainElement"
+                        SeparatorColor="Silver">
                 <ListView.Behaviors>
                     <my_behv:ScrollOnLoadBehavior/>
                 </ListView.Behaviors>
@@ -55,7 +63,9 @@
             </ListView>
 
 
-            <flow:FlowListView  x:Name="TallyListView" 
+            <flow:FlowListView
+                                Grid.Row="1" Grid.Column="0"
+                                x:Name="TallyListView" 
                                 FlowItemsSource="{Binding TalliesFiltered}"
                                 FlowItemTappedCommand="{Binding TallyCommand}"
                                 FlowColumnCount="3" 
@@ -78,11 +88,11 @@
                                     <Grid Padding="0" >
 
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>  <!-- population info and menu button -->
+                                            <RowDefinition Height="*"/>     <!-- spacer -->
+                                            <RowDefinition Height="Auto"/>  <!-- tree count -->
+                                            <RowDefinition Height="Auto"/>  <!-- hotkey -->
+                                            <RowDefinition Height="*"/>     <!-- bottom spacer -->
                                         </Grid.RowDefinitions>
 
                                         <Grid.ColumnDefinitions>
@@ -98,10 +108,15 @@
                                                         Source="ic_more_vert_black_24dp.png" 
                                                         CommandParameter="{Binding .}"  />
 
-                                        <Label  Grid.Column="0" Grid.Row="0"
-                                                Grid.ColumnSpan="2"
-                                                Text="{Binding TallyDescription}" 
-                                                HorizontalTextAlignment="Center" />
+                                        <local_views:PopulationIndicatorView Grid.Column="0" Grid.Row="0"
+                                                             StratumCode="{Binding StratumCode}"
+                                                             SampleGroupCode="{Binding SampleGroupCode}"
+                                                             Species="{Binding Species}"
+                                                             LiveDead="{Binding LiveDead}"
+                                                             Margin="5"
+                                                             HeightRequest="20"
+                                                                             FontSize="Micro"
+                                                                             HorizontalOptions="Center"/>
 
                                         <Frame  Grid.Column="0" Grid.Row="2"
                                                 Grid.ColumnSpan="2"
@@ -150,11 +165,13 @@
                 </flow:FlowListView.FlowColumnTemplate>
             </flow:FlowListView>
 
-            <flow:FlowListView x:Name="StratumFilterListView" 
-                               FlowColumnCount="6" SeparatorVisibility="None" HasUnevenRows="False"
-                               VerticalOptions="End"
-                               HeightRequest="44"
-                               FlowItemsSource="{Binding StrataFilterOptions}">
+            <flow:FlowListView 
+                                Grid.Row="2" Grid.Column="0"
+                                x:Name="StratumFilterListView" 
+                                FlowColumnCount="6" SeparatorVisibility="None" HasUnevenRows="False"
+                                VerticalOptions="End"
+                                HeightRequest="44"
+                                FlowItemsSource="{Binding StrataFilterOptions}">
                 <flow:FlowListView.FlowColumnTemplate>
 
                     <DataTemplate>
@@ -167,7 +184,7 @@
 
                 </flow:FlowListView.FlowColumnTemplate>
             </flow:FlowListView>
+        </Grid>
 
-        </StackLayout>
     </ContentPage.Content>
 </ContentPage>

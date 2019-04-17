@@ -5,6 +5,7 @@
              xmlns:flow="clr-namespace:DLToolkit.Forms.Controls;assembly=DLToolkit.Forms.Controls.FlowListView"
              xmlns:tk_conv="clr-namespace:Xamarin.Toolkit.Converters;assembly=Xamarin.Toolkit.Converters"
              xmlns:my_behv="clr-namespace:FScruiser.XF.Behaviors"
+             xmlns:local_views="clr-namespace:FScruiser.XF.Views"
              x:Class="FScruiser.XF.Pages.PlotTallyPage"
              BackgroundColor ="White"
              x:Name="_page"
@@ -60,12 +61,24 @@
 
                             <StackLayout HorizontalOptions="Fill" 
                                          VerticalOptions="Fill" Padding="3">
-                                <Label Text="{Binding TallyDescription}" 
+
+                                <local_views:PopulationIndicatorView 
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
+                                    StratumCode="{Binding StratumCode}"
+                                    SampleGroupCode="{Binding SampleGroupCode}"
+                                    Species="{Binding Species}"
+                                    LiveDead="{Binding LiveDead}"
+                                    Margin="5"
+                                    HeightRequest="20"
+                                    FontSize="Micro"/>
+
+                                <!--<Label Text="{Binding TallyDescription}" 
                                        HorizontalTextAlignment="Center"
                                        TextColor="White"/>
                                 <Label Text="{Binding TallyHotKey}"
                                        HorizontalTextAlignment="Center"
-                                       TextColor="White"/>
+                                       TextColor="White"/>-->
                             </StackLayout>
                             
                         </Frame>

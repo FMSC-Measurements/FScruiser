@@ -107,6 +107,7 @@ namespace FScruiser.XF.ViewCells
         protected override void RefreshDrawer(bool isSelected)
         {
             _treeEditPanel.IsVisible = isSelected;
+            base.ForceUpdateSize();
         }
 
         private View MakeEditControlContainer(System.Collections.Generic.IEnumerable<TreeFieldSetup> treeFields)

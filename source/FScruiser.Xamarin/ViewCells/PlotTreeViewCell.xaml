@@ -5,19 +5,30 @@
              x:Class="FScruiser.XF.ViewCells.PlotTreeViewCell">
     <ViewCell.View>
         <ContentView BackgroundColor="Silver">
-            <Frame BackgroundColor="#30C1BC" CornerRadius="5" Margin="2,5,2,0" Padding="0">
+            <Frame 
+                BackgroundColor="#30C1BC" 
+                CornerRadius="5" 
+                Margin="2,5,2,0" 
+                Padding="0">
+
                 <Frame.Triggers>
+                    
                     <DataTrigger TargetType="Frame" Binding="{Binding CountOrMeasure}" Value="M">
                         <Setter Property="BackgroundColor" Value="#30C1BC" />
                     </DataTrigger>
+                    
                     <DataTrigger TargetType="Frame" Binding="{Binding CountOrMeasure}" Value="I">
                         <Setter Property="BackgroundColor" Value="Silver" />
                     </DataTrigger>
+                    
                     <DataTrigger TargetType="Frame" Binding="{Binding CountOrMeasure}" Value="C">
                         <Setter Property="BackgroundColor" Value="White" />
                     </DataTrigger>
+                    
                 </Frame.Triggers>
+                
                 <StackLayout>
+                    
                     <StackLayout Orientation="Horizontal">
                         <StackLayout.Resources>
                             <ResourceDictionary>
@@ -27,6 +38,7 @@
                                 </Style>
                             </ResourceDictionary>
                         </StackLayout.Resources>
+                        
                         <Label Text="{Binding StratumCode, StringFormat='{}St:{0}'}" FontSize="20"/>
                         <Label Text="{Binding SampleGroupCode}" FontSize="20"/>
                         <Label Text="{Binding TreeNumber, StringFormat='{}Tree# {0}'}" TextColor="Blue" FontSize="30"/>
