@@ -8,19 +8,19 @@ namespace FScruiser
 
         public static readonly TreeFieldSetup[] DEFAULT_TREE_FIELDS = new TreeFieldSetup[]{
             new TreeFieldSetup(){
-                Field = nameof(Tree_Ex.TreeNumber), Heading = "Tree", FieldOrder = 1, ColumnType = "Text" },
+                Field = nameof(Tree_Ex.TreeNumber), Heading = "Tree", FieldOrder = 1 },
             new TreeFieldSetup() {
-                Field = "Stratum", Heading = "St", FieldOrder = 2, ColumnType = "Text"  },
+                Field = "Stratum", Heading = "St", FieldOrder = 2 },
             new TreeFieldSetup() {
-                Field = "SampleGroup", Heading = "SG", FieldOrder = 3, ColumnType = "Text" },
+                Field = "SampleGroup", Heading = "SG", FieldOrder = 3 },
             new TreeFieldSetup() {
-                Field = nameof(Tree_Ex.Species), Heading = "Sp", FieldOrder = 4, ColumnType = "Combo" },
+                Field = nameof(Tree_Ex.Species), Heading = "Sp", FieldOrder = 4 },
             new TreeFieldSetup() {
-                Field = nameof(Tree_Ex.DBH), Heading = "DBH", FieldOrder = 5, ColumnType = "Text" },
+                Field = nameof(Tree_Ex.DBH), Heading = "DBH", FieldOrder = 5 },
             new TreeFieldSetup() {
-                Field = nameof(Tree_Ex.TotalHeight), Heading = "THT", FieldOrder = 6, ColumnType = "Text" },
+                Field = nameof(Tree_Ex.TotalHeight), Heading = "THT", FieldOrder = 6 },
             new TreeFieldSetup() {
-                Field = nameof(Tree_Ex.SeenDefectPrimary), Heading = "Def", FieldOrder = 7, ColumnType = "Text" }
+                Field = nameof(Tree_Ex.SeenDefectPrimary), Heading = "Def", FieldOrder = 7 }
         };
 
         public static readonly string[] HEIGHT_FIELDS = new string[]

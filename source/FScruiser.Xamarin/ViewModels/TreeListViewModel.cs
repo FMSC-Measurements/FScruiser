@@ -1,6 +1,7 @@
 ﻿using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
 using Microsoft.AppCenter.Crashes;
 using Prism.Navigation;
@@ -89,7 +90,7 @@ namespace FScruiser.XF.ViewModels
         {
             try
             {
-                var result = await NavigationService.NavigateAsync("Tree", new NavigationParameters($"Tree_Guid={tree.TreeID}"));
+                var result = await NavigationService.NavigateAsync("Tree", new NavigationParameters() { { NavParams.TreeID, tree.TreeID } });
                 var ex = result.Exception;
                 if(ex != null)
                 {
@@ -115,7 +116,7 @@ namespace FScruiser.XF.ViewModels
         {
             try
             {
-                var result = await NavigationService.NavigateAsync("Logs", new NavigationParameters($"Tree_Guid={tree.TreeID}"));
+                var result = await NavigationService.NavigateAsync("Logs", new NavigationParameters() { { NavParams.TreeID, tree.TreeID } });
 
                 if(result?.Exception != null)
                 {
