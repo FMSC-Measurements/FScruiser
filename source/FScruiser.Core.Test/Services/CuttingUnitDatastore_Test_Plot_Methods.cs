@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using FScruiser.Util;
 
 namespace FScruiser.Core.Test.Services
 {
@@ -18,7 +19,7 @@ namespace FScruiser.Core.Test.Services
             string[] species, string[][] tdvs, string[][] subPops)
         {
             //Cutting Units
-            foreach (var unit in units)
+            foreach (var unit in units.OrEmpty())
             {
                 database.Execute(
                     "INSERT INTO CuttingUnit (" +
@@ -28,13 +29,13 @@ namespace FScruiser.Core.Test.Services
             }
 
             //Strata
-            foreach (var st in strata)
+            foreach (var st in strata.OrEmpty())
             {
                 database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{st[0]}', '{st[1]}');");
             }
 
             //Unit - Strata
-            foreach (var cust in unit_strata)
+            foreach (var cust in unit_strata.OrEmpty())
             {
                 database.Execute(
                     "INSERT INTO CuttingUnit_Stratum " +
@@ -44,7 +45,7 @@ namespace FScruiser.Core.Test.Services
             }
 
             //Sample Groups
-            foreach (var sg in sampleGroups)
+            foreach (var sg in sampleGroups.OrEmpty())
             {
                 database.Execute(
                     "INSERT INTO SampleGroup_V3 (" +
@@ -59,12 +60,12 @@ namespace FScruiser.Core.Test.Services
 
             //TreeDefaults
 
-            foreach (var sp in species)
+            foreach (var sp in species.OrEmpty())
             {
                 database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
             }
 
-            foreach (var tdv in tdvs)
+            foreach (var tdv in tdvs.OrEmpty())
             {
                 database.Execute(
                     "INSERT INTO TreeDefaultValue (" +
@@ -75,7 +76,7 @@ namespace FScruiser.Core.Test.Services
                     $"('{tdv[0]}', '{tdv[1]}', '{tdv[2]}');");
             }
 
-            foreach (var sub in subPops)
+            foreach (var sub in subPops.OrEmpty())
             {
                 database.Execute(
                     "INSERT INTO SubPopulation (" +
@@ -156,9 +157,19 @@ namespace FScruiser.Core.Test.Services
 
                 plotID.Should().NotBeNullOrEmpty();
 
+                
+
+                var plot1 = datastore.GetPlot(plotID);
+
+                var strat_plots = datastore.GetPlot_Strata(unitCode, plot1.PlotNumber);
+
+
+
                 var plotID2 = datastore.AddNewPlot(unitCode);
 
                 plotID2.Should().NotBeNullOrEmpty();
+
+                
             }
         }
 
@@ -282,55 +293,71 @@ namespace FScruiser.Core.Test.Services
 
                 foreach (var ps in stPlots)
                 {
-                    ValidatePlot_Stratum(ps);
+                    ValidatePlot_Stratum(ps, true);
                 }
             }
         }
 
+        [Fact]
         public void GetPlot_Stratum()
         {
-            var unitCode = "u1";
-            var strata = new string[] { "st1", "st2" };
+            var units = new string[] { "u1" };
+            var strata = new string[][]
+            {
+                new string[] {"st1", "" },
+                new string[] {"st2", "" },
+                new string[] {"st3", "" },
+            };
+            var unit_strata = new string[][]
+            {
+                new string[] {"u1", "st1" },
+                new string[] { "u1", "st2" },
+                new string[] { "u1", "st3" },
+            };
+
             var plotNumber = 1;
 
-            using (var database = CreateDatabase())
+            using (var database = new DAL())
             {
+                InitializeDatabase(database, units, strata, unit_strata, null, null, null, null);
+
                 var datastore = new CuttingUnitDatastore(database);
 
-                datastore.GetPlotsByUnitCode(unitCode).Should().BeEmpty("we havn't added any plots yet");
+                datastore.GetPlotsByUnitCode(units[0]).Should().BeEmpty("we havn't added any plots yet");
 
-                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('plotID1', '{unitCode}', {plotNumber});");
+                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('plotID1', '{units[0]}', {plotNumber});");
 
                 foreach (var st in strata)
                 {
+                    if(st[0] == "st3") { continue; }
+
                     database.Execute($"INSERT INTO Plot_Stratum (CuttingUnitCode, PlotNumber, StratumCode) VALUES " +
-                        $"('{unitCode}', {plotNumber}, '{st}');");
+                        $"('{units[0]}', {plotNumber}, '{st[0]}');");
                 }
 
                 foreach (var st in strata)
                 {
-                    var plotStratum = datastore.GetPlot_Stratum(unitCode, st, plotNumber);
-                    ValidatePlot_Stratum(plotStratum);
+                    var plotStratum = datastore.GetPlot_Stratum(units[0], st[0], plotNumber);
+                    ValidatePlot_Stratum(plotStratum, st[0] != "st3");
                 }
 
-                var nonExistantPS = datastore.GetPlot_Stratum(unitCode, "st3", plotNumber);
-                nonExistantPS.InCruise.Should().BeFalse();
-                ValidatePlot_Stratum(nonExistantPS);
+                var nonExistantPS = datastore.GetPlot_Stratum(units[0], "st3", plotNumber);
+                ValidatePlot_Stratum(nonExistantPS, false);
             }
         }
 
-        void ValidatePlot_Stratum(Plot_Stratum ps)
+        void ValidatePlot_Stratum(Plot_Stratum ps, bool inCruise)
         {
             ps.CuttingUnitCode.Should().NotBeNullOrWhiteSpace();
             ps.StratumCode.Should().NotBeNullOrWhiteSpace();
             ps.PlotNumber.Should().BeGreaterThan(0);
+            ps.InCruise.Should().Be(inCruise);
         }
 
         [Fact]
         public void GetPlot_ByPlotID()
         {
             var unitCode = "u1";
-            var stratumCode = "st1";
             var plotNumber = 1;
             var plotID = "plotID1";
 
@@ -351,7 +378,6 @@ namespace FScruiser.Core.Test.Services
         public void GetPlot_ByUnitPlotNumber()
         {
             var unitCode = "u1";
-            var stratumCode = "st1";
             var plotNumber = 1;
             var plotID = "plotID1";
 

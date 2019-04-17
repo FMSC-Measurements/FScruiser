@@ -26,6 +26,7 @@ namespace FScruiser.XF.ViewModels
         private ICollection<TreeStub_Plot> _trees;
         private ICommand _tallyCommand;
         private Command _editPlotCommand;
+        private Plot _plot;
 
         public event EventHandler TreeAdded;
 
@@ -53,6 +54,12 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand EditPlotCommand => _editPlotCommand
             ?? (_editPlotCommand = new Command(() => ShowEditPlot()));
+
+        public Plot Plot
+        {
+            get => _plot;
+            set => SetValue(ref _plot, value);
+        }
 
         public int PlotNumber
         {
@@ -149,9 +156,10 @@ namespace FScruiser.XF.ViewModels
             IsRecon = salePurpose.ToLower() == "recon";
 
             TallyPopulations = Datastore.GetPlotTallyPopulationsByUnitCode(plot.CuttingUnitCode, plot.PlotNumber).ToArray();
-            Strata = Datastore.GetPlotStrataProxies(UnitCode).ToArray();
-            Trees = Datastore.GetPlotTreeProxies(UnitCode, PlotNumber).ToObservableCollection();
+            Strata = Datastore.GetPlotStrataProxies(plot.CuttingUnitCode).ToArray();
+            Trees = Datastore.GetPlotTreeProxies(plot.CuttingUnitCode, plot.PlotNumber).ToObservableCollection();
 
+            Plot = plot;
             PlotNumber = plot.PlotNumber;
             UnitCode = plot.CuttingUnitCode;
         }
@@ -218,7 +226,7 @@ namespace FScruiser.XF.ViewModels
 
         public void ShowEditPlot()
         {
-            NavigationService.NavigateAsync("PlotEdit", new NavigationParameters($"UnitCode={UnitCode}&PlotNumber={PlotNumber}"));
+            NavigationService.NavigateAsync("PlotEdit", new NavigationParameters($"{NavParams.PlotID}={Plot.PlotID}"));
         }
 
         public void DeleteTree(string tree_guid)

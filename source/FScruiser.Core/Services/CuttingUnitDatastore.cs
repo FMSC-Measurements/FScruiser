@@ -163,7 +163,7 @@ namespace FScruiser.Services
             return Database.Query<Plot_Stratum>(
                 "SELECT " +
                     "ps.Plot_Stratum_CN, " +
-                    "(ps.Plot_Stratum_CN IS NOT NULL) AS InCruise, " +
+                    "(CASE WHEN ps.Plot_Stratum_CN IS NOT NULL THEN 1 ELSE 0 END) AS InCruise, " +
                     "st.Code AS StratumCode, " +
                     "p.CuttingUnitCode, " +
                     "p.PlotNumber, " +
@@ -633,6 +633,7 @@ namespace FScruiser.Services
                 "JOIN SampleGroup_V3 AS sg USING (StratumCode, SampleGroupCode) " +
                 "Left JOIN SamplerState ss USING (StratumCode, SampleGroupCode) " +
                 "JOIN Stratum AS st ON tp.StratumCode = st.Code " +
+                "JOIN CuttingUnit_Stratum AS cust ON tp.StratumCode = cust.StratumCode AND cust.CuttingUnitCode = @p1 " +
                 "LEFT JOIN tallyPopTreeCounts AS tl " +
                     "ON tl.CuttingUnitCode = @p1 " +
                     "AND tp.StratumCode = tl.StratumCode " +
@@ -701,7 +702,7 @@ namespace FScruiser.Services
                 pop.InCruise = GetIsTallyPopInCruise(unitCode, plotNumber, pop.StratumCode);
                 pop.IsEmpty = Database.ExecuteScalar<int>("SELECT ifnull(IsEmpty, 0) FROM Plot_Stratum " +
                     "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2 AND StratumCode = @p3;",
-                    unitCode, plotNumber, pop.StratumCode) == 0;
+                    unitCode, plotNumber, pop.StratumCode) == 1;
             }
 
             return tallyPops;
@@ -710,14 +711,12 @@ namespace FScruiser.Services
         private bool GetIsTallyPopInCruise(string unitCode, int plotNumber, string stratumCode)
         {
             return Database.ExecuteScalar<bool?>(
-                "SELECT " +
-                    "1 " +
-                "FROM Plot " +
-                "JOIN Stratum USING (Stratum_CN) " +
-                "JOIN CuttingUnit USING (CuttingUnit_CN) " +
-                "WHERE Stratum.Code = @p1 " +
-                    "AND CuttingUnit.Code = @p2 " +
-                    "AND PlotNumber = @p3;",
+                "SELECT EXISTS (" +
+                    "SELECT * " +
+                    "FROM Plot_Stratum " +
+                    "WHERE StratumCode = @p1 " +
+                        "AND CuttingUnitCode = @p2 " +
+                        "AND PlotNumber = @p3);",
                 stratumCode, unitCode, plotNumber) ?? false;
         }
 
@@ -803,7 +802,7 @@ namespace FScruiser.Services
         {
             return QueryTree_Base()
                 //.Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
+                .Where("CuttingUnit.Code = @p1 AND PlotNumber IS NULL")
                 .Query(unitCode).ToArray();
         }
 
@@ -842,8 +841,7 @@ namespace FScruiser.Services
         public IEnumerable<TreeStub> GetTreeStubsByUnitCode(string unitCode)
         {
             return QueryTreeStub()
-                .Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1 AND Plot_CN IS NULL")
+                .Where("CuttingUnitCode = @p1 AND PlotNumber IS NULL")
                 .Query(unitCode);
         }
 
@@ -1074,7 +1072,7 @@ namespace FScruiser.Services
         {
             var treeID = tree.TreeID ?? Guid.NewGuid().ToString();
 
-            Database.Execute(
+            Database.Execute2(
                 "INSERT INTO Tree_V3 ( " +
                     "TreeID, " +
                     "TreeNumber, " +
@@ -1086,17 +1084,18 @@ namespace FScruiser.Services
                     "LiveDead, " +
                     "CountOrMeasure " +
                 ") VALUES ( " +
-                    "@treeID,\r\n " +
-                    "@treeNumber,\r\n " +
-                    "@cuttingUnitCode,\r\n " +
-                    "@plotNumber,\r\n " +
-                    "@stratumCode,\r\n " +
-                    "@sampleGroupCode,\r\n " +
-                    "@species,\r\n" + // species
-                    "@liveDead,\r\n" + // liveDead
-                    "@countOrMeasure " + // countMeasure
+                    "@TreeID,\r\n " +
+                    "@TreeNumber,\r\n " +
+                    "@CuttingUnitCode,\r\n " +
+                    "@PlotNumber,\r\n " +
+                    "@StratumCode,\r\n " +
+                    "@SampleGroupCode,\r\n " +
+                    "@Species,\r\n" + // species
+                    "@LiveDead,\r\n" + // liveDead
+                    "@CountOrMeasure " + // countMeasure
                 "); " +
                 "INSERT INTO TallyLedger ( " +
+                    "TallyLedgerID, " +
                     "TreeID, " +
                     "CuttingUnitCode, " +
                     "PlotNumber, " +
@@ -1108,31 +1107,32 @@ namespace FScruiser.Services
                     "KPI, " +
                     "STM " +
                 ") VALUES ( " +
-                    "@treeID, " +
-                    "@cuttingUnitCode, " +
-                    "@plotNumber, " +
-                    "@stratumCode, " +
-                    "@sampleGroupCode, " +
-                    "@species, " +
-                    "@liveDead, " +
-                    "@treeCount, " +
-                    "@kpi, " +
-                    "@stm " +
+                    "@TreeID, " +
+                    "@TreeID, " +
+                    "@CuttingUnitCode, " +
+                    "@PlotNumber, " +
+                    "@StratumCode, " +
+                    "@SampleGroupCode, " +
+                    "@Species, " +
+                    "@LiveDead, " +
+                    "@TreeCount, " +
+                    "@KPI, " +
+                    "@STM " +
                 "); "
                 , new
                 {
                     TreeID = treeID,
-                    TreeNumber = tree.TreeNumber,
-                    CuttingUnitCode = tree.CuttingUnitCode,
-                    PlotNumber = tree.PlotNumber,
-                    StratumCode = tree.StratumCode,
-                    SampleGroupCode = tree.SampleGroupCode,
-                    Species = tree.Species ?? "",
-                    LiveDead = tree.LiveDead ?? "",
-                    CountOrMeasure = tree.CountOrMeasure,
-                    TreeCount = tree.TreeCount,
-                    KPI = tree.KPI,
-                    STM = tree.STM,
+                    tree.TreeNumber,
+                    tree.CuttingUnitCode,
+                    tree.PlotNumber,
+                    tree.StratumCode,
+                    tree.SampleGroupCode,
+                    tree.Species,
+                    tree.LiveDead,
+                    tree.CountOrMeasure,
+                    tree.TreeCount,
+                    tree.KPI,
+                    tree.STM,
                 });
 
             tree.TreeID = treeID;
@@ -1514,6 +1514,7 @@ namespace FScruiser.Services
                     "tl.Species, " +
                     "tl.LiveDead, " +
                     "TreeCount, " +
+                    "Reason, " +
                     "KPI, " +
                     "EntryType, " +
                     "Remarks, " +
@@ -1548,6 +1549,7 @@ namespace FScruiser.Services
                     "Species, " +
                     "LiveDead, " +
                     "TreeCount, " +
+                    "Reason, " +
                     "KPI, " +
                     "EntryType, " +
                     "Remarks, " +

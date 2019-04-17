@@ -17,7 +17,7 @@ namespace FScruiser.Models
         [Field("Plot_Stratum_CN")]
         public long? Plot_Stratum_CN { get; set; }
 
-        [IgnoreField]
+        [Field("InCruise")]
         public bool InCruise
         {
             get => _inCruise;
