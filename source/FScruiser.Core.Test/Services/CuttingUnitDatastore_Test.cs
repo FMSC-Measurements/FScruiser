@@ -454,18 +454,40 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_GUID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
+                var treeID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
 
-                var tree = datastore.GetTree(tree_GUID);
+                var tree = datastore.GetTree(treeID);
                 tree.Should().NotBeNull();
+                tree.CuttingUnitCode.Should().Be(unitCode);
+                tree.StratumCode.Should().Be(stratumCode);
+                tree.SampleGroupCode.Should().Be(sgCode);
+                tree.Species.Should().Be(species);
+                tree.LiveDead.Should().Be(liveDead);
+                tree.TreeNumber.Should().Be(1);
+                tree.TreeID.Should().Be(treeID);
 
-                tree.DBH = 100;
+                unitCode = "_" + unitCode;
+                stratumCode = "_" + stratumCode;
+                sgCode = "_" + sgCode;
+                species = "_" + species;
+                liveDead = "_" + liveDead;
+
+
+                tree.CuttingUnitCode = unitCode;
+                tree.StratumCode = stratumCode;
+                tree.SampleGroupCode = sgCode;
+                tree.Species = species;
+                tree.LiveDead = liveDead;
 
                 datastore.UpdateTree(tree);
 
-                var treeAgain = datastore.GetTree(tree_GUID);
+                var treeAgain = datastore.GetTree(treeID);
 
-                treeAgain.DBH.Should().Be(tree.DBH);
+                treeAgain.CuttingUnitCode.Should().Be(unitCode);
+                treeAgain.StratumCode.Should().Be(stratumCode);
+                treeAgain.SampleGroupCode.Should().Be(sgCode);
+                treeAgain.Species.Should().Be(species);
+                treeAgain.LiveDead.Should().Be(liveDead);
             }
         }
 
@@ -483,14 +505,14 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
-                var tree_GUID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
+                var treeID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
 
-                var tree = datastore.GetTree(tree_GUID);
+                var tree = datastore.GetTree(treeID);
                 tree.Should().NotBeNull();
 
-                datastore.DeleteTree(tree_GUID);
+                datastore.DeleteTree(treeID);
 
-                tree = datastore.GetTree(tree_GUID);
+                tree = datastore.GetTree(treeID);
                 tree.Should().BeNull();
             }
         }
