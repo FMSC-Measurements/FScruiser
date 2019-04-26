@@ -466,11 +466,11 @@ namespace FScruiser.Core.Test.Services
                 tree.TreeNumber.Should().Be(1);
                 tree.TreeID.Should().Be(treeID);
 
-                unitCode = "_" + unitCode;
-                stratumCode = "_" + stratumCode;
-                sgCode = "_" + sgCode;
-                species = "_" + species;
-                liveDead = "_" + liveDead;
+                //unitCode = "u2"; // tree should not be able to change units
+                stratumCode = "st2";
+                sgCode = "sg2";
+                species = "sp2";
+                liveDead = "D";
 
 
                 tree.CuttingUnitCode = unitCode;
