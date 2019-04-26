@@ -1,30 +1,108 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:FScruiser.XF.Converters"
+             xmlns:effects="clr-namespace:Xamarin.Toolkit.Effects;assembly=Xamarin.Toolkit.Effects"
              x:Class="FScruiser.XF.Pages.TreeEditPage2"
-             xmlns:validation="clr-namespace:FScruiser.Validation;assembly=FScruiser.Core"
+             Title="{Binding TreeNumber, StringFormat='{}Tree Number {0}'}"
              BackgroundColor="White"
-             ErrorsAndWarnings="{Binding ErrorsAndWarnings}">
+             TreeNumber="{Binding TreeNumber}"
+             TreeFieldValues="{Binding TreeFieldValues}">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Logs" Command="{Binding ShowLogsCommand}"/>
+        <ToolbarItem Text="Logs"
+                     Command="{Binding ShowLogsCommand}" />
     </ContentPage.ToolbarItems>
+
+    <ContentPage.Resources>
+        <converters:ErrorLevelToColorConverter x:Key="errorLevelToColorConverter"
+                                               Default="White"
+                                               Error="Red"
+                                               Warning="Gold" />
+
+
+    </ContentPage.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ScrollView x:Name="_editViewsHost" Grid.Row="0" Grid.RowSpan="1">
+        <Grid Grid.Row="0">
+            <Grid.Resources>
+                <Style TargetType="Label">
+                    <Setter Property="VerticalTextAlignment"
+                            Value="Center" />
+                    <Setter Property="HorizontalTextAlignment"
+                            Value="End" />
+                </Style>
+            </Grid.Resources>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40" />
+                <RowDefinition Height="40" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Row="0"
+                   Grid.Column="0"
+                   Text="Tree #" />
+            <Entry Grid.Row="0"
+                   Grid.Column="1"
+                   x:Name="_treeNumberEntry">
+                <Entry.Effects>
+                    <effects:EntrySelectAllText />
+                </Entry.Effects>
+            </Entry>
+
+            <Label Grid.Row="0"
+                   Grid.Column="2"
+                   Text="Stratum" />
+            <Picker Grid.Row="0"
+                    Grid.Column="3"
+                    ItemsSource="{Binding StratumCodes}"
+                    SelectedItem="{Binding StratumCode}" />
+
+            <Label Grid.Row="1"
+                   Grid.Column="0"
+                   Text="Sample Group" />
+            <Picker Grid.Row="1"
+                    Grid.Column="1"
+                    ItemsSource="{Binding SampleGroupCodes}"
+                    SelectedItem="{Binding SampleGroupCode}" />
+
+            <Label Grid.Row="1"
+                   Grid.Column="2"
+                   Text="Species - LiveDead" />
+            <Picker Grid.Row="1"
+                    Grid.Column="3"
+                    ItemsSource="{Binding SubPopulations}"
+                    SelectedItem="{Binding SubPopulation}" />
+        </Grid>
+
+        <ScrollView x:Name="_editViewsHost"
+                    Grid.Row="1"
+                    VerticalOptions="FillAndExpand">
             <ScrollView.Resources>
                 <ResourceDictionary>
                     <Style TargetType="Label">
-                        <Setter Property="TextColor" Value="Black"/>
-                        <Setter Property="VerticalTextAlignment" Value="Center"/>
+                        <Setter Property="TextColor"
+                                Value="Black" />
+                        <Setter Property="VerticalTextAlignment"
+                                Value="Center" />
                     </Style>
                     <Style TargetType="Entry">
-                        <Setter Property="TextColor" Value="Black"/>
+                        <Setter Property="TextColor"
+                                Value="Black" />
                     </Style>
                     <Style TargetType="Picker">
-                        <Setter Property="TextColor" Value="Black"/>
+                        <Setter Property="TextColor"
+                                Value="Black" />
                     </Style>
                     <!--<Style TargetType="Switch">
                 <Setter Property="TextColor" Value="Black"/>
@@ -33,8 +111,15 @@
             </ScrollView.Resources>
         </ScrollView>
 
-        <StackLayout Grid.Row="1" x:Name="_errorMessageContainer">
-            
+        <StackLayout Grid.Row="1"
+                     BindableLayout.ItemsSource="{Binding ErrorsAndWarnings}"
+                     VerticalOptions="End">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding Message}"
+                           BackgroundColor="{Binding Level, Converter={StaticResource errorLevelToColorConverter}}" />
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
         </StackLayout>
         <!--<ListView Grid.Row="1" ItemsSource="{Binding ErrorsAndWarnings}" VerticalOptions="End">
             <ListView.ItemTemplate>

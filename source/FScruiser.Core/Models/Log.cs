@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace FScruiser.Models
 {
     [EntitySource("Log_V3")]
-    public class Log : INPC_Base
+    public class Log : INPC_Base, IHasTreeID
     {
         [Field("LogID")]
         public string LogID { get; set; }

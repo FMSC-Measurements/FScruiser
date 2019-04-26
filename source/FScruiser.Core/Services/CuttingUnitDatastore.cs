@@ -474,6 +474,15 @@ namespace FScruiser.Services
 
         #region strata
 
+        public IEnumerable<string> GetStratumCodesByUnit(string unitCode)
+        {
+            var stratumCodes = Database.ExecuteScalar<string>(
+                "SELECT group_concat(StratumCode, ',') FROM CuttingUnit_Stratum " +
+                "WHERE CuttingUnitCode = @p1;", unitCode);
+
+            return stratumCodes.Split(',');
+        }
+
         public IEnumerable<Stratum> GetStrataByUnitCode(string unitCode)
         {
             return Database.Query<Stratum>(
@@ -522,6 +531,14 @@ namespace FScruiser.Services
         //        .Join("CuttingUnit", "USING (CuttingUnit_CN)")
         //        .Where("CuttingUnit.Code = @p1").Query(unitCode).ToArray();
         //}
+
+        public IEnumerable<string> GetSampleGroupCodes(string stratumCode)
+        {
+            var sgCode = Database.ExecuteScalar<string>("SELECT group_concat(SampleGroupCode,',') FROM SampleGroup_V3 " +
+                "WHERE StratumCode = @p1;", stratumCode);
+
+            return sgCode.Split(',');
+        }
 
         public IEnumerable<SampleGroupProxy> GetSampleGroupProxiesByUnit(string unitCode)
         {
@@ -722,19 +739,15 @@ namespace FScruiser.Services
 
         #endregion sampleGroup
 
-        #region TreeDefaults
+        #region subpopulation
 
-        public IEnumerable<TreeDefaultProxy> GetTreeDefaultProxies(string stratumCode, string sampleGroupCode)
+        public IEnumerable<SubPopulation> GetSubPopulations(string stratumCode, string sampleGroupCode)
         {
-            return Database.From<TreeDefaultProxy>()
-                .Join("SampleGroupTreeDefaultValue", "USING (TreeDefaultValue_CN)")
-                .Join("SampleGroup", "USING (SampleGroup_CN)")
-                .Join("Stratum", "USING (Stratum_CN)")
-                .Where("Stratum.Code = @p1 AND SampleGroup.Code = @p2")
-                .Query(stratumCode, sampleGroupCode);
+            return Database.Query<SubPopulation>("SELECT * FROM SubPopulation " +
+                "WHERE StratumCode = @p1 AND SampleGroupCode = @p2;", stratumCode, sampleGroupCode).ToArray();
         }
 
-        #endregion TreeDefaults
+        #endregion subpopulation
 
         #region TreeFields
 
@@ -755,7 +768,7 @@ namespace FScruiser.Services
 
         public IEnumerable<TreeFieldSetup> GetTreeFieldsByStratumCode(string stratumCode)
         {
-            var treeFields = Database.Query<TreeFieldSetup>(
+            return Database.Query<TreeFieldSetup>(
                 "SELECT " +
                 "Field, " +
                 "Heading, " +
@@ -764,29 +777,59 @@ namespace FScruiser.Services
                 "WHERE StratumCode = @p1 AND FieldOrder >= 0 " +
                 "GROUP BY Field " +
                 "ORDER BY FieldOrder;",
-                new object[] { stratumCode }).ToList();
-
-            treeFields.InsertRange(0, new TreeFieldSetup[]
-            {
-                //new TreeFieldSetup { Field = nameof(Tree_Ex.TreeNumber), Heading = "Tree #" },
-                new TreeFieldSetup { Field = nameof(Tree_Ex.Species), Heading = "Species" },
-                //new TreeFieldSetup { Field = nameof(Tree_Ex.LiveDead), Heading = "Live Dead" },
-                new TreeFieldSetup { Field = nameof(Tree_Ex.StratumCode), Heading = "St" },
-                new TreeFieldSetup { Field = nameof(Tree_Ex.SampleGroupCode), Heading = "Sg" },
-            });
-
-            return treeFields;
-
-            //return Database.From<TreeFieldSetup>()
-            //    .Join("Stratum", "USING (Stratum_CN)")
-            //    .Where("Stratum.Code == @p1")
-            //    .OrderBy("FieldOrder")
-            //    .Query(stratumCode);
+                new object[] { stratumCode }).ToArray();
         }
 
         #endregion TreeFields
 
         #region Tree
+
+        public void UpdateTreeFieldValue(TreeFieldValue treeFieldValue)
+        {
+            Database.Execute(
+                "INSERT INTO TreeMeasurment " +
+                $"(TreeID, {treeFieldValue.Field})" +
+                $"VALUES (@p1, @p2)" +
+                $"ON CONFLICT (TreeID) DO " +
+                $"UPDATE SET {treeFieldValue.Field} = @p2 WHERE TreeID = @p1;", 
+                treeFieldValue.TreeID, treeFieldValue.Value);
+        }
+
+        public IEnumerable<TreeFieldValue> GetTreeFieldValues(string treeID)
+        {
+            return Database.Query<TreeFieldValue>(
+                "SELECT " +
+                "t.TreeID, " +
+                "tf.Field, " +
+                "tfs.Heading, " +
+                "tf.DbType, " +
+                "tfv.ValueReal, " +
+                "tfv.ValueBool, " +
+                "tfv.ValueText, " +
+                "tfv.ValueInt " +
+                "FROM Tree_V3 AS t " +
+                "JOIN TreeFieldSetup_V3 AS tfs USING (StratumCode) " +
+                "JOIN TreeField AS tf USING (Field) " +
+                "LEFT JOIN TreeFieldValue_TreeMeasurment AS tfv USING (TreeID, Field) " +
+                "WHERE t.TreeID = @p1 " +
+                "ORDER BY tfs.FieldOrder;", treeID).ToArray(); 
+
+
+            //return Database.Query<TreeFieldValue>(
+            //    "SELECT " +
+            //    "tfv.TreeID, " +
+            //    "tfv.Field, " +
+            //    "tfs.Heading, " +
+            //    "tfv.DbType, " +
+            //    "tfv.ValueReal, " +
+            //    "tfv.ValueBool, " +
+            //    "tfv.ValueText, " +
+            //    "tfv.ValueInt " +
+            //    "FROM TreeFieldValue_TreeMeasurment AS tfv " +
+            //    "JOIN Tree_V3 AS t USING (TreeID) " +
+            //    "JOIN TreeFieldSetup_V3 AS tfs ON tfv.Field = tfs.Field AND t.StratumCode = tfs.StratumCode " +
+            //    "WHERE tfv.TreeID = @p1 ; ", treeID).ToArray();
+        }
 
         public bool IsTreeNumberAvalible(string unit, int treeNumber, int? plotNumber = null)
         {
@@ -796,16 +839,15 @@ namespace FScruiser.Services
                     "WHERE CuttingUnitCode = @p1 " +
                     "AND PlotNumber = @p2 " +
                     "AND TreeNumber = @p3;",
-                    unit, plotNumber, treeNumber) > 0;
+                    unit, plotNumber, treeNumber) == 0;
             }
             else
             {
-                return Database.ExecuteScalar<int>("SELECT count(*) FROM Tree " +
-                    "JOIN CuttingUnit USING (CuttingUnit_CN) " +
+                return Database.ExecuteScalar<int>("SELECT count(*) FROM Tree_V3 " +
                     "WHERE CuttingUnitCode = @p1 " +
                     "AND PlotNumber IS NULL " +
                     "AND TreeNumber = @p2;",
-                    unit, treeNumber) > 0;
+                    unit, treeNumber) == 0;
             }
         }
 
@@ -889,7 +931,7 @@ namespace FScruiser.Services
         //        .Query(unitCode, treeNumber).FirstOrDefault();
         //}
 
-        public Tree_Ex GetTree(string treeID)
+        public Tree GetTree(string treeID)
         {
             return QueryTree_Base()
                 .Where("Tree_V3.TreeID = @p1")
@@ -1264,17 +1306,49 @@ namespace FScruiser.Services
                 "ModifiedBy = @UserName " +
             "WHERE TreeID = @TreeID;";
 
+        public void UpdateTree(Tree tree)
+        {
+            //if (tree.IsPersisted == false) { throw new InvalidOperationException("tree is not persisted before calling update"); }
+            //Database.Update(tree);
+
+            Database.Execute2(
+                "UPDATE Tree_V3 SET \r\n " +
+                    "TreeNumber = @TreeNumber, " +
+                    "StratumCode = @StratumCode, " +
+                    "SampleGroupCode = @SampleGroupCode, " +
+                    "Species = @Species," +
+                    "LiveDead = @LiveDead, " +
+                    "CountOrMeasure = @CountOrMeasure, " +
+                    "ModifiedBy = @UserName " +
+                "WHERE TreeID = @TreeID; ",
+                new
+                {
+                    tree.TreeID,
+                    tree.TreeNumber,
+                    tree.StratumCode,
+                    tree.SampleGroupCode,
+                    tree.Species,
+                    tree.LiveDead,
+                    tree.CountOrMeasure,
+
+                    UserName,
+                });
+        }
+
         public void UpdateTree(Tree_Ex tree)
         {
             //if (tree.IsPersisted == false) { throw new InvalidOperationException("tree is not persisted before calling update"); }
             //Database.Update(tree);
 
             Database.Execute2(
-                "UPDATE Tree_V3 SET \r\n" +
+                "UPDATE Tree_V3 SET \r\n " +
+                    "TreeNumber = @TreeNumber, " +
                     "StratumCode = @StratumCode, " +
                     "SampleGroupCode = @SampleGroupCode, " +
                     "Species = @Species," +
-                    "LiveDead = @LiveDead " +
+                    "LiveDead = @LiveDead, " +
+                    "CountOrMeasure = @CountOrMeasure, " +
+                    "ModifiedBy = @UserName " +
                 "WHERE TreeID = @TreeID; " +
                 UPSERT_TREEMEASURMENT_COMMAND,
                 new
@@ -1282,8 +1356,8 @@ namespace FScruiser.Services
                     tree.TreeID,
                     tree.StratumCode,
                     tree.SampleGroupCode,
-                    Species = tree.Species,
-                    LiveDead = tree.LiveDead,
+                    tree.Species,
+                    tree.LiveDead,
                     CountOrMeasure = tree.CountOrMeasure ?? "",
 
                     tree.SeenDefectPrimary,
@@ -1420,7 +1494,7 @@ namespace FScruiser.Services
                 "te.Field, " +
                 "te.Message, " +
                 "te.Resolution " +
-                "FROM TreeAuditError AS te " +
+                "FROM TreeError AS te " +
                 "JOIN Tree_V3 AS t USING (TreeID) " +
                 "LEFT JOIN TreeAuditResolution AS ter USING (TreeAuditRuleID, TreeID) " +
                 "WHERE t.CuttingUnitCode = @p1 AND PlotNumber IS NULL;",
@@ -1448,12 +1522,12 @@ namespace FScruiser.Services
                 "SELECT " +
                 "te.TreeID, " +
                 "te.Field, " +
+                "te.Level, " +
                 "te.Message, " +
                 "te.Resolution " +
-                "FROM TreeAuditError AS te " +
-                "LEFT JOIN TreeAuditResolution AS ter USING (TreeAuditRuleID, TreeID) " +
+                "FROM TreeError AS te " +
                 "WHERE te.TreeID = @p1;",
-                new object[] { treeID });
+                new object[] { treeID }).ToArray();
         }
 
         public IEnumerable<LogError> GetLogErrorsByLog(string logID)
@@ -1813,7 +1887,7 @@ namespace FScruiser.Services
         {
             var logID = Guid.NewGuid().ToString();
 
-            var logNumber = Database.ExecuteScalar<int>("SELECT ifnull(max(LogNumber), 0) + 1 FROM Log WHERE Tree_CN = @p1", log.TreeID);
+            var logNumber = Database.ExecuteScalar<int>("SELECT ifnull(max(LogNumber), 0) + 1 FROM Log_V3 WHERE TreeID = @p1", log.TreeID);
 
             Database.Execute2(
                 "INSERT INTO Log_V3 ( " +

@@ -1,54 +1,53 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<local:TallyEntryViewCell_Base xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FScruiser.XF.ViewCells.TallyEntryTreeViewCell"
-             xmlns:local="clr-namespace:FScruiser.XF.ViewCells"
-             xmlns:local_commands="clr-namespace:FScruiser.XF.Commands"
-             xmlns:local_views="clr-namespace:FScruiser.XF.Views">
+<local:TallyEntryTreeViewCell_Base xmlns="http://xamarin.com/schemas/2014/forms"
+                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                   x:Class="FScruiser.XF.ViewCells.TallyEntryTreeViewCell"
+                                   xmlns:local="clr-namespace:FScruiser.XF.ViewCells"
+                                   xmlns:local_commands="clr-namespace:FScruiser.XF.Commands"
+                                   xmlns:local_views="clr-namespace:FScruiser.XF.Views">
     <ViewCell.View>
         <ContentView BackgroundColor="Silver">
-            <Frame 
-                BackgroundColor="{StaticResource accent}" 
-                CornerRadius="5" 
-                Margin="2,5,2,0" 
-                Padding="0">
+            <Frame BackgroundColor="{StaticResource accent}"
+                   CornerRadius="5"
+                   Margin="2,5,2,0"
+                   Padding="0">
 
                 <Grid x:Name="_contentHost">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="50"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="50" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <local_views:PopulationIndicatorView
-                        Grid.Row="0" Grid.Column="0"
-                        StratumCode="{Binding StratumCode}"
-                        SampleGroupCode="{Binding SampleGroupCode}"
-                        Species="{Binding Species}"
-                        LiveDead="{Binding LiveDead}"
-                        Margin="5"
-                        HeightRequest="30"
-                        VerticalOptions="Center"
-                        HorizontalOptions="Start"
-                        FontSize="Small"/>
+                    <local_views:PopulationIndicatorView Grid.Row="0"
+                                                         Grid.Column="0"
+                                                         StratumCode="{Binding StratumCode}"
+                                                         SampleGroupCode="{Binding SampleGroupCode}"
+                                                         Species="{Binding Species}"
+                                                         LiveDead="{Binding LiveDead}"
+                                                         Margin="5"
+                                                         HeightRequest="30"
+                                                         VerticalOptions="Center"
+                                                         HorizontalOptions="Start"
+                                                         FontSize="Small" />
 
 
-                    <Image  
-                        Grid.Row="0" Grid.Column="1"
-                        Source="ic_pine_tree_box_black_36dp.png" />
+                    <Image Grid.Row="0"
+                           Grid.Column="1"
+                           Source="ic_pine_tree_box_black_36dp.png" />
 
-                    <Label
-                        Grid.Row="0" Grid.Column="2"
-                        Text="{Binding TreeNumber, StringFormat='{}#{0}'}" 
-                        TextColor="{StaticResource accentText}" 
-                        FontSize="30" 
-                        VerticalTextAlignment="Center" 
-                        HorizontalOptions="Start"/>
+                    <Label Grid.Row="0"
+                           Grid.Column="2"
+                           Text="{Binding TreeNumber, StringFormat='{}#{0}'}"
+                           TextColor="{StaticResource accentText}"
+                           FontSize="30"
+                           VerticalTextAlignment="Center"
+                           HorizontalOptions="Start" />
 
                     <!--<Label x:Name="CruiserInitialsLabel" 
                                Text="{Binding Tree.Initials}"
@@ -56,12 +55,15 @@
                                VerticalTextAlignment="Center"
                                HorizontalOptions="EndAndExpand" />-->
 
-                    <Grid x:Name="_treeEditPanel" 
-                        Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
-                        IsVisible="False"> <!-- default to not visable, when view cell expands visability will be set to true -->
+                    <Grid x:Name="_treeEditPanel"
+                          Grid.Row="1"
+                          Grid.Column="0"
+                          Grid.ColumnSpan="3"
+                          IsVisible="False">
+                        <!-- default to not visable, when view cell expands visability will be set to true -->
 
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -71,18 +73,27 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <ScrollView x:Name="_treeEditScrollView" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+                        <ScrollView x:Name="_treeEditScrollView"
+                                    Grid.Row="0"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="3">
                             <Grid x:Name="_treeEditControlGrid">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                             </Grid>
                         </ScrollView>
 
-                        <Button Grid.Row="1" Grid.Column="1" x:Name="_editButton" Text="Edit"/>
+                        <Button Grid.Row="1"
+                                Grid.Column="1"
+                                x:Name="_editButton"
+                                Text="Edit" />
 
-                        <Button Grid.Row="1" Grid.Column="2" x:Name="_untallyButton" Text="Untally"/>
+                        <Button Grid.Row="1"
+                                Grid.Column="2"
+                                x:Name="_untallyButton"
+                                Text="Untally" />
 
                     </Grid>
 
@@ -92,4 +103,4 @@
             </Frame>
         </ContentView>
     </ViewCell.View>
-</local:TallyEntryViewCell_Base>
+</local:TallyEntryTreeViewCell_Base>

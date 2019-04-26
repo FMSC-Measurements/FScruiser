@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace FScruiser.Models
 {
     [EntitySource("Tree_V3")]
-    public class TreeStub
+    public class TreeStub : IHasTreeID
     {
         [Field("TreeID")]
         public string TreeID { get; set; }

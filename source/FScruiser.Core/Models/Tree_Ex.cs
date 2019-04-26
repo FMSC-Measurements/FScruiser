@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    public class Tree_Ex :Tree
+    public class Tree_Ex :Tree, IHasTreeID
     {
         private static readonly string DEFAULT_GRADE = "00";
         private static readonly string DEFAULT_CLEAR_FACE = "";

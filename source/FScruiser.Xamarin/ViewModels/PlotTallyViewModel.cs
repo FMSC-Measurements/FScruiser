@@ -27,6 +27,8 @@ namespace FScruiser.XF.ViewModels
         private ICommand _tallyCommand;
         private Command _editPlotCommand;
         private Plot _plot;
+        private ICommand _editTreeCommand;
+        private ICommand _deleteTreeCommand;
 
         public event EventHandler TreeAdded;
 
@@ -48,6 +50,12 @@ namespace FScruiser.XF.ViewModels
             TallySettings = tallySettings;
             SoundService = soundService;
         }
+
+        public ICommand EditTreeCommand => _editTreeCommand
+    ?? (_editTreeCommand = new Command<string>(ShowEditTree));
+
+        public ICommand DeleteTreeCommand => _deleteTreeCommand
+            ?? (_deleteTreeCommand = new Command<string>(DeleteTree));
 
         public ICommand TallyCommand => _tallyCommand
             ?? (_tallyCommand = new Command<TallyPopulation_Plot>(async (x) => await this.TallyAsync(x)));
@@ -195,9 +203,9 @@ namespace FScruiser.XF.ViewModels
             await HandleTally(pop, tree, soundService, dialogService, tallySettings);
         }
 
-        public void ShowEditTree(string tree_guid)
+        public void ShowEditTree(string treeID)
         {
-            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { "Tree_Guid", tree_guid } }, useModalNavigation: true);
+            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { NavParams.TreeID, treeID } });
         }
 
         public static async Task HandleTally(TallyPopulation_Plot population,

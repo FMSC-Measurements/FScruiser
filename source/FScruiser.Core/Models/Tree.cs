@@ -5,7 +5,7 @@ using System;
 namespace FScruiser.Models
 {
     [EntitySource("Tree_V3")]
-    public class Tree : INPC_Base
+    public class Tree : INPC_Base, IHasTreeID
     {
         #region table fields
 
@@ -34,7 +34,7 @@ namespace FScruiser.Models
         }
 
         [Field("PlotNumber")]
-        public long? PlotNumber
+        public int? PlotNumber
         {
             get { return _plotNumber; }
             set { SetValue(ref _plotNumber, value); }
@@ -83,13 +83,7 @@ namespace FScruiser.Models
         
         private string _liveDead = DEFAULT_LIVE_DEAD;
 
-        private string _remarks = "";
-
-        private string _createdBy;
-        private DateTime _createdDate;
-        private string _modifiedBy;
-        private string _modifiedDate;
-        private long? _plotNumber;
+        private int? _plotNumber;
         private string _unitCode;
         private static readonly string DEFAULT_STM = "N";
         private static readonly string DEFAULT_COUNT_MEASURE = "C";

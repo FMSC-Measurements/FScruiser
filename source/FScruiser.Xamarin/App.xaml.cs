@@ -50,29 +50,12 @@ namespace FScruiser.XF
                 , typeof(Microsoft.AppCenter.Distribute.Distribute)
                 , typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Crashes));
 
-            
 #endif
-            
 
             MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_SELECTED, async (sender, path) =>
             {
                 await LoadCruiseFileAsync(path);
             });
-
-            //MessagingCenter.Subscribe<object, string>(this, Messages.PAGE_NAVIGATED_TO, (sender, navParams) =>
-            //{
-            //    try
-            //    {
-            //        var navigationPath = NavigationService.GetNavigationUriPath();
-
-            //        Properties.SetValue(CURRENT_NAV_PATH, navigationPath);
-            //        Properties.SetValue(CURRENT_NAV_PARAMS, navParams);
-            //    }catch( Exception ex)
-            //    {
-            //        Debug.WriteLine("ERROR::::" + ex);
-            //        Crashes.TrackError(ex);
-            //    }
-            //});
 
             await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
         }
@@ -85,7 +68,6 @@ namespace FScruiser.XF
             //    Analytics.TrackEvent("Error::::LoadCruiseFile|Invalid File Path", new Dictionary<string, string>() { { "FilePath", path } });
             //    return;
             //}
-
 
             try
             {

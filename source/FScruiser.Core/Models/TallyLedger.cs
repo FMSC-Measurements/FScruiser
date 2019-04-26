@@ -9,7 +9,7 @@ using static FScruiser.Constants;
 namespace FScruiser.Models
 {
     [EntitySource("TallyLedger")]
-    public class TallyLedger
+    public class TallyLedger : IHasTreeID
     {
         public class EntryTypeValues
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FMSC.ORM.EntityModel.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,20 +7,24 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    public class TreeError
+    public class TreeError : IHasTreeID
     {
+        [Field("TreeID")]
         public string TreeID { get; set; }
 
-        public string TreeAuditRuleID { get; set; }
+        [Field("Level")]
+        public string Level { get; set; }
 
-        public string ErrorCode { get; set; }
-
+        [Field("Message")]
         public string Message { get; set; }
 
+        [Field("Field")]
         public string Field { get; set; }
 
+        [Field("Resolution")]
         public string Resolution { get; set; }
 
+        [Field("ResolutionInitials")]
         public string ResolutionInitials { get; set; }
     }
 }

@@ -6,7 +6,7 @@ using System.Text;
 namespace FScruiser.Models
 {
     [EntitySource("TallyLedger")]
-    public class TallyEntry
+    public class TallyEntry : IHasTreeID
     {
         public TallyEntry()
         { }

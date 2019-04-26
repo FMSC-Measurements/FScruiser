@@ -61,6 +61,8 @@ namespace FScruiser.Services
 
         #region stratra
 
+        IEnumerable<string> GetStratumCodesByUnit(string unitCode);
+
         IEnumerable<Stratum> GetStrataByUnitCode(string unitCode);
 
         IEnumerable<StratumProxy> GetStrataProxiesByUnitCode(string unitCode);
@@ -70,6 +72,8 @@ namespace FScruiser.Services
         #endregion stratra
 
         #region sampleGroups
+
+        IEnumerable<string> GetSampleGroupCodes(string stratumCode);
 
         SampleGroup GetSampleGroup(string stratumCode, string sgCode);
 
@@ -85,7 +89,7 @@ namespace FScruiser.Services
 
         #endregion sampleGroups
 
-        IEnumerable<TreeDefaultProxy> GetTreeDefaultProxies(string stratumCode, string sampleGroupCode);
+        IEnumerable<SubPopulation> GetSubPopulations(string stratumCode, string sampleGroupCode);
 
         IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode);
 
@@ -119,6 +123,10 @@ namespace FScruiser.Services
 
         #region tree
 
+        IEnumerable<TreeFieldValue> GetTreeFieldValues(string treeID);
+
+        void UpdateTreeFieldValue(TreeFieldValue treeFieldValue);
+
         bool IsTreeNumberAvalible(string unitCode, int treeNumber, int? plotNumber = null);
 
         int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon);
@@ -127,7 +135,7 @@ namespace FScruiser.Services
             string sampleGroupCode = null, string species = null, string liveDead = "L", 
             int treeCount = 1, int kpi = 0, bool stm = false);
 
-        Tree_Ex GetTree(string tree_GUID);
+        Tree GetTree(string tree_GUID);
 
         TreeStub GetTreeStub(string tree_GUID);
 
@@ -138,6 +146,8 @@ namespace FScruiser.Services
         IEnumerable<TreeStub> GetTreeStubsByUnitCode(string unitCode);
 
         void InsertTree(TreeStub_Plot tree);
+
+        void UpdateTree(Tree tree);
 
         void UpdateTree(Tree_Ex tree);
 

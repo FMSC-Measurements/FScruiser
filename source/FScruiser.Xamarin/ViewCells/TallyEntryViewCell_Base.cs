@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms;
+﻿using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewCells
 {
@@ -9,6 +10,28 @@ namespace FScruiser.XF.ViewCells
         protected TallyEntryViewCell_Base()
         {
         }
+
+        #region UntallyCommand
+
+        /// <summary>
+        /// Identifies the <see cref="UntallyCommand"/> bindable property.
+        /// </summary>
+        public static readonly BindableProperty UntallyCommandProperty =
+            BindableProperty.Create(nameof(UntallyCommand),
+              typeof(Command<string>),
+              typeof(TallyEntryViewCell_Base),
+              defaultValue: default(Command<string>));
+
+        /// <summary>
+        /// Gets or sets the <see cref="UntallyCommand" /> property. This is a bindable property.
+        /// </summary>
+        public ICommand UntallyCommand
+        {
+            get { return (Command<string>)GetValue(UntallyCommandProperty); }
+            set { SetValue(UntallyCommandProperty, value); }
+        }
+
+        #endregion UntallyCommand
 
         public bool IsSelected
         {
@@ -21,26 +44,14 @@ namespace FScruiser.XF.ViewCells
             }
         }
 
+        protected abstract View DrawrView { get; }
+
         protected override void OnTapped()
         {
             base.OnTapped();
 
             IsSelected = !IsSelected;
         }
-
-        //protected override void OnAppearing()
-        //{
-        //    base.OnAppearing();
-
-        //    RefreshTree();
-        //}
-
-        //protected override void OnDisappearing()
-        //{
-        //    base.OnDisappearing();
-
-        //    IsSelected = false;
-        //}
 
         protected override void OnPropertyChanging(string propertyName = null)
         {
@@ -114,7 +125,11 @@ namespace FScruiser.XF.ViewCells
             }
         }
 
-        protected abstract void RefreshDrawer(bool isSelected);
+        protected void RefreshDrawer(bool isSelected)
+        {
+            DrawrView.IsVisible = isSelected;
+            base.ForceUpdateSize();
+        }
 
         protected void EnsureVisable()
         {
