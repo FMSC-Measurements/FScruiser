@@ -1,5 +1,9 @@
 # FScruiser.Core
 
+## CruiseDAL.Core
+	
+## FMSC.Sampling
+
 # FScruiser.Xamarin
 
 ## Xamarin.Forms
@@ -14,6 +18,12 @@ for recieving user feed back, tracking feature useage, and proactive error track
 
 ### Crashes
 for crash reports and logging exceptions 
+
+### Distribute
+for hooking up automatic update from AppCenter when using AppCenter for distributing. **Remove this dependancy when distributing to Play Store**
+
+## Newtonsoft.Json
+for serializing cruisers in `TallySettingsDataService.cs`
 
 ## Plugin.Permissions
 for checking and requesting permissions if disabled. Depends on Plugin.CurrentActivity on Android
@@ -35,5 +45,6 @@ useful suit of libraries that extend functionality of controls using Behaviors, 
 build tool. **not a run-time dependency **
 
 # FScruiser.Droid
+
 ## Plugin.CurrentActivity 
 required by Plugin.Permissions. Initialized in MainApplication.cs
