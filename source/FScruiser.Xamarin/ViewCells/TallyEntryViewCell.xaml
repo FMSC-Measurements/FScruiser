@@ -17,12 +17,16 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="40" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
+                    <Image Grid.Row="0"
+                           Grid.Column="0"
+                           Source="ic_tally_box_black_24dp.png" />
+                    
                     <local_views:PopulationIndicatorView Grid.Row="0"
-                                                         Grid.Column="0"
+                                                         Grid.Column="1"
                                                          StratumCode="{Binding StratumCode}"
                                                          SampleGroupCode="{Binding SampleGroupCode}"
                                                          Species="{Binding Species}"

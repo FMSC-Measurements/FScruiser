@@ -1606,7 +1606,9 @@ namespace FScruiser.Services
                     "Signature, " +
                     "tl.CreatedDate, " +
                     "t.TreeNumber, " +
-                    "tl.STM " +
+                    "tl.STM, " +
+                    "(SELECT count(*) FROM TreeError AS te WHERE tl.TreeID IS NOT NULL AND Level = 'E' AND te.TreeID = tl.TreeID AND Resolution IS NULL) AS ErrorCount, " +
+                    "(SELECT count(*) FROM TreeError AS te WHERE tl.TreeID IS NOT NULL AND Level = 'W' AND te.TreeID = tl.TreeID AND Resolution IS NULL) AS WarningCount " +
                 "FROM TallyLedger AS tl " +
                 "LEFT JOIN Tree_V3 AS t USING (TreeID) " +
                 "WHERE tl.CuttingUnitCode = @p1 " +

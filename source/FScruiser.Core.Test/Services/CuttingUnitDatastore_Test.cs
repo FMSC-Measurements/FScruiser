@@ -522,7 +522,7 @@ namespace FScruiser.Core.Test.Services
         #region tally entry
 
         [Fact]
-        public void GetTallyEntry()
+        public void GetTallyEntriesByUnitCode()
         {
             var unit = "u1";
             var stratum = "st1";

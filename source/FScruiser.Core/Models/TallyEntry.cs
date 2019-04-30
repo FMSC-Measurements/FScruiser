@@ -34,6 +34,12 @@ namespace FScruiser.Models
         [Field("SampleGroupCode")]
         public string SampleGroupCode { get; set; }
 
+        [Field("ErrorCount")]
+        public int ErrorCount { get; set; }
+
+        [Field("WarningCount")]
+        public int WarningCount { get; set; }
+
         [Field("Species")]
         public string Species { get; set; }
 
