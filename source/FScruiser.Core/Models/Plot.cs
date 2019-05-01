@@ -1,10 +1,15 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Util;
 
 namespace FScruiser.Models
 {
     [EntitySource("Plot")]
-    public class Plot
+    public class Plot : INPC_Base
     {
+        private double _slope;
+        private double _aspect;
+        private string _remarks;
+
         [Field("PlotID")]
         public string PlotID { get; set; }
 
@@ -15,13 +20,25 @@ namespace FScruiser.Models
         public int PlotNumber { get; set; }
 
         [Field("Slope")]
-        public double Slope { get; set; }
+        public double Slope
+        {
+            get => _slope;
+            set => SetValue(ref _slope, value);
+        }
 
         [Field("Aspect")]
-        public double Aspect { get; set; }
+        public double Aspect
+        {
+            get => _aspect;
+            set => SetValue(ref _aspect, value);
+        }
 
         [Field("Remarks")]
-        public string Remarks { get; set; }
+        public string Remarks
+        {
+            get => _remarks;
+            set => SetValue(ref _remarks, value);
+        }
 
         [Field("XCoordinate")]
         public double XCoordinate { get; set; }

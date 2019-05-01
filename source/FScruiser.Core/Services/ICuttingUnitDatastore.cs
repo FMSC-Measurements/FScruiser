@@ -37,6 +37,8 @@ namespace FScruiser.Services
 
         void InsertPlot_Stratum(Plot_Stratum stratumPlot);
 
+        void UpdatePlot(Plot plot);
+
         void UpdatePlot_Stratum(Plot_Stratum stratumPlot);
 
         void AddPlotRemark(string cuttingUnitCode, int plotNumber, string remark);

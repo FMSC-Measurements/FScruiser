@@ -374,6 +374,7 @@ namespace FScruiser.XF.ViewModels
         {
             var treeFieldValue = (TreeFieldValue)sender;
             Datastore.UpdateTreeFieldValue(treeFieldValue);
+            RefreshErrorsAndWarnings();
         }
 
         public void RefreshErrorsAndWarnings()

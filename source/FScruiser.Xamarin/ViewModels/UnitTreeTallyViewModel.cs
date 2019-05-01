@@ -74,7 +74,7 @@ namespace FScruiser.XF.ViewModels
                 }
                 else
                 {
-                    return tallies.Where(x => x.StratumCode == selectedStratum);
+                    return tallies.Where(x => x.StratumCode == selectedStratum).ToArray();
                 }
             }
         }

@@ -316,6 +316,33 @@ namespace FScruiser.Services
             plotStratum.Plot_Stratum_CN = plot_stratum_CN;
         }
 
+        public void UpdatePlot(Plot plot)
+        {
+            Database.Execute2(
+                "UPDATE Plot_V3 SET " +
+                    "PlotNumber = @PlotNumber, " +
+                    "Slope = @Slope, " +
+                    "Aspect = @Aspect, " +
+                    "Remarks = @Remarks, " +
+                    "XCoordinate = @XCoordinate, " +
+                    "YCoordinate = @YCoordinate, " +
+                    "ZCoordinate = @ZCoordinate, " +
+                    "ModifiedBy = @UserName " +
+                "WHERE PlotID = @PlotID; ",
+                    new
+                    {
+                        plot.PlotNumber,
+                        plot.Slope,
+                        plot.Aspect,
+                        plot.Remarks,
+                        plot.XCoordinate,
+                        plot.YCoordinate,
+                        plot.ZCoordinate,
+                        UserName,
+                        plot.PlotID,
+                    });
+        }
+
         public void UpdatePlot_Stratum(Plot_Stratum stratumPlot)
         {
             Database.Execute2(
@@ -791,7 +818,7 @@ namespace FScruiser.Services
                 $"(TreeID, {treeFieldValue.Field})" +
                 $"VALUES (@p1, @p2)" +
                 $"ON CONFLICT (TreeID) DO " +
-                $"UPDATE SET {treeFieldValue.Field} = @p2 WHERE TreeID = @p1;", 
+                $"UPDATE SET {treeFieldValue.Field} = @p2 WHERE TreeID = @p1;",
                 treeFieldValue.TreeID, treeFieldValue.Value);
         }
 
@@ -812,7 +839,7 @@ namespace FScruiser.Services
                 "JOIN TreeField AS tf USING (Field) " +
                 "LEFT JOIN TreeFieldValue_TreeMeasurment AS tfv USING (TreeID, Field) " +
                 "WHERE t.TreeID = @p1 " +
-                "ORDER BY tfs.FieldOrder;", treeID).ToArray(); 
+                "ORDER BY tfs.FieldOrder;", treeID).ToArray();
 
 
             //return Database.Query<TreeFieldValue>(

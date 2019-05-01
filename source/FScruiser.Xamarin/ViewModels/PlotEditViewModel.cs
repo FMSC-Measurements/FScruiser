@@ -6,6 +6,7 @@ using FScruiser.XF.Util;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -25,10 +26,23 @@ namespace FScruiser.XF.ViewModels
             get => _plot;
             set
             {
+                var oldValue = _plot;
+                if(oldValue != null)
+                {
+                    oldValue.PropertyChanged -= Plot_PropertyChanged;
+                }
+
                 SetValue(ref _plot, value);
                 RaisePropertyChanged(nameof(PlotNumber));
+
+                if(value != null)
+                {
+                    value.PropertyChanged += Plot_PropertyChanged;
+                }
             }
         }
+
+        
 
         public ICommand ShowLimitingDistanceCommand => _showLimitingDistanceCommand ?? (_showLimitingDistanceCommand = new Command<Plot_Stratum>(async x => await ShowLimitingDistanceCalculatorAsync(x)));
 
@@ -88,7 +102,25 @@ namespace FScruiser.XF.ViewModels
             get { return _stratumPlots; }
             set
             {
+                var oldValue = _stratumPlots;
+                if(oldValue != null)
+                {
+                    foreach(var sp in oldValue)
+                    {
+                        sp.PropertyChanged -= StratumPlot_PropertyChanged;
+                    }
+                }
+                
+
                 SetValue(ref _stratumPlots, value);
+
+                if (value != null)
+                {
+                    foreach (var sp in value)
+                    {
+                        sp.PropertyChanged += StratumPlot_PropertyChanged;
+                    }
+                }
             }
         }
 
@@ -159,13 +191,24 @@ namespace FScruiser.XF.ViewModels
 
             var stratumPlots = Datastore.GetPlot_Strata(plot.CuttingUnitCode, plot.PlotNumber);
 
-            foreach (var stratumPlot in stratumPlots)
-            {
-                stratumPlot.PropertyChanged += StratumPlot_PropertyChanged;
-            }
-
             Plot = plot;
             StratumPlots = stratumPlots;
+        }
+
+        private void Plot_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var plot = Plot;
+
+            switch(e.PropertyName)
+            {
+                case nameof(Plot.Aspect):
+                case nameof(Plot.Slope):
+                case nameof(Plot.Remarks):
+                    {
+                        Datastore.UpdatePlot(plot);
+                        break;
+                    }
+            }
         }
 
         private void StratumPlot_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
