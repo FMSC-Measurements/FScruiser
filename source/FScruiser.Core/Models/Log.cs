@@ -1,10 +1,6 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Models;
 using FScruiser.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
@@ -26,8 +22,8 @@ namespace FScruiser.Models
             set { _logNumber = value; }
         }
 
-
         private string _grade;
+
         [Field("Grade")]
         public string Grade
         {
@@ -35,8 +31,8 @@ namespace FScruiser.Models
             set { _grade = value; }
         }
 
-
         private double _seenDefect;
+
         [Field("SeenDefect")]
         public double SeenDefect
         {
@@ -44,8 +40,8 @@ namespace FScruiser.Models
             set { _seenDefect = value; }
         }
 
-
         private double _percentRecoverable;
+
         [Field("PercentRecoverable")]
         public double PercentRecoverable
         {
@@ -53,8 +49,8 @@ namespace FScruiser.Models
             set { _percentRecoverable = value; }
         }
 
-
         private int _length;
+
         [Field("Length")]
         public int Length
         {
@@ -62,8 +58,8 @@ namespace FScruiser.Models
             set { _length = value; }
         }
 
-
         private string _exportGrade;
+
         [Field("ExportGrade")]
         public string ExportGrade
         {
@@ -71,8 +67,8 @@ namespace FScruiser.Models
             set { _exportGrade = value; }
         }
 
-
         private double _smallEndDiameter;
+
         [Field("SmallEndDiameter")]
         public double SmallEndDiameter
         {
@@ -80,8 +76,8 @@ namespace FScruiser.Models
             set { _smallEndDiameter = value; }
         }
 
-
         private double _largeEndDiameter;
+
         [Field("LargeEndDiameter")]
         public double LargeEndDiameter
         {
@@ -90,6 +86,7 @@ namespace FScruiser.Models
         }
 
         private double _grossCubicFoot;
+
         [Field("GrossCubicFoot")]
         public double GrossCubicFoot
         {
@@ -98,6 +95,7 @@ namespace FScruiser.Models
         }
 
         private double _netBoardFoot;
+
         [Field("NetBoardFoot")]
         public double NetBoardFoot
         {
@@ -106,6 +104,7 @@ namespace FScruiser.Models
         }
 
         private double _grossBoardFoot;
+
         [Field("GrossBoardFoot")]
         public double GrossBoardFoot
         {
@@ -114,6 +113,7 @@ namespace FScruiser.Models
         }
 
         private double _netCubicFoot;
+
         [Field("NetCubicFoot")]
         public double NetCubicFoot
         {
@@ -122,6 +122,7 @@ namespace FScruiser.Models
         }
 
         private double _boardFootRemoved;
+
         [Field("BoardFootRemoved")]
         public double BoardFootRemoved
         {
@@ -130,6 +131,7 @@ namespace FScruiser.Models
         }
 
         private double _cubicFootRemoved;
+
         [Field("CubicFootRemoved")]
         public double CubicFootRemoved
         {
@@ -138,6 +140,7 @@ namespace FScruiser.Models
         }
 
         private double _dibClass;
+
         [Field("DIBClass")]
         public double DIBClass
         {
@@ -146,6 +149,7 @@ namespace FScruiser.Models
         }
 
         private double _barkThickness;
+
         [Field("BarkThickness")]
         public double BarkThickness
         {
@@ -154,6 +158,7 @@ namespace FScruiser.Models
         }
 
         private string _createdBy;
+
         [Field("CreatedBy")]
         public string CreatedBy
         {

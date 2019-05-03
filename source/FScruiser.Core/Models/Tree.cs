@@ -1,6 +1,6 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Models;
 using FScruiser.Util;
-using System;
 
 namespace FScruiser.Models
 {
@@ -61,16 +61,12 @@ namespace FScruiser.Models
             set { SetValue(ref _countOrMeasure, value); }
         }
 
-        
-
         [Field(Name = "LiveDead")]
         public string LiveDead
         {
             get { return _liveDead; }
             set { SetValue(ref _liveDead, value); }
         }
-
-
 
         #endregion table fields
 
@@ -80,7 +76,6 @@ namespace FScruiser.Models
         private string _species;
         private string _countOrMeasure = DEFAULT_COUNT_MEASURE;
 
-        
         private string _liveDead = DEFAULT_LIVE_DEAD;
 
         private int? _plotNumber;

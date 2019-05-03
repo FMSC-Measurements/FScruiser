@@ -1,7 +1,5 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using FScruiser.Models;
 
 namespace FScruiser.Models
 {
@@ -63,6 +61,5 @@ namespace FScruiser.Models
 
         [Field("TallyLedgerID")]
         public string TallyLedgerID { get; set; }
-
     }
 }

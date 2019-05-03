@@ -1,21 +1,18 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Models;
 using FScruiser.Util;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
     public class TreeFieldValue : INPC_Base, IHasTreeID
     {
-        string _dbType;
-        string _field;
-        double? _valueReal;
-        int? _valueInt;
-        bool? _valueBool;
-        string _valueText;
+        private string _dbType;
+        private string _field;
+        private double? _valueReal;
+        private int? _valueInt;
+        private bool? _valueBool;
+        private string _valueText;
 
         [Field("TreeID")]
         public string TreeID { get; set; }
@@ -42,7 +39,7 @@ namespace FScruiser.Models
 
         [Field("Heading")]
         public string Heading { get; set; }
-        
+
         [Field("ValueReal")]
         public double? ValueReal
         {
@@ -75,7 +72,7 @@ namespace FScruiser.Models
         {
             get
             {
-                switch(DBType)
+                switch (DBType)
                 {
                     case "REAL":
                         { return ValueReal; }

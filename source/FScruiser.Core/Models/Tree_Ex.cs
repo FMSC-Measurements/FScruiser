@@ -1,13 +1,9 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FScruiser.Models;
 
 namespace FScruiser.Models
 {
-    public class Tree_Ex :Tree, IHasTreeID
+    public class Tree_Ex : Tree, IHasTreeID
     {
         private static readonly string DEFAULT_GRADE = "00";
         private static readonly string DEFAULT_CLEAR_FACE = "";

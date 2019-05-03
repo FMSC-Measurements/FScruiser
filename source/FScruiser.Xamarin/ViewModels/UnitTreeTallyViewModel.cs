@@ -164,7 +164,7 @@ namespace FScruiser.XF.ViewModels
         public async Task TallyAsync(TallyPopulation pop)
         {
             // perform logic to determin if tally is a sample
-            var action = await TreeBasedTallyLogic.TallyAsync(UnitCode, pop, Datastore, SampleSelectorService, DialogService);//TODO async
+            var action = await TreeBasedTallyLogic.TallyAsync(UnitCode, pop, SampleSelectorService, DialogService);//TODO async
 
             // record action to the database,
             // database will assign tree a tree number if there is a tree

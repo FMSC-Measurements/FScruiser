@@ -1,10 +1,6 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static FScruiser.Constants;
 
 namespace FScruiser.Models
 {
@@ -27,8 +23,6 @@ namespace FScruiser.Models
             Species = tallyPopulation.Species ?? "";
             LiveDead = tallyPopulation.LiveDead ?? "";
         }
-
-        
 
         [Field(nameof(TallyLedgerID))]
         public string TallyLedgerID { get; set; }
@@ -62,8 +56,6 @@ namespace FScruiser.Models
 
         [Field(nameof(ThreePRandomValue))]
         public int ThreePRandomValue { get; set; }
-
-        
 
         [Field(nameof(CreatedBy))]
         public DateTime CreatedBy { get; set; }
