@@ -2,7 +2,6 @@
 using FScruiser.Services;
 using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
-using FScruiser.XF.Util;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
@@ -20,6 +19,13 @@ namespace FScruiser.XF.ViewModels
         private IEnumerable<Plot_Stratum> _stratumPlots;
         private Command<Plot_Stratum> _showLimitingDistanceCommand;
         private Command<Plot_Stratum> _toggleInCruiseCommand;
+        private IEnumerable<PlotError> _errorsAndWarnings;
+
+        public IEnumerable<PlotError> ErrorsAndWarnings
+        {
+            get => _errorsAndWarnings;
+            set => SetValue(ref _errorsAndWarnings, value);
+        }
 
         public Plot Plot
         {
@@ -27,7 +33,7 @@ namespace FScruiser.XF.ViewModels
             set
             {
                 var oldValue = _plot;
-                if(oldValue != null)
+                if (oldValue != null)
                 {
                     oldValue.PropertyChanged -= Plot_PropertyChanged;
                 }
@@ -35,14 +41,12 @@ namespace FScruiser.XF.ViewModels
                 SetValue(ref _plot, value);
                 RaisePropertyChanged(nameof(PlotNumber));
 
-                if(value != null)
+                if (value != null)
                 {
                     value.PropertyChanged += Plot_PropertyChanged;
                 }
             }
         }
-
-        
 
         public ICommand ShowLimitingDistanceCommand => _showLimitingDistanceCommand ?? (_showLimitingDistanceCommand = new Command<Plot_Stratum>(async x => await ShowLimitingDistanceCalculatorAsync(x)));
 
@@ -103,14 +107,13 @@ namespace FScruiser.XF.ViewModels
             set
             {
                 var oldValue = _stratumPlots;
-                if(oldValue != null)
+                if (oldValue != null)
                 {
-                    foreach(var sp in oldValue)
+                    foreach (var sp in oldValue)
                     {
                         sp.PropertyChanged -= StratumPlot_PropertyChanged;
                     }
                 }
-                
 
                 SetValue(ref _stratumPlots, value);
 
@@ -124,7 +127,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public ICuttingUnitDatastore Datastore { get; set; }
+        public IPlotDatastore Datastore { get; set; }
         public IDialogService DialogService { get; set; }
 
         public PlotEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
@@ -170,6 +173,8 @@ namespace FScruiser.XF.ViewModels
                     stratumPlot.InCruise = true;
                 }
             }
+
+            RefreshErrorsAndWarnings(Plot);
         }
 
         protected override void Refresh(INavigationParameters parameters)
@@ -193,13 +198,22 @@ namespace FScruiser.XF.ViewModels
 
             Plot = plot;
             StratumPlots = stratumPlots;
+
+            RefreshErrorsAndWarnings(plot);
+        }
+
+        protected void RefreshErrorsAndWarnings(Plot plot)
+        {
+            //todo use plot id instead
+            var errorsAndWarnings = Datastore.GetPlotErrors(plot.CuttingUnitCode, plot.PlotNumber);
+            ErrorsAndWarnings = errorsAndWarnings;
         }
 
         private void Plot_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             var plot = Plot;
 
-            switch(e.PropertyName)
+            switch (e.PropertyName)
             {
                 case nameof(Plot.Aspect):
                 case nameof(Plot.Slope):
@@ -222,6 +236,8 @@ namespace FScruiser.XF.ViewModels
                 {
                     Datastore.UpdatePlot_Stratum(stratumPlot);
                 }
+
+                RefreshErrorsAndWarnings(Plot);
             }
         }
 

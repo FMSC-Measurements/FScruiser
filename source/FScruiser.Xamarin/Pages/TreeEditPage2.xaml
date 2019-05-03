@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:converters="clr-namespace:FScruiser.XF.Converters"
              xmlns:effects="clr-namespace:Xamarin.Toolkit.Effects;assembly=Xamarin.Toolkit.Effects"
              x:Class="FScruiser.XF.Pages.TreeEditPage2"
              Title="{Binding TreeNumber, StringFormat='{}Tree Number {0}'}"
@@ -12,15 +11,6 @@
         <ToolbarItem Text="Logs"
                      Command="{Binding ShowLogsCommand}" />
     </ContentPage.ToolbarItems>
-
-    <ContentPage.Resources>
-        <converters:ErrorLevelToColorConverter x:Key="errorLevelToColorConverter"
-                                               Default="White"
-                                               Error="Red"
-                                               Warning="Gold" />
-
-
-    </ContentPage.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -116,8 +106,7 @@
                      VerticalOptions="End">
             <BindableLayout.ItemTemplate>
                 <DataTemplate>
-                    <Label Text="{Binding Message}"
-                           BackgroundColor="{Binding Level, Converter={StaticResource errorLevelToColorConverter}}" />
+                    <Label Style="{StaticResource errorWarningLabel}"/>
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </StackLayout>
