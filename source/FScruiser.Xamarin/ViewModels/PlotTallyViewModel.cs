@@ -192,7 +192,7 @@ namespace FScruiser.XF.ViewModels
 
             var nextTreeNumber = Datastore.GetNextPlotTreeNumber(UnitCode, pop.StratumCode, PlotNumber, IsRecon);
 
-            var tree = await PlotBasedTallyLogic.TallyAsync(pop, UnitCode, PlotNumber, sampleSelectorRepository, dialogService);//TODO async
+            var tree = await PlotBasedTallyLogic.TallyAsync(pop, UnitCode, PlotNumber, sampleSelectorRepository, dialogService);
             if(tree == null) { return; }
 
             tree.TreeNumber = nextTreeNumber;

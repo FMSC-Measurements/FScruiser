@@ -323,7 +323,6 @@ namespace FScruiser.Services
             public string Method { get; set; }
         }
 
-        //TODO: update this method
         public IEnumerable<TallyPopulation_Plot> GetPlotTallyPopulationsByUnitCode(string unitCode, int plotNumber)
         {
             var tallyPops = Database.Query<TallyPopulation_Plot>(
@@ -515,28 +514,20 @@ namespace FScruiser.Services
                 "SELECT " +
                 "te.TreeID, " +
                 "te.Field, " +
+                "te.Level, " +
                 "te.Message, " +
                 "te.Resolution " +
                 "FROM TreeError AS te " +
                 "JOIN Tree_V3 AS t USING (TreeID) " +
-                "LEFT JOIN TreeAuditResolution AS ter USING (TreeAuditRuleID, TreeID) " +
-                "WHERE t.CuttingUnitCode = @p1 AND PlotNumber IS NULL;",
-                new object[] { cuttingUnitCode });
+                "WHERE t.CuttingUnitCode = @p1;",
+                new object[] { cuttingUnitCode }).ToArray();
         }
 
-        public IEnumerable<TreeError> GetTreeErrorsByUnit(string cuttingUnitCode, int PlotNumber)
+        public IEnumerable<PlotError> GetPlotErrorsByUnit(string cuttingUnitCode)
         {
-            return Database.Query<TreeError>(
-                "SELECT " +
-                "te.TreeID, " +
-                "te.Field, " +
-                "te.Message, " +
-                "te.Resolution " +
-                "FROM TreeAuditError AS te " +
-                "JOIN Tree_V3 AS t USING (TreeID) " +
-                "LEFT JOIN TreeAuditResolution AS ter USING (TreeAuditRuleID, TreeID) " +
-                "WHERE t.CuttingUnitCode = @p1 AND PlotNumber = @plotNumber;",
-                new object[] { cuttingUnitCode, PlotNumber });
+            return Database.Query<PlotError>("SELECT * FROM PlotError AS pe " +
+                "WHERE pe.CuttingUnitCode = @p1;",
+                cuttingUnitCode).ToArray();
         }
 
         public IEnumerable<LogError> GetLogErrorsByLog(string logID)
@@ -596,10 +587,8 @@ namespace FScruiser.Services
 
         #region Tally Entry
 
-        public IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode)
-        {
-            return Database.Query<TallyEntry>(
-                "SELECT " +
+        const string QUERY_TALLYENTRY_BASE =
+            "SELECT " +
                     "tl.TreeID, " +
                     "tl.TallyLedgerID, " +
                     "tl.CuttingUnitCode, " +
@@ -619,7 +608,21 @@ namespace FScruiser.Services
                     "(SELECT count(*) FROM TreeError AS te WHERE tl.TreeID IS NOT NULL AND Level = 'E' AND te.TreeID = tl.TreeID AND Resolution IS NULL) AS ErrorCount, " +
                     "(SELECT count(*) FROM TreeError AS te WHERE tl.TreeID IS NOT NULL AND Level = 'W' AND te.TreeID = tl.TreeID AND Resolution IS NULL) AS WarningCount " +
                 "FROM TallyLedger AS tl " +
-                "LEFT JOIN Tree_V3 AS t USING (TreeID) " +
+                "LEFT JOIN Tree_V3 AS t USING (TreeID) ";
+
+        public TallyEntry GetTallyEntry(string tallyLedgerID)
+        {
+            return Database.Query<TallyEntry>(
+                QUERY_TALLYENTRY_BASE +
+                "WHERE tl.TallyLedgerID = @p1;",
+                new object[] { tallyLedgerID })
+                .FirstOrDefault();
+        }
+
+        public IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode)
+        {
+            return Database.Query<TallyEntry>(
+                QUERY_TALLYENTRY_BASE +
                 "WHERE tl.CuttingUnitCode = @p1 " +
                 "ORDER BY tl.CreatedDate DESC;",
                 new object[] { unitCode })
@@ -636,27 +639,10 @@ namespace FScruiser.Services
         public IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber)
         {
             return Database.Query<TallyEntry>(
-                "SELECT " +
-                    "TreeID, " +
-                    "TallyLedgerID, " +
-                    "CuttingUnitCode, " +
-                    "StratumCode, " +
-                    "SampleGroupCode, " +
-                    "Species, " +
-                    "LiveDead, " +
-                    "TreeCount, " +
-                    "Reason, " +
-                    "KPI, " +
-                    "EntryType, " +
-                    "Remarks, " +
-                    "Signature, " +
-                    "CreatedDate, " +
-                    "t.TreeNumber, " +
-                    "tl.STM " +
-                "FROM TallyLedger AS tl " +
-                "LEFT JOIN Tree_V3 USING (TreeID) " +
-                "WHERE tl.CuttingUnitCode = @p1;",
-                new object[] { unitCode })
+                QUERY_TALLYENTRY_BASE +
+                "WHERE tl.CuttingUnitCode = @p1" +
+                "AND tl.PolotNumber = @p2;",
+                new object[] { unitCode, plotNumber })
                 .ToArray();
 
             //return Database.From<TallyEntry>()

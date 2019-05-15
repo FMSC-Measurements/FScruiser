@@ -52,7 +52,7 @@ namespace FScruiser.Services
 
         IEnumerable<TreeError> GetTreeErrorsByUnit(string cuttingUnitCode);
 
-        IEnumerable<TreeError> GetTreeErrorsByUnit(string cuttingUnitCode, int PlotNumber);
+        IEnumerable<PlotError> GetPlotErrorsByUnit(string cuttingUnitCode);
 
         IEnumerable<LogError> GetLogErrorsByLog(string logID);
 
@@ -95,7 +95,7 @@ namespace FScruiser.Services
         #endregion logs
 
         #region Tally Entries
-
+        TallyEntry GetTallyEntry(string tallyLedgerID);
         IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
 
         IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber);

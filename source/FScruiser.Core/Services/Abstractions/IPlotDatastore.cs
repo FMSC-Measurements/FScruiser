@@ -86,6 +86,8 @@ namespace FScruiser.Services
 
         IEnumerable<PlotError> GetPlotErrors(string unit, int plotNumber);
 
+        IEnumerable<TreeError> GetTreeErrorsByPlot(string plotID);
+
         int GetNextPlotNumber(string unitCode);
 
         bool IsPlotNumberAvalible(string unitCode, int plotNumber);

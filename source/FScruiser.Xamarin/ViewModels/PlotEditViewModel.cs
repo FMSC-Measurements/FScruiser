@@ -204,8 +204,7 @@ namespace FScruiser.XF.ViewModels
 
         protected void RefreshErrorsAndWarnings(Plot plot)
         {
-            //todo use plot id instead
-            var errorsAndWarnings = Datastore.GetPlotErrors(plot.CuttingUnitCode, plot.PlotNumber);
+            var errorsAndWarnings = Datastore.GetPlotErrors(plot.PlotID);
             ErrorsAndWarnings = errorsAndWarnings;
         }
 

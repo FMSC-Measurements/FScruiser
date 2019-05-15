@@ -135,10 +135,6 @@ namespace FScruiser.Core.Test.Services
 
             var database = new DAL();
 
-            //HACK: in the current db version there is a foreign key constraint on the Tree view in TreeCalculated values
-            //will be removed but for now lets just drop the TCV table
-            //database.Execute("Drop table TreeCalculatedValues;");
-
             InitializeDatabase(database, units, strata, unit_strata, sampleGroups, species, tdvs, subPops);
 
             return database;
@@ -579,11 +575,7 @@ namespace FScruiser.Core.Test.Services
 
                 ValidateTallyEntry(entry, isSample);
 
-                var entryAgain = database.From<TallyEntry>()
-                    .LeftJoin("Tree_V3", "USING (TreeID)")
-                    .Where("TallyLedgerID = @p1")
-                    .Query(entry.TallyLedgerID)
-                    .FirstOrDefault();
+                var entryAgain = datastore.GetTallyEntry(entry.TallyLedgerID);
 
                 ValidateTallyEntry(entryAgain, isSample);
 

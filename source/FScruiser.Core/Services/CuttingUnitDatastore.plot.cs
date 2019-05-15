@@ -587,6 +587,22 @@ namespace FScruiser.Services
                 plotID).ToArray();
         }
 
+        public IEnumerable<TreeError> GetTreeErrorsByPlot(string plotID)
+        {
+            return Database.Query<TreeError>(
+                "SELECT " +
+                "te.TreeID, " +
+                "te.Field, " +
+                "te.Level, " +
+                "te.Message, " +
+                "te.Resolution " +
+                "FROM TreeError AS te " +
+                "JOIN Tree_V3 AS t USING (TreeID) " +
+                "JOIN Plot_V3 AS p USING (CuttingUnitCode, PlotNumber) " +
+                "WHERE p.PlotID = @p1;",
+                new object[] { plotID }).ToArray();
+        }
+
 
     }
 }
