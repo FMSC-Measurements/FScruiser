@@ -2,6 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:effects="clr-namespace:Xamarin.Toolkit.Effects;assembly=Xamarin.Toolkit.Effects"
+             xmlns:tk_converters="clr-namespace:Xamarin.Toolkit.Converters;assembly=Xamarin.Toolkit.Converters"
+             xmlns:widgiwhats="clr-namespace:Backpack.XF.WidgiWhats;assembly=Backpack.XF.WidgiWhats"
              x:Class="FScruiser.XF.Pages.TreeEditPage2"
              Title="{Binding TreeNumber, StringFormat='{}Tree Number {0}'}"
              BackgroundColor="White"
@@ -11,69 +13,104 @@
         <ToolbarItem Text="Logs"
                      Command="{Binding ShowLogsCommand}" />
     </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <tk_converters:BooleanToObjectConverter x:Key="hasErrorConverter"
+                                                x:TypeArguments="Color"
+                                                TrueObject="Red"
+                                                FalseObject="Transparent" />
+    </ContentPage.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Grid.Resources>
+        <FlexLayout Grid.Row="0"
+                    Wrap="Wrap"
+                    AlignContent="Start"
+                    JustifyContent="SpaceAround"
+                    HeightRequest="80">
+            <FlexLayout.Resources>
                 <Style TargetType="Label">
                     <Setter Property="VerticalTextAlignment"
                             Value="Center" />
                     <Setter Property="HorizontalTextAlignment"
                             Value="End" />
                 </Style>
-            </Grid.Resources>
+                <Style TargetType="Picker">
+                    <Setter Property="WidthRequest"
+                            Value="50" />
+                </Style>
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="40" />
-                <RowDefinition Height="40" />
-            </Grid.RowDefinitions>
+                <Style TargetType="StackLayout">
+                    <Setter Property="HeightRequest"
+                            Value="40" />
+                    <Setter Property="Margin"
+                            Value="7,0,0,3" />
+                </Style>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
+                <Style TargetType="Entry">
+                    <Setter Property="WidthRequest"
+                            Value="50" />
+                </Style>
+            </FlexLayout.Resources>
 
-            <Label Grid.Row="0"
-                   Grid.Column="0"
-                   Text="Tree #" />
-            <Entry Grid.Row="0"
-                   Grid.Column="1"
-                   x:Name="_treeNumberEntry">
-                <Entry.Effects>
-                    <effects:EntrySelectAllText />
-                </Entry.Effects>
-            </Entry>
+            <StackLayout Orientation="Horizontal">
 
-            <Label Grid.Row="0"
-                   Grid.Column="2"
-                   Text="Stratum" />
-            <Picker Grid.Row="0"
-                    Grid.Column="3"
-                    ItemsSource="{Binding StratumCodes}"
-                    SelectedItem="{Binding StratumCode}" />
+                <Label Text="Tree #" />
+                <Entry x:Name="_treeNumberEntry">
+                    <Entry.Effects>
+                        <effects:EntrySelectAllText />
+                    </Entry.Effects>
+                </Entry>
 
-            <Label Grid.Row="1"
-                   Grid.Column="0"
-                   Text="Sample Group" />
-            <Picker Grid.Row="1"
-                    Grid.Column="1"
-                    ItemsSource="{Binding SampleGroupCodes}"
-                    SelectedItem="{Binding SampleGroupCode}" />
+            </StackLayout>
 
-            <Label Grid.Row="1"
-                   Grid.Column="2"
-                   Text="Species - LiveDead" />
-            <Picker Grid.Row="1"
-                    Grid.Column="3"
-                    ItemsSource="{Binding SubPopulations}"
-                    SelectedItem="{Binding SubPopulation}" />
-        </Grid>
+            <StackLayout Orientation="Horizontal">
+
+                <Label Text="Stratum" />
+                <widgiwhats:ValuePicker x:Name="_stratumCodeEntry"
+                                        SelectedValue="{Binding StratumCode}"
+                                        ValueSource="{Binding StratumCodes}">
+                </widgiwhats:ValuePicker>
+
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal"
+                         BackgroundColor="{Binding HasSampleGroupError, Converter={StaticResource hasErrorConverter}}">
+
+                <Label Text="Sample Group" />
+                <widgiwhats:ValuePicker x:Name="_sampleGroupEntry"
+                                        SelectedValue="{Binding SampleGroupCode}"
+                                        ValueSource="{Binding SampleGroupCodes}">
+                </widgiwhats:ValuePicker>
+
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal"
+                         BackgroundColor="{Binding HasSpeciesError, Converter={StaticResource hasErrorConverter}}">
+
+                <Label Text="Species" />
+                <widgiwhats:ValuePicker x:Name="_speciesEntry"
+                                        SelectedValue="{Binding Species}"
+                                        ValueSource="{Binding SpeciesOptions}">
+                </widgiwhats:ValuePicker>
+
+            </StackLayout>
+
+            <StackLayout Orientation="Horizontal">
+
+                <Label Text="Live/Dead" />
+                <Entry x:Name="_liveDeadEntry"
+                       Text="{Binding LiveDead}">
+                    <Entry.GestureRecognizers>
+                        <TapGestureRecognizer x:Name="_liveDeadTapped" />
+                    </Entry.GestureRecognizers>
+                </Entry>
+
+            </StackLayout>
+
+        </FlexLayout>
 
         <ScrollView x:Name="_editViewsHost"
                     Grid.Row="1"
@@ -106,7 +143,7 @@
                      VerticalOptions="End">
             <BindableLayout.ItemTemplate>
                 <DataTemplate>
-                    <Label Style="{StaticResource errorWarningLabel}"/>
+                    <Label Style="{StaticResource errorWarningLabel}" />
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </StackLayout>

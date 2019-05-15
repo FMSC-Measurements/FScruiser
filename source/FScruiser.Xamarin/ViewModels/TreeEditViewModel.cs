@@ -13,10 +13,16 @@ using Xamarin.Forms;
 
 namespace FScruiser.XF.ViewModels
 {
+    //TODO the validation of species and sample group could use some improvement
+    // rightnow it is done when saving the tree. It is important that we validate sampleGroup before saving,
+    // because we do want to prevent saving a tree that is going to throw a database exception
+    // but validation requires that the sampleGroup options be updated before.
+    // Currently this is done but not in a very elegant way.
+    // also it would be nice if the view model had a Errors property that exposed a observable dictionary
+    // which exposed all the errors rather than having properties to indecated if a property had an error
+
     public class TreeEditViewModel : ViewModelBase
     {
-
-        private bool _suspendSave;
         private Command _showLogsCommand;
         private IEnumerable<string> _stratumCodes;
         private IEnumerable<string> _sampleGroupCodes;
@@ -24,7 +30,8 @@ namespace FScruiser.XF.ViewModels
         private IEnumerable<TreeError> _errorsAndWarnings;
         private IEnumerable<TreeFieldValue> _treeFieldValues;
         private Tree _tree;
-        private TreeValidator _treeValidator = new TreeValidator();
+        private bool _hasSampleGroupError;
+        private bool _hasSpeciesError;
 
         protected ICuttingUnitDatastore Datastore { get; set; }
         protected IDialogService DialogService { get; set; }
@@ -36,6 +43,8 @@ namespace FScruiser.XF.ViewModels
             get => _errorsAndWarnings;
             set => SetValue(ref _errorsAndWarnings, value);
         }
+
+        public IDictionary<string, string> Errors { get; set; }
 
         public IEnumerable<TreeFieldValue> TreeFieldValues
         {
@@ -52,9 +61,15 @@ namespace FScruiser.XF.ViewModels
                 RaisePropertyChanged(nameof(TreeNumber));
                 RaisePropertyChanged(nameof(StratumCode));
                 RaisePropertyChanged(nameof(SampleGroupCode));
-                RaisePropertyChanged(nameof(SubPopulation));
+                //RaisePropertyChanged(nameof(SubPopulation));
+                RaisePropertyChanged(nameof(Species));
+                RaisePropertyChanged(nameof(LiveDead));
             }
         }
+
+        public bool HasSampleGroupError { get => _hasSampleGroupError; set => SetValue(ref _hasSampleGroupError, value); }
+
+        public bool HasSpeciesError { get => _hasSpeciesError; set => SetValue(ref _hasSpeciesError, value); }
 
         #region TreeNumber
 
@@ -84,9 +99,7 @@ namespace FScruiser.XF.ViewModels
 
         private bool OnTreeNumberChanging(Tree tree, int oldValue, int newValue)
         {
-            if(oldValue == newValue) { return false; }
-
-
+            if (oldValue == newValue) { return false; }
 
             if (Datastore.IsTreeNumberAvalible(tree.CuttingUnitCode, newValue, tree.PlotNumber))
             {
@@ -133,20 +146,14 @@ namespace FScruiser.XF.ViewModels
             //{
             //    Tree.SampleGroupCode = "";
             //}
-            try
-            {
-                _suspendSave = true;
-                tree.SampleGroupCode = null;
-            }
-            finally
-            { _suspendSave = false; }
 
-            SaveTree(tree);
-
-            RefreshErrorsAndWarnings(tree);
+            
             RefreshSampleGroups(tree);
             RefreshSubPopulations(tree);
             RefreshTreeFieldValues(tree);
+            RefreshErrorsAndWarnings(tree);
+
+            SaveTree(tree);
         }
 
         private bool OnStratumChanging(string oldValue, string newStratum)
@@ -182,7 +189,10 @@ namespace FScruiser.XF.ViewModels
 
         public IEnumerable<string> SampleGroupCodes
         {
-            get { return _sampleGroupCodes; }
+            get
+            {
+                return _sampleGroupCodes;
+            }
             set
             {
                 SetValue(ref _sampleGroupCodes, value);
@@ -195,7 +205,7 @@ namespace FScruiser.XF.ViewModels
             set
             {
                 var tree = Tree;
-                if(tree == null) { return; }
+                if (tree == null) { return; }
                 var oldValue = tree.SampleGroupCode;
                 if (OnSampleGroupChanging(oldValue, value))
                 {
@@ -205,30 +215,34 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
+        protected bool ValidateSampleGroupCode(string sgCode)
+        {
+            if (SampleGroupCodes == null || SampleGroupCodes.Contains(sgCode))
+            {
+                HasSampleGroupError = false;
+                return true;
+            }
+            else
+            {
+                HasSampleGroupError = true;
+                return false;
+            }
+        }
+
         private void OnSampleGroupChanged(Tree tree, string oldValue, string newValue)
         {
             //Dataservice.LogMessage($"Tree SampleGroupCanged, Tree_GUID:{Tree.Tree_GUID}, OldSG:{oldValue}, NewSG:{newValue}", "high");
 
-            try
-            {
-                _suspendSave = true;
-                tree.Species = null;
-                tree.LiveDead = null;
-            }
-            finally
-            {
-                _suspendSave = false;
-            }
-            SaveTree(tree);
-
             RefreshErrorsAndWarnings(tree);
             RefreshSubPopulations(tree);
+
+            SaveTree(tree);
         }
 
         private bool OnSampleGroupChanging(string oldValue, string newSG)
         {
             if (string.IsNullOrWhiteSpace(newSG)) { return false; }
-            if(oldValue == newSG) { return false; }
+            if (oldValue == newSG) { return false; }
             if (string.IsNullOrWhiteSpace(oldValue)) { return true; }
             else
             {
@@ -248,56 +262,140 @@ namespace FScruiser.XF.ViewModels
 
         #endregion SampleGroup
 
-        #region SubPopulation
+        //#region SubPopulation
 
-        public IEnumerable<SubPopulation> SubPopulations
+        protected IEnumerable<SubPopulation> SubPopulations
         {
             get => _subPopulations;
             set
             {
                 SetValue(ref _subPopulations, value);
-                RaisePropertyChanged(nameof(SubPopulation));
+                //RaisePropertyChanged(nameof(SubPopulation));
+                RaisePropertyChanged(nameof(SpeciesOptions));
             }
         }
 
-        public SubPopulation SubPopulation
+        //public SubPopulation SubPopulation
+        //{
+        //    get
+        //    {
+        //        var tree = Tree;
+        //        if(tree == null) { return null; }
+
+        //        return SubPopulations.OrEmpty()
+        //        .Where(x => x.Species == tree.Species && x.LiveDead == tree.LiveDead)
+        //        .FirstOrDefault();
+        //    }
+
+        //    set
+        //    {
+        //        var tree = Tree;
+        //        if(tree == null) { return; }
+
+        //        if (value != null)
+        //        {
+        //            tree.Species = value.Species;
+        //            tree.LiveDead = value.LiveDead;
+        //        }
+        //        else
+        //        {
+        //            tree.Species = null;
+        //            tree.LiveDead = null;
+        //        }
+        //        OnSubPopulationChanged(tree);
+        //    }
+        //}
+
+        //protected void OnSubPopulationChanged(Tree tree)
+        //{
+        //    SaveTree(tree);
+        //    RefreshErrorsAndWarnings(tree);
+        //}
+
+        //#endregion SubPopulation
+
+        #region Species
+
+        public IEnumerable<string> SpeciesOptions
         {
             get
             {
                 var tree = Tree;
-                if(tree == null) { return null; }
 
-                return SubPopulations.OrEmpty()
-                .Where(x => x.Species == tree.Species && x.LiveDead == tree.LiveDead)
-                .FirstOrDefault();
-            }
-
-            set
-            {
-                var tree = Tree;
-                if(tree == null) { return; }
-
-                if (value != null)
-                {
-                    tree.Species = value.Species;
-                    tree.LiveDead = value.LiveDead;
-                }
-                else
-                {
-                    tree.Species = null;
-                    tree.LiveDead = null;
-                }
-                OnSubPopulationChanged(tree);
+                return _subPopulations.OrEmpty()
+                  .Select(x => x.Species)
+                  .ToArray();
             }
         }
 
-        protected void OnSubPopulationChanged(Tree tree)
+        public string Species
+        {
+            get => Tree?.Species;
+            set
+            {
+                var tree = Tree;
+                if (tree == null) { return; }
+                var oldValue = tree.Species;
+                if (OnSpeciesChanging(oldValue, value))
+                {
+                    tree.Species = value;
+                    OnSpeciesChanged(tree, value);
+                }
+            }
+        }
+
+        protected bool ValidateSpecies(string value)
+        {
+            if (SpeciesOptions == null || SpeciesOptions.Contains(value))
+            {
+                HasSpeciesError = false;
+                return true;
+            }
+            else
+            {
+                HasSpeciesError = true;
+                return false;
+            }
+        }
+
+        private void OnSpeciesChanged(Tree tree, string value)
+        {
+            RefreshErrorsAndWarnings(tree);
+
+            SaveTree(tree);
+        }
+
+        private bool OnSpeciesChanging(string oldValue, string value)
+        {
+            return true;
+        }
+
+        #endregion Species
+
+        #region LiveDead
+
+        public IEnumerable<string> LiveDeadOptions => new string[] { "L", "D" };
+
+        public string LiveDead
+        {
+            get => Tree?.LiveDead;
+            set
+            {
+                var tree = Tree;
+                if (tree == null) { return; }
+                var oldValue = tree.LiveDead;
+                tree.LiveDead = value;
+                OnLiveDeadChanged(tree, oldValue);
+            }
+        }
+
+        private void OnLiveDeadChanged(Tree tree, object oldValue)
         {
             SaveTree(tree);
             RefreshErrorsAndWarnings(tree);
         }
 
-        #endregion SubPopulation
+        #endregion LiveDead
 
         public ICommand ShowLogsCommand => _showLogsCommand ?? (_showLogsCommand = new Command(ShowLogs));
 
@@ -401,10 +499,23 @@ namespace FScruiser.XF.ViewModels
 
         protected void SaveTree(Tree tree)
         {
-            if (_suspendSave) { return; }
+            HasSampleGroupError = false;
+            HasSpeciesError = false;
+
             if (tree != null)
             {
-                Datastore.UpdateTree(tree);
+                if (ValidateSampleGroupCode(tree.SampleGroupCode)
+                    && ValidateSpecies(tree.Species))
+                {
+                    try
+                    {
+                        Datastore.UpdateTree(tree);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO notify error to view
+                    }
+                }
             }
         }
 

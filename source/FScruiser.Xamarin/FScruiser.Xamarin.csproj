@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="Backpack.XF.Converters" Version="1.0.1.2" />
+    <PackageReference Include="Backpack.XF.WidgiWhats" Version="1.0.2" />
     <PackageReference Include="DLToolkit.Forms.Controls.FlowListView" Version="2.0.10" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="1.13.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.13.0" />
