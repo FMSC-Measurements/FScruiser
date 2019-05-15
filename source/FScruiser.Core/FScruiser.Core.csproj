@@ -3,24 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>FScruiser</RootNamespace>
-    <Version>0.10</Version>
+    <Version>$(FScruiserVersion)</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Util\DatabaseUpdater.cs~" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CruiseDAL.Core" Version="3.0.0.12" />
     <PackageReference Include="FMSC.Sampling" Version="1.1.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>
