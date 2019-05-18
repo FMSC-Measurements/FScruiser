@@ -15,6 +15,30 @@ namespace FScruiser.XF.Pages
         public FixCntTallyPage()
         {
             InitializeComponent();
+
+            var viewMode = new ViewModels.FixCNTViewModel()
+            {
+                
+                TallyPopulations = new Models.FixCntTallyPopulation[]
+                {
+                    new Models.FixCntTallyPopulation
+                    {
+                        FieldName = "DBH",
+                        Buckets = new List<Models.FixCNTTallyBucket>()
+                        {
+                            new Models.FixCNTTallyBucket { Value = 1.0 },
+                            new Models.FixCNTTallyBucket { Value = 2.0 },
+                            new Models.FixCNTTallyBucket { Value = 3.0 },
+                            new Models.FixCNTTallyBucket { Value = 4.0 },
+                            new Models.FixCNTTallyBucket { Value = 5.0 },
+                        }
+                    },
+                }
+            };
+
+            BindingContext = viewMode;
+
         }
+
     }
 }

@@ -14,8 +14,8 @@ namespace FScruiser.Models
         [Field("StratumCode")]
         public string StratumCode { get; set; }
 
-        [Field("SGCode")]
-        public string SGCode { get; set; }
+        [Field("SampleGroupCode")]
+        public string SampleGroupCode { get; set; }
 
         [Field("Species")]
         public string Species { get; set; }

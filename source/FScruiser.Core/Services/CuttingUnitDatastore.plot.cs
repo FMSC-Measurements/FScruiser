@@ -428,7 +428,7 @@ namespace FScruiser.Services
             string stratumCode, string sgCode, string species, string liveDead,
             string fieldName, double value, int treeCount = 0)
         {
-            var tree_guid = Guid.NewGuid().ToString();
+            var treeID = Guid.NewGuid().ToString();
 
             var fieldNameStr = fieldName.ToString();
 
@@ -457,10 +457,11 @@ namespace FScruiser.Services
                     "'M'" +
                 ");" + //countMeasure
 
-                "INSERT INTO TreeMeasurment (" +
-                $"({fieldNameStr}) VALUES (@value);" +
+                "INSERT INTO TreeMeasurment " +
+                $"(TreeID, {fieldNameStr}) VALUES (@TreeID, @value);" +
 
-                "INSERT INTO TallyLedger (" +
+                "INSERT INTO TallyLedger ( " +
+                    "TallyLedgerID, " +
                     "TreeID, " +
                     "CuttingUnitCode, " +
                     "PlotNumber, " +
@@ -469,7 +470,8 @@ namespace FScruiser.Services
                     "Species, " +
                     "LiveDead, " +
                     "TreeCount" +
-                ") VALUES (" +
+                ") VALUES ( " +
+                    "@TallyLedgerID, " +
                     "@TreeID, " +
                     "@CuttingUnitCode, " +
                     "@PlotNumber, " +
@@ -482,18 +484,20 @@ namespace FScruiser.Services
                 ,
                 new
                 {
-                    TreeID = tree_guid,
+                    TreeID = treeID,
+                    TallyLedgerID = treeID,
                     CuttingUnitCode = unitCode,
                     PlotNumber = plotNumber,
                     StratumCode = stratumCode,
                     SampleGroupCode = sgCode,
                     Species = species,
                     LiveDead = liveDead,
-                    TreeCount = treeCount
+                    TreeCount = treeCount,
+                    value,
                 }
             );
 
-            var tree = QueryTree_Base().Where("TreeID = @p1").Query(tree_guid).First();
+            var tree = QueryTree_Base().Where("TreeID = @p1").Query(treeID).First();
             return tree;
         }
 
@@ -512,7 +516,7 @@ namespace FScruiser.Services
                 $"WHERE tm.{fieldNameStr} = @p1 " +
                     "AND t.PlotNumber = @p2 " +
                     "AND t.CuttingUnitCode = @p3 " +
-                    "AND t.StratumCode = @p4" +
+                    "AND t.StratumCode = @p4 " +
                     "AND t.SampleGroupCode = @p5 " +
                     "AND ifnull(t.Species, '') = ifnull(@p6, '') " +
                     "AND ifnull(t.LiveDead, '') = ifnull(@p7, '') " +
@@ -537,8 +541,8 @@ namespace FScruiser.Services
                     "Min, " +
                     "Max, " +
                     "IntervalSize " +
-                "FROM FixCNTTallyPopulation AF ftp " +
-                "JOIN FixCNTTallyClass AS tc USING (StratumCode) " +
+                "FROM FixCNTTallyPopulation_V3 AS ftp " +
+                "JOIN FixCNTTallyClass_V3 AS tc USING (StratumCode) " +
                 "WHERE StratumCode = @p1;",
                 new object[] { stratumCode });
         }
