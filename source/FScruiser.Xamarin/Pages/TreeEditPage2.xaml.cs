@@ -12,11 +12,8 @@ namespace FScruiser.XF.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class TreeEditPage2 : ContentPage
     {
-        private Color _altRowColor;
 
         #region TreeNumber
-
-        private bool _treeNumberChanging = false;
 
         /// <summary>
         /// Identifies the <see cref="TreeNumber"/> bindable property.
@@ -36,15 +33,9 @@ namespace FScruiser.XF.Pages
         /// <param name="newValue">The new value of the <see cref="TreeNumber"/> property.</param>
         protected virtual void OnTreeNumberChanged(int? oldValue, int? newValue)
         {
-            _treeNumberChanging = true;
-            try
-            {
-                _treeNumberEntry.Text = newValue?.ToString();
-            }
-            finally
-            {
-                _treeNumberChanging = false;
-            }
+
+            _treeNumberEntry.Text = newValue?.ToString();
+
         }
 
         /// <summary>
@@ -99,7 +90,7 @@ namespace FScruiser.XF.Pages
         {
             InitializeComponent();
 
-            _altRowColor = (Color)App.Current.Resources["black_12"];
+            //_altRowColor = (Color)App.Current.Resources["black_12"];
             _treeNumberEntry.Completed += _treeNumberEntry_Completed;
             _treeNumberEntry.Keyboard = Keyboard.Numeric;
         }

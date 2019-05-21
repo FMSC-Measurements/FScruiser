@@ -511,7 +511,7 @@ namespace FScruiser.XF.ViewModels
                     {
                         Datastore.UpdateTree(tree);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         //TODO notify error to view
                     }

@@ -83,40 +83,5 @@ namespace FScruiser.Models
         private static readonly string DEFAULT_STM = "N";
         private static readonly string DEFAULT_COUNT_MEASURE = "C";
         private static readonly string DEFAULT_LIVE_DEAD = "L";
-
-        //[IgnoreField]
-        //protected bool HasError { get; set; }
-
-        //[IgnoreField]
-        //public bool HasFieldData
-        //{
-        //    get { return _hasFieldData; }
-        //    set
-        //    {
-        //        _hasFieldData = value;
-        //        NotifyPropertyChanged(nameof(HasFieldData));
-        //        NotifyPropertyChanged(nameof(TallyFeedStatus));
-        //    }
-        //}
-
-        //[IgnoreField]
-        //public string TallyFeedStatus
-        //{
-        //    get
-        //    {
-        //        if (HasErrors())
-        //        {
-        //            return "Error";
-        //        }
-        //        else if (HasFieldData == false)
-        //        {
-        //            return "NoData";
-        //        }
-        //        else
-        //        {
-        //            return "HasData";
-        //        }
-        //    }
-        //}
     }
 }

@@ -10,9 +10,6 @@ namespace FScruiser.Models
         private bool _inCruise;
         private bool _isEmpty;
         private int _kpi;
-        private string _remarks;
-        private double _slope;
-        private double _aspect;
 
         [Field("Plot_Stratum_CN")]
         public long? Plot_Stratum_CN { get; set; }
