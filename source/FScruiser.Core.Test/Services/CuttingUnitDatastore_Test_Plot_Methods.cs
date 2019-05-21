@@ -209,6 +209,33 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Fact]
+        public void CreateFixCNTTallyTree()
+        {
+            var unitCode = "u1";
+            var plotNumber = 1;
+            var stratumCode = "st1";
+            var sgCode = "sg1";
+            var species = "sp1";
+            var liveDead = "L";
+            var countMeasure = "C";
+            var treeCount = 1;
+            var fieldName = "DBH";
+
+            using (var database = CreateDatabase())
+            {
+
+                var datastore = new CuttingUnitDatastore(database);
+
+                database.Execute(
+                    $"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ({Guid.Empty.ToString()}, '{unitCode}', {plotNumber});" +
+                    $"INSERT INTO Plot_Stratum (CuttingUnitCode, PlotNumber, StratumCode) VALUES ('{unitCode}', {plotNumber}, '{stratumCode}');");
+
+                var tree = datastore.CreateFixCNTTallyTree(unitCode, plotNumber, stratumCode, sgCode, species, liveDead, fieldName, 1.0, treeCount);
+                tree.Should().NotBeNull();
+            }
+        }
+
+        [Fact]
         public void GetNextPlotNumber()
         {
             var unitCode = "u1";
@@ -964,10 +991,6 @@ namespace FScruiser.Core.Test.Services
         //        //firstResult.LiveDead.Should().Be(tdv.LiveDead);
         //    }
         //}
-
-        public void CreateFixCNTTallyTree()
-        {
-        }
 
         #endregion plot
     }
