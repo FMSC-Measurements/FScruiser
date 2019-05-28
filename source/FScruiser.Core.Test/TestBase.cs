@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using Xunit.Abstractions;
 
-namespace Xunit
+namespace FScruiser.Core.Test
 {
     public class TestBase
     {
