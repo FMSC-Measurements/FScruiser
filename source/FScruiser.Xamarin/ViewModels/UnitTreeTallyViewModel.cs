@@ -19,7 +19,8 @@ namespace FScruiser.XF.ViewModels
     {
         public static readonly string STRATUM_FILTER_ALL = "All";
 
-        private Dictionary<string, IEnumerable<TallyPopulation>> _tallies;
+        private IEnumerable<TallyPopulation> _tallies;
+        private IEnumerable<string> _stratumCodes;
         private string _selectedStratumCode = STRATUM_FILTER_ALL;
 
         private IList<TallyEntry> _tallyFeed;
@@ -32,7 +33,7 @@ namespace FScruiser.XF.ViewModels
             set { SetValue(ref _tallyFeed, value); }
         }
 
-        public Dictionary<string, IEnumerable<TallyPopulation>> Tallies
+        public IEnumerable<TallyPopulation> Tallies
         {
             get { return _tallies; }
             protected set
@@ -45,12 +46,8 @@ namespace FScruiser.XF.ViewModels
 
         public IEnumerable<string> StrataFilterOptions
         {
-            get
-            {
-                if (Tallies != null)
-                { return Tallies.Keys.AsEnumerable().Append(STRATUM_FILTER_ALL).ToArray(); }
-                else { return Enumerable.Empty<string>(); }
-            }
+            get => _stratumCodes;
+            set => SetValue(ref _stratumCodes, value);
         }
 
         public string SelectedStratumCode
@@ -67,14 +64,17 @@ namespace FScruiser.XF.ViewModels
         {
             get
             {
-                if (Tallies == null) { return Enumerable.Empty<TallyPopulation>(); }
-                if (SelectedStratumCode == STRATUM_FILTER_ALL)
+                var tallies = Tallies;
+                var selectedStratum = SelectedStratumCode;
+
+                if (tallies == null) { return Enumerable.Empty<TallyPopulation>(); }
+                if (selectedStratum == STRATUM_FILTER_ALL)
                 {
-                    return Tallies.Values.SelectMany(x => x).ToArray();
+                    return tallies;
                 }
                 else
                 {
-                    return Tallies[SelectedStratumCode];
+                    return tallies.Where(x => x.StratumCode == selectedStratum).ToArray();
                 }
             }
         }
@@ -87,6 +87,7 @@ namespace FScruiser.XF.ViewModels
         private ICommand _showTallyMenuCommand;
         private ICommand _stratumSelectedCommand;
         private ICommand _tallyCommand;
+        private ICommand _untallyCommand;
 
         public ICommand ShowTallyMenuCommand => _showTallyMenuCommand
             ?? (_showTallyMenuCommand = new Command<TallyPopulation>(ShowTallyMenu));
@@ -99,6 +100,9 @@ namespace FScruiser.XF.ViewModels
 
         public ICommand EditTreeCommand => _editTreeCommand
             ?? (_editTreeCommand = new Command<string>(EditTree));
+
+        public ICommand UntallyCommand => _untallyCommand
+            ?? (_untallyCommand = new Command<string>(Untally));
 
         #endregion Commands
 
@@ -122,37 +126,29 @@ namespace FScruiser.XF.ViewModels
             SoundService = soundService;
         }
 
-        public override void OnNavigatedTo(INavigationParameters parameters)
-        {
-            base.OnNavigatedTo(parameters);
-
-            MessagingCenter.Subscribe<object, string>(this, Messages.EDIT_TREE_CLICKED, (sender, treeID) => EditTree(treeID));
-            MessagingCenter.Subscribe<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, (sender, tallyEntry) => Untally(tallyEntry));
-        }
-
-        public override void OnNavigatedFrom(INavigationParameters parameters)
-        {
-            base.OnNavigatedFrom(parameters);
-
-            MessagingCenter.Unsubscribe<object>(this, Messages.EDIT_TREE_CLICKED);
-            MessagingCenter.Unsubscribe<object>(this, Messages.UNTALLY_CLICKED);
-        }
-
         protected override void Refresh(INavigationParameters parameters)
         {
             var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
 
             var datastore = Datastore;
 
-            var tallyLookup = datastore.GetTallyPopulationsByUnitCode(UnitCode)
-                .GroupBy(x => x.StratumCode)
-                .ToDictionary(x => x.Key, x => (IEnumerable<TallyPopulation>)x.ToArray());
-            Tallies = tallyLookup;
+            var tallyPopulations = datastore.GetTallyPopulationsByUnitCode(UnitCode);
+            var strata = tallyPopulations.Select(x => x.StratumCode)
+                .Distinct()
+                .Append(STRATUM_FILTER_ALL)
+                .ToArray();
+
+            if (strata.Count() > 2)
+            {
+                StrataFilterOptions = strata;
+            }
+            else
+            { StrataFilterOptions = new string[0]; }
+
+            Tallies = tallyPopulations;
 
             TallyFeed = datastore.GetTallyEntriesByUnitCode(UnitCode).Reverse().ToObservableCollection();
         }
-
-       
 
         private void ShowTallyMenu(TallyPopulation obj)
         {
@@ -162,13 +158,13 @@ namespace FScruiser.XF.ViewModels
 
         public void EditTree(string treeID)
         {
-            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { NavParams.TreeID, treeID } }, useModalNavigation: true);
+            NavigationService.NavigateAsync("Tree", new NavigationParameters() { { NavParams.TreeID, treeID } });
         }
 
         public async Task TallyAsync(TallyPopulation pop)
         {
             // perform logic to determin if tally is a sample
-            var action = await TreeBasedTallyLogic.TallyAsync(UnitCode, pop, Datastore, SampleSelectorService, DialogService);//TODO async
+            var action = await TreeBasedTallyLogic.TallyAsync(UnitCode, pop, SampleSelectorService, DialogService);
 
             // record action to the database,
             // database will assign tree a tree number if there is a tree
@@ -192,18 +188,18 @@ namespace FScruiser.XF.ViewModels
             population.TreeCount = population.TreeCount + action.TreeCount;
             population.SumKPI = population.SumKPI + action.KPI;
 
-            SoundService.SignalTally();
+            await SoundService.SignalTallyAsync();
             if (action.IsSample)
             {
                 var method = population.Method;
 
                 if (action.IsInsuranceSample)
                 {
-                    SoundService.SignalInsuranceTree();
+                    await SoundService.SignalInsuranceTreeAsync();
                 }
                 else
                 {
-                    SoundService.SignalMeasureTree();
+                    await SoundService.SignalMeasureTreeAsync();
                 }
 
                 if (TallySettings.EnableCruiserPopup)
@@ -214,7 +210,7 @@ namespace FScruiser.XF.ViewModels
                         Datastore.UpdateTreeInitials(entry.TreeID, cruiser);
                     }
                 }
-                else if(method != CruiseMethods.H_PCT)
+                else if (method != CruiseMethods.H_PCT)
                 {
                     var sampleType = (action.IsInsuranceSample) ? "Insurance Tree" : "Measure Tree";
                     await DialogService.ShowMessageAsync("Tree #" + entry.TreeNumber.ToString(), sampleType);
@@ -232,10 +228,18 @@ namespace FScruiser.XF.ViewModels
             TallyEntryAdded?.Invoke(this, null);
         }
 
-        public void Untally(TallyEntry entry)
+        public void Untally(string tallyLedgerID)
         {
-            Datastore.DeleteTallyEntry(entry.TallyLedgerID);
-            TallyFeed.Remove(entry);
+            Datastore.DeleteTallyEntry(tallyLedgerID);
+
+            var tallyEntry = TallyFeed.First(x => x.TallyLedgerID == tallyLedgerID);
+            var tallyPopulation = Tallies.First(x => x.StratumCode == tallyEntry.StratumCode
+            && x.SampleGroupCode == tallyEntry.SampleGroupCode
+            && x.Species == tallyEntry.Species
+            && x.LiveDead == tallyEntry.LiveDead);
+
+            tallyPopulation.TreeCount -= tallyEntry.TreeCount;
+            TallyFeed.Remove(TallyFeed.First(x => x.TallyLedgerID == tallyLedgerID));
         }
 
         public void SetStratumFilter(string code)

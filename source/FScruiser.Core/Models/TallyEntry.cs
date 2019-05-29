@@ -1,12 +1,10 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using FScruiser.Models;
 
 namespace FScruiser.Models
 {
     [EntitySource("TallyLedger")]
-    public class TallyEntry
+    public class TallyEntry : IHasTreeID
     {
         public TallyEntry()
         { }
@@ -34,6 +32,12 @@ namespace FScruiser.Models
         [Field("SampleGroupCode")]
         public string SampleGroupCode { get; set; }
 
+        [Field("ErrorCount")]
+        public int ErrorCount { get; set; }
+
+        [Field("WarningCount")]
+        public int WarningCount { get; set; }
+
         [Field("Species")]
         public string Species { get; set; }
 
@@ -57,6 +61,5 @@ namespace FScruiser.Models
 
         [Field("TallyLedgerID")]
         public string TallyLedgerID { get; set; }
-
     }
 }

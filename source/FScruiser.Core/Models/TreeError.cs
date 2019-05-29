@@ -1,25 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Models;
 
 namespace FScruiser.Models
 {
-    public class TreeError
+    public class TreeError : Error_Base, IHasTreeID
     {
+        [Field("TreeID")]
         public string TreeID { get; set; }
 
+        [Field("TreeAuditRuleID")]
         public string TreeAuditRuleID { get; set; }
-
-        public string ErrorCode { get; set; }
-
-        public string Message { get; set; }
-
-        public string Field { get; set; }
-
-        public string Resolution { get; set; }
-
-        public string ResolutionInitials { get; set; }
     }
 }

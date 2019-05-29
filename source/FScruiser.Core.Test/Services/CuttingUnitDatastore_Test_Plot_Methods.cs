@@ -132,10 +132,6 @@ namespace FScruiser.Core.Test.Services
 
             var database = new DAL();
 
-            //HACK: in the current db version there is a foreign key constraint on the Tree view in TreeCalculated values
-            //will be removed but for now lets just drop the TCV table
-            //database.Execute("Drop table TreeCalculatedValues;");
-
             InitializeDatabase(database, units, strata, unit_strata, sampleGroups, species, tdvs, subPops);
 
             return database;
@@ -157,7 +153,7 @@ namespace FScruiser.Core.Test.Services
 
                 plotID.Should().NotBeNullOrEmpty();
 
-                
+
 
                 var plot1 = datastore.GetPlot(plotID);
 
@@ -169,7 +165,7 @@ namespace FScruiser.Core.Test.Services
 
                 plotID2.Should().NotBeNullOrEmpty();
 
-                
+
             }
         }
 
@@ -209,6 +205,33 @@ namespace FScruiser.Core.Test.Services
                 tree.LiveDead.Should().Be(liveDead);
                 tree.CountOrMeasure.Should().Be(countMeasure);
                 //tree.TreeCount.Should().Be(treeCount);
+            }
+        }
+
+        [Fact]
+        public void CreateFixCNTTallyTree()
+        {
+            var unitCode = "u1";
+            var plotNumber = 1;
+            var stratumCode = "st1";
+            var sgCode = "sg1";
+            var species = "sp1";
+            var liveDead = "L";
+            var countMeasure = "C";
+            var treeCount = 1;
+            var fieldName = "DBH";
+
+            using (var database = CreateDatabase())
+            {
+
+                var datastore = new CuttingUnitDatastore(database);
+
+                database.Execute(
+                    $"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ({Guid.Empty.ToString()}, '{unitCode}', {plotNumber});" +
+                    $"INSERT INTO Plot_Stratum (CuttingUnitCode, PlotNumber, StratumCode) VALUES ('{unitCode}', {plotNumber}, '{stratumCode}');");
+
+                var tree = datastore.CreateFixCNTTallyTree(unitCode, plotNumber, stratumCode, sgCode, species, liveDead, fieldName, 1.0, treeCount);
+                tree.Should().NotBeNull();
             }
         }
 
@@ -329,7 +352,7 @@ namespace FScruiser.Core.Test.Services
 
                 foreach (var st in strata)
                 {
-                    if(st[0] == "st3") { continue; }
+                    if (st[0] == "st3") { continue; }
 
                     database.Execute($"INSERT INTO Plot_Stratum (CuttingUnitCode, PlotNumber, StratumCode) VALUES " +
                         $"('{units[0]}', {plotNumber}, '{st[0]}');");
@@ -457,6 +480,51 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Fact]
+        public void UpdatePlot()
+        {
+            var random = new Bogus.Randomizer();
+            var unitCode = "u1";
+            var stratumCode = "st1";
+            var plotNumber = 1;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var stratumPlot = new Plot_Stratum()
+                {
+                    CuttingUnitCode = unitCode,
+                    PlotNumber = plotNumber,
+                    StratumCode = stratumCode,
+                    IsEmpty = false,
+                };
+
+                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES " +
+                    $"('plotID1', '{unitCode}', {plotNumber})");
+
+                var plot = datastore.GetPlot(unitCode, plotNumber);
+
+                var slope = random.Double();
+                plot.Slope = slope;
+
+                var aspect = random.Double();
+                plot.Aspect = aspect;
+
+
+                var remarks = random.String(24);
+                plot.Remarks = remarks;
+
+                datastore.UpdatePlot(plot);
+
+                var plotAgain = datastore.GetPlot(unitCode, plotNumber);
+
+                plotAgain.Slope.Should().Be(slope);
+                plotAgain.Aspect.Should().Be(aspect);
+                plotAgain.Remarks.Should().Be(remarks);
+            }
+        }
+
+        [Fact]
         public void UpdatePlot_Stratum()
         {
             var unitCode = "u1";
@@ -568,7 +636,7 @@ namespace FScruiser.Core.Test.Services
                     //it should return one tally pop per sample group in the unit, that is associated with a FIX or PNT stratum
                     var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
 
-                    if(tallyBySp == 0)
+                    if (tallyBySp == 0)
                     {
                         unit3tallyPops.Should().HaveCount(1);
 
@@ -582,7 +650,7 @@ namespace FScruiser.Core.Test.Services
                     {
                         unit3tallyPops.Should().HaveCount(2);
 
-                        foreach(var tp in unit3tallyPops)
+                        foreach (var tp in unit3tallyPops)
                         {
                             tp.Species.Should().NotBeNullOrWhiteSpace();
                             tp.LiveDead.Should().NotBeNullOrWhiteSpace();
@@ -923,10 +991,6 @@ namespace FScruiser.Core.Test.Services
         //        //firstResult.LiveDead.Should().Be(tdv.LiveDead);
         //    }
         //}
-
-        public void CreateFixCNTTallyTree()
-        {
-        }
 
         #endregion plot
     }

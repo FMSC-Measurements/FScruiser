@@ -1,9 +1,10 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Models;
 
 namespace FScruiser.Models
 {
     [EntitySource("Tree")]
-    public class TreeStub_Plot : TreeStub
+    public class TreeStub_Plot : TreeStub, IHasTreeID
     {
         [Field(Alias = "CuttingUnitCode", SQLExpression = "CuttingUnit.Code")]
         public string CuttingUnitCode { get; set; }

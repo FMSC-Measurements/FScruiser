@@ -1,11 +1,11 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
+using FScruiser.Models;
 using FScruiser.Util;
-using System;
 
 namespace FScruiser.Models
 {
     [EntitySource("Tree_V3")]
-    public class Tree : INPC_Base
+    public class Tree : INPC_Base, IHasTreeID
     {
         #region table fields
 
@@ -34,7 +34,7 @@ namespace FScruiser.Models
         }
 
         [Field("PlotNumber")]
-        public long? PlotNumber
+        public int? PlotNumber
         {
             get { return _plotNumber; }
             set { SetValue(ref _plotNumber, value); }
@@ -61,16 +61,12 @@ namespace FScruiser.Models
             set { SetValue(ref _countOrMeasure, value); }
         }
 
-        
-
         [Field(Name = "LiveDead")]
         public string LiveDead
         {
             get { return _liveDead; }
             set { SetValue(ref _liveDead, value); }
         }
-
-
 
         #endregion table fields
 
@@ -80,54 +76,12 @@ namespace FScruiser.Models
         private string _species;
         private string _countOrMeasure = DEFAULT_COUNT_MEASURE;
 
-        
         private string _liveDead = DEFAULT_LIVE_DEAD;
 
-        private string _remarks = "";
-
-        private string _createdBy;
-        private DateTime _createdDate;
-        private string _modifiedBy;
-        private string _modifiedDate;
-        private long? _plotNumber;
+        private int? _plotNumber;
         private string _unitCode;
         private static readonly string DEFAULT_STM = "N";
         private static readonly string DEFAULT_COUNT_MEASURE = "C";
         private static readonly string DEFAULT_LIVE_DEAD = "L";
-
-        //[IgnoreField]
-        //protected bool HasError { get; set; }
-
-        //[IgnoreField]
-        //public bool HasFieldData
-        //{
-        //    get { return _hasFieldData; }
-        //    set
-        //    {
-        //        _hasFieldData = value;
-        //        NotifyPropertyChanged(nameof(HasFieldData));
-        //        NotifyPropertyChanged(nameof(TallyFeedStatus));
-        //    }
-        //}
-
-        //[IgnoreField]
-        //public string TallyFeedStatus
-        //{
-        //    get
-        //    {
-        //        if (HasErrors())
-        //        {
-        //            return "Error";
-        //        }
-        //        else if (HasFieldData == false)
-        //        {
-        //            return "NoData";
-        //        }
-        //        else
-        //        {
-        //            return "HasData";
-        //        }
-        //    }
-        //}
     }
 }

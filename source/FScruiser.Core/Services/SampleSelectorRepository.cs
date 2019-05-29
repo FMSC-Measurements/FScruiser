@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FMSC.Sampling;
 using FScruiser.Logic;
+using FScruiser.Services;
 
 namespace FScruiser.Services
 {

@@ -1,14 +1,10 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FScruiser.Models;
 
 namespace FScruiser.Models
 {
     [EntitySource("Tree_V3")]
-    public class TreeStub
+    public class TreeStub : IHasTreeID
     {
         [Field("TreeID")]
         public string TreeID { get; set; }

@@ -11,141 +11,13 @@ using Xunit.Abstractions;
 
 namespace FScruiser.Core.Test.Services
 {
-    public class CuttingUnitDatastore_Test : TestBase
+    public class CuttingUnitDatastore_Test : Datastore_TestBase
     {
         public CuttingUnitDatastore_Test(ITestOutputHelper output) : base(output)
         {
         }
 
-        void InitializeDatabase(DAL database, string[] units, string[][] strata,
-    string[][] unit_strata, dynamic[] sampleGroups,
-    string[] species, string[][] tdvs, string[][] subPops)
-        {
-            //Cutting Units
-            foreach (var unit in units)
-            {
-                database.Execute(
-                    "INSERT INTO CuttingUnit (" +
-                    "Code" +
-                    ") VALUES " +
-                    $"('{unit}');");
-            }
-
-            //Strata
-            foreach (var st in strata)
-            {
-                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{st[0]}', '{st[1]}');");
-            }
-
-            //Unit - Strata
-            foreach (var cust in unit_strata)
-            {
-                database.Execute(
-                    "INSERT INTO CuttingUnit_Stratum " +
-                    "(CuttingUnitCode, StratumCode) " +
-                    "VALUES " +
-                    $"('{cust[0]}','{cust[1]}');");
-            }
-
-            //Sample Groups
-            foreach (var sg in sampleGroups)
-            {
-                database.Execute(
-                    "INSERT INTO SampleGroup_V3 (" +
-                    "StratumCode, " +
-                    "SampleGroupCode," +
-                    "SamplingFrequency, " +
-                    "TallyBySubPop " +
-                    ") VALUES " +
-                    $"('{sg.StCode}', '{sg.SgCode}', {sg.Freq}, {sg.TallyBySp}); ");
-            }
-
-
-            //TreeDefaults
-
-            foreach (var sp in species)
-            {
-                database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
-            }
-
-            foreach (var tdv in tdvs)
-            {
-                database.Execute(
-                    "INSERT INTO TreeDefaultValue (" +
-                    "Species, " +
-                    "LiveDead, " +
-                    "PrimaryProduct" +
-                    ") VALUES " +
-                    $"('{tdv[0]}', '{tdv[1]}', '{tdv[2]}');");
-            }
-
-            foreach (var sub in subPops)
-            {
-                database.Execute(
-                    "INSERT INTO SubPopulation (" +
-                    "StratumCode, " +
-                    "SampleGroupCode, " +
-                    "Species, " +
-                    "LiveDead)" +
-                    "VALUES " +
-                    $"('{sub[0]}', '{sub[1]}', '{sub[2]}', '{sub[3]}');");
-            }
-        }
-
-        private DAL CreateDatabase()
-        {
-            var units = new string[] { "u1", "u2" };
-            var strata = new string[][]
-            {
-                new string[] {"st1", "" },
-                new string[] {"st2", "" },
-            };
-            var unit_strata = new string[][]
-            {
-                new string[] {"u1", "st1" },
-                new string[] { "u1", "st2" },
-                new string[] { "u2", "st2" },
-            };
-
-            var sampleGroups = new[]
-            {
-                new{StCode = "st1", SgCode = "sg1", Freq = 101, TallyBySp = 1},
-                new{StCode = "st2", SgCode = "sg2", Freq = 101, TallyBySp = 0},
-            };
-
-            var species = new string[] { "sp1", "sp2", "sp3" };
-
-            var tdvs = new[]
-            {
-                // sp, L/D, Prod
-                new[] { "sp1", "L", "01" },
-                new[] { "sp1", "D", "01" },
-                new[] { "sp2", "L", "01" },
-                new[] { "sp3", "L", "01" },
-            };
-
-            var subPops = new string[][]
-            {
-                // st, sg, sp, ld
-                new[] { "st1", "sg1", "sp1", "L" },
-                new[] { "st1", "sg1", "sp2", "L" },
-                new[] { "st1", "sg1", "sp3", "L" },
-            };
-
-
-            var database = new DAL();
-
-            //HACK: in the current db version there is a foreign key constraint on the Tree view in TreeCalculated values
-            //will be removed but for now lets just drop the TCV table
-            //database.Execute("Drop table TreeCalculatedValues;");
-
-            InitializeDatabase(database, units, strata, unit_strata, sampleGroups, species, tdvs, subPops);
-
-            return database;
-        }
-
-
-
+        
         [Theory]
         [InlineData("u1", "st1", "st2")]
         [InlineData("u2", "st2")]
@@ -383,124 +255,12 @@ namespace FScruiser.Core.Test.Services
             result.Frequency.Should().BeGreaterThan(0);
         }
 
-        #region tree
-
-        [Theory]
-        [InlineData("u1", "st1", null, "", "", Skip = "sampleGroup is required now")]
-        [InlineData("u1", "st1", "sg1", "sp1", "L")]
-        public void GetTreeStub(string unitCode, string stratumCode, string sgCode, string species, string liveDead)
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var tree_GUID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead);
-
-                var tree = datastore.GetTreeStub(tree_GUID);
-                tree.Should().NotBeNull();
-
-                tree.TreeID.Should().Be(tree_GUID);
-                tree.StratumCode.Should().Be(stratumCode);
-                tree.SampleGroupCode.Should().Be(sgCode);
-                tree.Species.Should().Be(species);
-                //tree.CountOrMeasure.Should().Be(countMeasure);
-            }
-        }
-
-        [Fact]
-        public void CreateTree()
-        {
-            var unitCode = "u1";
-            var stratumCode = "st1";
-            var sgCode = "sg1";
-            var species = "sp1";
-            var liveDead = "L";
-            //var countMeasure = "C";
-            var treeCount = 1;
-
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var treeID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
-
-                var tree = datastore.GetTree(treeID);
-                tree.Should().NotBeNull();
-
-                //tree.CuttingUnit_CN.Should().Be(1);
-                tree.TreeID.Should().Be(treeID);
-                tree.StratumCode.Should().Be(stratumCode);
-                tree.SampleGroupCode.Should().Be(sgCode);
-                tree.Species.Should().Be(species);
-                tree.LiveDead.Should().Be(liveDead);
-                //tree.CountOrMeasure.Should().Be(countMeasure);
-                //tree.TreeCount.Should().Be(treeCount);
-            }
-        }
-
-        
-
-        [Fact]
-        public void UpdateTree()
-        {
-            var unitCode = "u1";
-            var stratumCode = "st1";
-            var sgCode = "sg1";
-            var species = "sp1";
-            var liveDead = "L";
-            var treeCount = 1;
-
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var tree_GUID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
-
-                var tree = datastore.GetTree(tree_GUID);
-                tree.Should().NotBeNull();
-
-                tree.DBH = 100;
-
-                datastore.UpdateTree(tree);
-
-                var treeAgain = datastore.GetTree(tree_GUID);
-
-                treeAgain.DBH.Should().Be(tree.DBH);
-            }
-        }
-
-        [Fact]
-        public void DeleteTree()
-        {
-            var unitCode = "u1";
-            var stratumCode = "st1";
-            var sgCode = "sg1";
-            var species = "sp1";
-            var liveDead = "L";
-            var treeCount = 1;
-
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var tree_GUID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
-
-                var tree = datastore.GetTree(tree_GUID);
-                tree.Should().NotBeNull();
-
-                datastore.DeleteTree(tree_GUID);
-
-                tree = datastore.GetTree(tree_GUID);
-                tree.Should().BeNull();
-            }
-        }
-
-        #endregion tree
+       
 
         #region tally entry
 
         [Fact]
-        public void GetTallyEntry()
+        public void GetTallyEntriesByUnitCode()
         {
             var unit = "u1";
             var stratum = "st1";
@@ -557,11 +317,7 @@ namespace FScruiser.Core.Test.Services
 
                 ValidateTallyEntry(entry, isSample);
 
-                var entryAgain = database.From<TallyEntry>()
-                    .LeftJoin("Tree_V3", "USING (TreeID)")
-                    .Where("TallyLedgerID = @p1")
-                    .Query(entry.TallyLedgerID)
-                    .FirstOrDefault();
+                var entryAgain = datastore.GetTallyEntry(entry.TallyLedgerID);
 
                 ValidateTallyEntry(entryAgain, isSample);
 
@@ -683,109 +439,6 @@ namespace FScruiser.Core.Test.Services
 
         #endregion tally entry
 
-        #region logs
 
-        [Fact]
-        public void InsertLog_test()
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var tree_guid = datastore.CreateMeasureTree("u1", "st1", "sg1");
-
-                var log = new Log() { TreeID = tree_guid };
-
-                var randomizer = new Randomizer(8675309);
-
-                log.BarkThickness = randomizer.Double();
-                log.BoardFootRemoved = randomizer.Double();
-                log.CubicFootRemoved = randomizer.Double();
-                log.DIBClass = randomizer.Double();
-                log.ExportGrade = randomizer.String();
-                log.Grade = randomizer.String();
-                log.GrossBoardFoot = randomizer.Double();
-                log.GrossCubicFoot = randomizer.Double();
-                log.LargeEndDiameter = randomizer.Double();
-                log.Length = randomizer.Int();
-                log.LogNumber = randomizer.Int();
-                //log.ModifiedBy = randomizer.String();
-                log.NetBoardFoot = randomizer.Double();
-                log.NetCubicFoot = randomizer.Double();
-                log.PercentRecoverable = randomizer.Double();
-                log.SeenDefect = randomizer.Double();
-                log.SmallEndDiameter = randomizer.Double();
-
-                datastore.InsertLog(log);
-
-                log.LogID.Should().NotBeNullOrWhiteSpace();
-                Guid.TryParse(log.LogID, out Guid log_guid).Should().BeTrue();
-                log_guid.Should().NotBe(Guid.Empty);
-            }
-        }
-
-        [Fact]
-        public void UpdateLog_test()
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var tree_guid = datastore.CreateMeasureTree("u1", "st1", "sg1");
-
-                var log = new Log() { TreeID = tree_guid, LogNumber = 1 };
-                datastore.InsertLog(log);
-
-                var randomizer = new Randomizer(8675309);
-
-                log.BarkThickness = randomizer.Double();
-                log.BoardFootRemoved = randomizer.Double();
-                log.CubicFootRemoved = randomizer.Double();
-                log.DIBClass = randomizer.Double();
-                log.ExportGrade = randomizer.String();
-                log.Grade = randomizer.String();
-                log.GrossBoardFoot = randomizer.Double();
-                log.GrossCubicFoot = randomizer.Double();
-                log.LargeEndDiameter = randomizer.Double();
-                log.Length = randomizer.Int();
-                log.LogNumber = randomizer.Int();
-                //log.ModifiedBy = randomizer.String(10);
-                log.NetBoardFoot = randomizer.Double();
-                log.NetCubicFoot = randomizer.Double();
-                log.PercentRecoverable = randomizer.Double();
-                log.SeenDefect = randomizer.Double();
-                log.SmallEndDiameter = randomizer.Double();
-
-                datastore.UpdateLog(log);
-
-                var logAgain = datastore.GetLog(log.LogID);
-
-                var eqivConfig = new EquivalencyAssertionOptions<Log>();
-                eqivConfig.Excluding(x => x.CreatedBy);
-
-                logAgain.Should().BeEquivalentTo(log, config: x => x.Excluding(l => l.CreatedBy));
-            }
-        }
-
-        [Fact]
-        public void DeleteLog_test()
-        {
-            using (var database = CreateDatabase())
-            {
-                var datastore = new CuttingUnitDatastore(database);
-
-                var treeID = datastore.CreateMeasureTree("u1", "st1", "sg1");
-
-                var log = new Log() { TreeID = treeID, LogNumber = 1 };
-                datastore.InsertLog(log);
-
-                datastore.DeleteLog(log.LogID);
-
-                var logAgain = datastore.GetLog(log.LogID);
-                logAgain.Should().BeNull();
-            }
-        }
-
-        #endregion logs
     }
 }

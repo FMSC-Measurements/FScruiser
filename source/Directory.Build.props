@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup Label="Build Config">
+    <VersionSuffix>alpha</VersionSuffix>
+  </PropertyGroup>
+  
+ <PropertyGroup Label="Custom Properties">
+   <FScruiserVersion>0.11.0.0</FScruiserVersion>
+ </PropertyGroup>
+</Project>

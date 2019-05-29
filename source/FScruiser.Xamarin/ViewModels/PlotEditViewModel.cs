@@ -2,10 +2,10 @@
 using FScruiser.Services;
 using FScruiser.XF.Constants;
 using FScruiser.XF.Services;
-using FScruiser.XF.Util;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -19,14 +19,32 @@ namespace FScruiser.XF.ViewModels
         private IEnumerable<Plot_Stratum> _stratumPlots;
         private Command<Plot_Stratum> _showLimitingDistanceCommand;
         private Command<Plot_Stratum> _toggleInCruiseCommand;
+        private IEnumerable<PlotError> _errorsAndWarnings;
+
+        public IEnumerable<PlotError> ErrorsAndWarnings
+        {
+            get => _errorsAndWarnings;
+            set => SetValue(ref _errorsAndWarnings, value);
+        }
 
         public Plot Plot
         {
             get => _plot;
             set
             {
+                var oldValue = _plot;
+                if (oldValue != null)
+                {
+                    oldValue.PropertyChanged -= Plot_PropertyChanged;
+                }
+
                 SetValue(ref _plot, value);
                 RaisePropertyChanged(nameof(PlotNumber));
+
+                if (value != null)
+                {
+                    value.PropertyChanged += Plot_PropertyChanged;
+                }
             }
         }
 
@@ -88,11 +106,28 @@ namespace FScruiser.XF.ViewModels
             get { return _stratumPlots; }
             set
             {
+                var oldValue = _stratumPlots;
+                if (oldValue != null)
+                {
+                    foreach (var sp in oldValue)
+                    {
+                        sp.PropertyChanged -= StratumPlot_PropertyChanged;
+                    }
+                }
+
                 SetValue(ref _stratumPlots, value);
+
+                if (value != null)
+                {
+                    foreach (var sp in value)
+                    {
+                        sp.PropertyChanged += StratumPlot_PropertyChanged;
+                    }
+                }
             }
         }
 
-        public ICuttingUnitDatastore Datastore { get; set; }
+        public IPlotDatastore Datastore { get; set; }
         public IDialogService DialogService { get; set; }
 
         public PlotEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
@@ -138,6 +173,8 @@ namespace FScruiser.XF.ViewModels
                     stratumPlot.InCruise = true;
                 }
             }
+
+            RefreshErrorsAndWarnings(Plot);
         }
 
         protected override void Refresh(INavigationParameters parameters)
@@ -159,13 +196,32 @@ namespace FScruiser.XF.ViewModels
 
             var stratumPlots = Datastore.GetPlot_Strata(plot.CuttingUnitCode, plot.PlotNumber);
 
-            foreach (var stratumPlot in stratumPlots)
-            {
-                stratumPlot.PropertyChanged += StratumPlot_PropertyChanged;
-            }
-
             Plot = plot;
             StratumPlots = stratumPlots;
+
+            RefreshErrorsAndWarnings(plot);
+        }
+
+        protected void RefreshErrorsAndWarnings(Plot plot)
+        {
+            var errorsAndWarnings = Datastore.GetPlotErrors(plot.PlotID);
+            ErrorsAndWarnings = errorsAndWarnings;
+        }
+
+        private void Plot_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var plot = Plot;
+
+            switch (e.PropertyName)
+            {
+                case nameof(Plot.Aspect):
+                case nameof(Plot.Slope):
+                case nameof(Plot.Remarks):
+                    {
+                        Datastore.UpdatePlot(plot);
+                        break;
+                    }
+            }
         }
 
         private void StratumPlot_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -179,6 +235,8 @@ namespace FScruiser.XF.ViewModels
                 {
                     Datastore.UpdatePlot_Stratum(stratumPlot);
                 }
+
+                RefreshErrorsAndWarnings(Plot);
             }
         }
 

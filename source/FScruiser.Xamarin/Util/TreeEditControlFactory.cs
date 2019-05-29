@@ -1,4 +1,6 @@
-﻿using FScruiser.Models;
+﻿using Backpack.XF.Converters;
+using FScruiser.Models;
+using FScruiser.XF.Converters;
 using FScruiser.XF.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,54 @@ namespace FScruiser.XF.Util
 {
     public class TreeEditControlFactory
     {
+        static readonly NullableDoubleToStringConverter _nullableDoubleConverter = new NullableDoubleToStringConverter();
+        static readonly NullableIntToStringConverter _nullableIntConverter = new NullableIntToStringConverter();
+
+        public static View MakeEditView(TreeFieldValue tfv)
+        {
+            View editView = null;
+            switch (tfv.DBType)
+            {
+                case "REAL":
+                    {
+                        editView = new Entry() { Keyboard = Keyboard.Numeric };
+                        editView.SetBinding(Entry.TextProperty, "ValueReal", converter: _nullableDoubleConverter );
+                        break;
+                    }
+                case "INT":
+                case "INTEGER":
+                    {
+                        editView = new Entry() { Keyboard = Keyboard.Numeric };
+                        editView.SetBinding(Entry.TextProperty, "ValueInt", converter: _nullableIntConverter);
+                        break;
+                    }
+                case "TEXT":
+                    {
+                        editView = new Entry() { Keyboard = Keyboard.Text };
+                        editView.SetBinding(Entry.TextProperty, "ValueText");
+                        break;
+                    }
+                case "BOOL":
+                case "BOOLEAN":
+                    {
+                        editView = new Switch();
+                        editView.SetBinding(Switch.IsToggledProperty, "ValueBool");
+                        break;
+                    }
+            }
+
+            if(editView != null)
+            {
+                editView.BindingContext = tfv;
+            }
+            if (editView is Entry entry)
+            {
+                entry.Effects.Add(new Xamarin.Toolkit.Effects.EntrySelectAllText());
+            }
+
+            return editView;
+        }
+
         public static View MakeEditView(TreeFieldSetup field)
         {
             View editView = null;
@@ -36,11 +86,11 @@ namespace FScruiser.XF.Util
                         editView = MakeSampleGroupPicker();
                         break;
                     }
-                case nameof(Tree.Species):
-                    {
-                        editView = MakeSpeciesPicker();
-                        break;
-                    }
+                //case nameof(Tree.Species):
+                //    {
+                //        editView = MakeSpeciesPicker();
+                //        break;
+                //    }
                 case nameof(Tree.CountOrMeasure):
                     {
                         editView = MakeCountMeasurePicker();
@@ -94,7 +144,7 @@ namespace FScruiser.XF.Util
                     }
             }
 
-            if(editView is Entry entry)
+            if (editView is Entry entry)
             {
                 entry.Effects.Add(new Xamarin.Toolkit.Effects.EntrySelectAllText());
             }
@@ -105,7 +155,7 @@ namespace FScruiser.XF.Util
         public static View MakeStratumPicker()
         {
             var view = new Picker();
-            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.StrataCodes));
+            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.StratumCodes));
             view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.StratumCode));
             //view.ItemDisplayBinding = new Binding(nameof(Stratum.Code));
 
@@ -133,14 +183,14 @@ namespace FScruiser.XF.Util
             return view;
         }
 
-        public static Picker MakeSpeciesPicker()
-        {
-            var view = new Picker();
-            view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.TreeDefaults));
-            view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.TreeDefault));
-            //view.ItemDisplayBinding = new Binding(nameof(TreeDefaultValueDO.Species));
+        //public static Picker MakeSpeciesPicker()
+        //{
+        //    var view = new Picker();
+        //    view.SetBinding(Picker.ItemsSourceProperty, nameof(TreeEditViewModel.TreeDefaults));
+        //    view.SetBinding(Picker.SelectedItemProperty, nameof(TreeEditViewModel.TreeDefault));
+        //    //view.ItemDisplayBinding = new Binding(nameof(TreeDefaultValueDO.Species));
 
-            return view;
-        }
+        //    return view;
+        //}
     }
 }

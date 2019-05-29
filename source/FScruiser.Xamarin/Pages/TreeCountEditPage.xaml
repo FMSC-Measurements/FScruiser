@@ -92,7 +92,7 @@
                             <Label Grid.Row="0" Grid.Column="2" 
                                    x:Name="_sampleGroupHeader" 
                                    Style="{StaticResource tallyInfo_label_header}"
-                                   Text="Sp"/>
+                                   Text="Sg"/>
                             <Label Grid.Row="0" Grid.Column="4" 
                                    x:Name="_speciesHeader" 
                                    Style="{StaticResource tallyInfo_label_header}"

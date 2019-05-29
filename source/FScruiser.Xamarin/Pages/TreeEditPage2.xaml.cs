@@ -1,7 +1,5 @@
 ﻿using FScruiser.Models;
-using FScruiser.Validation;
 using FScruiser.XF.Util;
-using FScruiser.XF.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,112 +12,99 @@ namespace FScruiser.XF.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class TreeEditPage2 : ContentPage
     {
-        private Color _altRowColor;
 
-        #region ErrorsAndWarnings
+        #region TreeNumber
 
         /// <summary>
-        /// Identifies the <see cref="ErrorsAndWarnings"/> bindable property.
+        /// Identifies the <see cref="TreeNumber"/> bindable property.
         /// </summary>
-        public static readonly BindableProperty ErrorsAndWarningsProperty =
-            BindableProperty.Create(nameof(ErrorsAndWarnings),
-              typeof(IEnumerable<ValidationError>),
+        public static readonly BindableProperty TreeNumberProperty =
+            BindableProperty.Create(nameof(TreeNumber),
+              typeof(int?),
               typeof(TreeEditPage2),
-              defaultValue: default(IEnumerable<ValidationError>),
-              defaultBindingMode: BindingMode.Default,
-              propertyChanged: (bindable, oldValue, newValue) => ((TreeEditPage2)bindable).OnErrorsAndWarningsChanged((IEnumerable<ValidationError>)oldValue, (IEnumerable<ValidationError>)newValue));
+              defaultValue: default(int?),
+              defaultBindingMode: BindingMode.TwoWay,
+              propertyChanged: (bindable, oldValue, newValue) => ((TreeEditPage2)bindable).OnTreeNumberChanged((int?)oldValue, (int?)newValue));
 
         /// <summary>
-        /// Invoked after changes have been applied to the <see cref="ErrorsAndWarnings"/> property.
+        /// Invoked after changes have been applied to the <see cref="TreeNumber"/> property.
         /// </summary>
-        /// <param name="oldValue">The old value of the <see cref="ErrorsAndWarnings"/> property.</param>
-        /// <param name="newValue">The new value of the <see cref="ErrorsAndWarnings"/> property.</param>
-        protected void OnErrorsAndWarningsChanged(IEnumerable<ValidationError> oldValue, IEnumerable<ValidationError> newValue)
+        /// <param name="oldValue">The old value of the <see cref="TreeNumber"/> property.</param>
+        /// <param name="newValue">The new value of the <see cref="TreeNumber"/> property.</param>
+        protected virtual void OnTreeNumberChanged(int? oldValue, int? newValue)
         {
-            _errorMessageContainer.Children.Clear();
 
+            _treeNumberEntry.Text = newValue?.ToString();
+
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="TreeNumber" /> property. This is a bindable property.
+        /// </summary>
+        public int? TreeNumber
+        {
+            get { return (int?)GetValue(TreeNumberProperty); }
+            set { SetValue(TreeNumberProperty, value); }
+        }
+
+        #endregion TreeNumber
+
+        #region TreeFieldValues
+
+        /// <summary>
+        /// Identifies the <see cref="TreeFieldValues"/> bindable property.
+        /// </summary>
+        public static readonly BindableProperty TreeFieldValuesProperty =
+            BindableProperty.Create(nameof(TreeFieldValues),
+              typeof(IEnumerable<TreeFieldValue>),
+              typeof(TreeEditPage2),
+              defaultValue: default(IEnumerable<TreeFieldValue>),
+              propertyChanged: (bindable, oldValue, newValue) => ((TreeEditPage2)bindable).OnTreeFieldValuesChanged((IEnumerable<TreeFieldValue>)oldValue, (IEnumerable<TreeFieldValue>)newValue));
+
+        /// <summary>
+        /// Invoked after changes have been applied to the <see cref="TreeFieldValues"/> property.
+        /// </summary>
+        /// <param name="oldValue">The old value of the <see cref="TreeFieldValues"/> property.</param>
+        /// <param name="newValue">The new value of the <see cref="TreeFieldValues"/> property.</param>
+        protected virtual void OnTreeFieldValuesChanged(IEnumerable<TreeFieldValue> oldValue, IEnumerable<TreeFieldValue> newValue)
+        {
             if (newValue != null)
             {
-                foreach (var error in newValue)
-                {
-                    //var newRow = new StackLayout
-                    //{
-                    //    Orientation = StackOrientation.Horizontal,
-                    //    BackgroundColor = Color.Red
-                    //};
-
-                    var row = new Label { Text = error.Message };
-
-                    switch (error.Level)
-                    {
-                        case ValidationLevel.Error: { row.BackgroundColor = Color.OrangeRed; break; }
-                        case ValidationLevel.Warning: { row.BackgroundColor = Color.Gold; break; }
-                        case ValidationLevel.Info: { row.BackgroundColor = Color.DodgerBlue; break; }
-                    }
-
-                    _errorMessageContainer.Children.Add(row);
-                }
+                var view = MakeTreeFields(newValue);
+                _editViewsHost.Content = view;
             }
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="ErrorsAndWarnings" /> property. This is a bindable property.
+        /// Gets or sets the <see cref="TreeFieldValues" /> property. This is a bindable property.
         /// </summary>
-        /// <value>
-        ///
-        /// </value>
-        public IEnumerable<ValidationError> ErrorsAndWarnings
+        public IEnumerable<TreeFieldValue> TreeFieldValues
         {
-            get { return (IEnumerable<ValidationError>)GetValue(ErrorsAndWarningsProperty); }
-            set { SetValue(ErrorsAndWarningsProperty, value); }
+            get { return (IEnumerable<TreeFieldValue>)GetValue(TreeFieldValuesProperty); }
+            set { SetValue(TreeFieldValuesProperty, value); }
         }
 
-        #endregion ErrorsAndWarnings
+        #endregion TreeFieldValues
 
         public TreeEditPage2()
         {
             InitializeComponent();
 
-            _altRowColor = (Color)App.Current.Resources["black_12"];
+            //_altRowColor = (Color)App.Current.Resources["black_12"];
+            _treeNumberEntry.Completed += _treeNumberEntry_Completed;
+            _treeNumberEntry.Keyboard = Keyboard.Numeric;
         }
 
-        protected override void OnAppearing()
+        private void _treeNumberEntry_Completed(object sender, EventArgs e)
         {
-            base.OnAppearing();
-
-            if (BindingContext is TreeEditViewModel viewModel)
+            var value = _treeNumberEntry.Text;
+            if (int.TryParse(value, out var intValue))
             {
-                viewModel.TreeFieldsChanged += ViewModel_TreeFieldsChanged;
+                TreeNumber = intValue;
             }
         }
 
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-
-            if (BindingContext is TreeEditViewModel viewModel)
-            {
-                viewModel.TreeFieldsChanged -= ViewModel_TreeFieldsChanged;
-            }
-        }
-
-        private void ViewModel_TreeFieldsChanged(object sender, IEnumerable<TreeFieldSetup> e)
-        {
-            UpdateTreeFields((TreeEditViewModel)sender);
-        }
-
-        protected void UpdateTreeFields(TreeEditViewModel viewModel)
-        {
-            if (viewModel != null)
-            {
-                var view = MakeTreeFields(viewModel.TreeFields);
-                _editViewsHost.Content = view;
-
-                //this.Content = new ScrollView { Content = view };
-            }
-        }
-
-        private View MakeTreeFields(IEnumerable<TreeFieldSetup> treeFields)
+        private View MakeTreeFields(IEnumerable<TreeFieldValue> treeFields)
         {
             if (treeFields == null) { throw new ArgumentNullException(nameof(treeFields)); }
 
@@ -132,13 +117,13 @@ namespace FScruiser.XF.Pages
             {
                 grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
 
-                if (index % 2 == 0) //alternate row color
-                {
-                    grid.Children.Add(new BoxView { Color = _altRowColor }, 0, 2, index, index + 1);
-                }
+                //if (index % 2 == 0) //alternate row color
+                //{
+                //    grid.Children.Add(new BoxView { Color = _altRowColor }, 0, 2, index, index + 1);
+                //}
 
                 var header = new Label() { Text = field.Heading };
-                if(field.Field == "Species")
+                if (field.Field == "Species")
                 { header.Text = "Sp/LD"; }
 
                 grid.Children.Add(header, 0, index);

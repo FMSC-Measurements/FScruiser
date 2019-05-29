@@ -9,6 +9,7 @@ namespace FScruiser.XF.ViewCells
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class TallyEntryViewCell : TallyEntryViewCell_Base
     {
+
         public TallyEntryViewCell()
         {
             InitializeComponent();
@@ -16,14 +17,14 @@ namespace FScruiser.XF.ViewCells
             _untallyButton.Clicked += _untallyButton_Clicked;
         }
 
+        protected override View DrawrView => _drawer;
+
         protected void _untallyButton_Clicked(object sender, EventArgs e)
         {
-            MessagingCenter.Send<object, TallyEntry>(this, Messages.UNTALLY_CLICKED, BindingContext as TallyEntry);
-        }
-
-        protected override void RefreshDrawer(bool isSelected)
-        {
-            _drawer.IsVisible = isSelected;
+            if (BindingContext is TallyEntry tallyEntry && tallyEntry != null)
+            {
+                UntallyCommand?.Execute(tallyEntry.TallyLedgerID);
+            }
         }
     }
 }

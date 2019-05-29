@@ -16,7 +16,7 @@ namespace FScruiser.XF.ViewModels
         private Command<FixCNTTallyBucket> _processTallyCommand;
         private bool _isUntallyEnabled;
 
-        public IEnumerable<FixCntTallyPopulation> TallyPopulations { get; protected set; }
+        public IEnumerable<FixCntTallyPopulation> TallyPopulations { get; set; }
 
         public ICuttingUnitDatastore Datastore { get; protected set; }
 
@@ -27,6 +27,8 @@ namespace FScruiser.XF.ViewModels
             get { return _isUntallyEnabled; }
             set { SetValue(ref _isUntallyEnabled, value); }
         }
+
+        public FixCNTViewModel() { }
 
         public FixCNTViewModel(INavigationService navigationService, ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
         {
@@ -90,11 +92,11 @@ namespace FScruiser.XF.ViewModels
                 //foreach interval value try to read a tree
                 do
                 {
-                    var tree = Datastore.GetFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SGCode, tp.Species, tp.LiveDead, tp.FieldName, interval);
+                    var tree = Datastore.GetFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SampleGroupCode, tp.Species, tp.LiveDead, tp.FieldName, interval);
                     //if tree doesn't exist create it
                     if (tree == null)
                     {
-                        tree = Datastore.CreateFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SGCode, tp.Species, tp.LiveDead, tp.FieldName, interval);
+                        tree = Datastore.CreateFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SampleGroupCode, tp.Species, tp.LiveDead, tp.FieldName, interval);
                     }
 
                     buckets.Add(new FixCNTTallyBucket() { Value = interval, Tree = tree });

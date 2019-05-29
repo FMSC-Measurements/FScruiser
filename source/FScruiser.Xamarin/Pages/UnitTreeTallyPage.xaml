@@ -22,12 +22,12 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
+            <!-- tally feed -->
             <ListView
                         Grid.Row="0" Grid.Column="0"
                         x:Name="_tallyFeedListView" 
                         HasUnevenRows="True"
                         ItemsSource="{Binding TallyFeed}" 
-                        ItemSelected="TallyFeedListView_ItemSelected"
                         CachingStrategy="RetainElement"
                         SeparatorColor="Silver">
                 <ListView.Behaviors>
@@ -44,7 +44,8 @@
 
                         <cells:TreeDataTemplateSelector.TreeItemTemplate>
                             <DataTemplate>
-                                <cells:TallyEntryTreeViewCell/>
+                                <cells:TallyEntryTreeViewCell EditTreeCommand="{Binding BindingContext.EditTreeCommand, Source={Reference _page}}"
+                                                              UntallyCommand="{Binding BindingContext.UntallyCommand, Source={Reference _page}}"/>
                             </DataTemplate>
 
                         </cells:TreeDataTemplateSelector.TreeItemTemplate>
@@ -52,7 +53,7 @@
                         <cells:TreeDataTemplateSelector.BasicTemplate>
 
                             <DataTemplate>
-                                <cells:TallyEntryViewCell/>
+                                <cells:TallyEntryViewCell UntallyCommand="{Binding BindingContext.UntallyCommand, Source={Reference _page}}"/>
                             </DataTemplate>
 
                         </cells:TreeDataTemplateSelector.BasicTemplate>
@@ -62,7 +63,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-
+            <!-- tally buttons -->
             <flow:FlowListView
                                 Grid.Row="1" Grid.Column="0"
                                 x:Name="TallyListView" 
@@ -80,10 +81,6 @@
                             <DataTemplate>
 
                                 <Frame CornerRadius="5" BackgroundColor="Green" Margin ="3" HeightRequest="100" Padding="0">
-                                    <!--<Frame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding BindingContext.TallyCommand, Source={Reference _page}}}"
-                                                              CommandParameter="{Binding .}"/>
-                            </Frame.GestureRecognizers>-->
 
                                     <Grid Padding="0" >
 
@@ -103,20 +100,21 @@
 
                                         <ImageButton    x:Name="_showTallyMenuButton"
                                                         Grid.Column="1" Grid.Row="0"
-                                                        Padding="3"
+                                                        Padding="0,3,3,0"
                                                         Command="{Binding BindingContext.ShowTallyMenuCommand, Source={Reference _page}}" 
                                                         Source="ic_more_vert_black_24dp.png" 
                                                         CommandParameter="{Binding .}"  />
 
-                                        <local_views:PopulationIndicatorView Grid.Column="0" Grid.Row="0"
+                                        <local_views:PopulationIndicatorView 
+                                                             Grid.Column="0" Grid.Row="0"
                                                              StratumCode="{Binding StratumCode}"
                                                              SampleGroupCode="{Binding SampleGroupCode}"
                                                              Species="{Binding Species}"
                                                              LiveDead="{Binding LiveDead}"
-                                                             Margin="5"
+                                                             Margin="5,5,0,0"
                                                              HeightRequest="20"
-                                                                             FontSize="Micro"
-                                                                             HorizontalOptions="Center"/>
+                                                             FontSize="Micro"
+                                                             HorizontalOptions="Start"/>
 
                                         <Frame  Grid.Column="0" Grid.Row="2"
                                                 Grid.ColumnSpan="2"
@@ -137,24 +135,6 @@
                                                 Text="{Binding TallyHotKey}"
                                                 HorizontalTextAlignment="Center" />
 
-                                        <!--<StackLayout    Grid.Column="0" Grid.Row="0"
-                                                        Grid.ColumnSpan="2" Grid.RowSpan="2"
-                                                        HorizontalOptions="Fill" 
-                                                        VerticalOptions="Fill" Padding="3">
-
-                                            <Label  Text="{Binding TallyDescription}" 
-                                                    HorizontalTextAlignment="Center" />
-
-                                            <Label  Text="{Binding TreeCount}" 
-                                                    HorizontalTextAlignment="Center" 
-                                                    BackgroundColor="White" 
-                                                    TextColor="Black" />
-
-                                            <Label  Text="{Binding TallyHotKey}"
-                                                    HorizontalTextAlignment="Center" />
-
-                                        </StackLayout>-->
-
                                     </Grid>
 
                                 </Frame>
@@ -165,6 +145,7 @@
                 </flow:FlowListView.FlowColumnTemplate>
             </flow:FlowListView>
 
+            <!-- stratum selection -->
             <flow:FlowListView 
                                 Grid.Row="2" Grid.Column="0"
                                 x:Name="StratumFilterListView" 
@@ -184,6 +165,7 @@
 
                 </flow:FlowListView.FlowColumnTemplate>
             </flow:FlowListView>
+            
         </Grid>
 
     </ContentPage.Content>

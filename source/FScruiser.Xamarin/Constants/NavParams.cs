@@ -24,5 +24,7 @@ namespace FScruiser.XF.Constants
 
         public const string PlotID = "PlotID";
 
+        public const string TreeAuditRuleID = "TreeAuditRuleID";
+
     }
 }
