@@ -188,18 +188,18 @@ namespace FScruiser.XF.ViewModels
             population.TreeCount = population.TreeCount + action.TreeCount;
             population.SumKPI = population.SumKPI + action.KPI;
 
-            SoundService.SignalTally();
+            await SoundService.SignalTallyAsync();
             if (action.IsSample)
             {
                 var method = population.Method;
 
                 if (action.IsInsuranceSample)
                 {
-                    SoundService.SignalInsuranceTree();
+                    await SoundService.SignalInsuranceTreeAsync();
                 }
                 else
                 {
-                    SoundService.SignalMeasureTree();
+                    await SoundService.SignalMeasureTreeAsync();
                 }
 
                 if (TallySettings.EnableCruiserPopup)

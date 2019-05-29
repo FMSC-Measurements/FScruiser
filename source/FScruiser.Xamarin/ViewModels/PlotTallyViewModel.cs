@@ -216,10 +216,10 @@ namespace FScruiser.XF.ViewModels
         {
             if (tree == null) { throw new ArgumentNullException(nameof(tree)); }
 
-            soundService.SignalTally();
+            await soundService.SignalTallyAsync();
             if (tree.CountOrMeasure == "M")
             {
-                soundService.SignalMeasureTree();
+                await soundService.SignalMeasureTreeAsync();
 
                 //if (tallySettings.EnableCruiserPopup)
                 //{
@@ -228,7 +228,7 @@ namespace FScruiser.XF.ViewModels
             }
             else if (tree.CountOrMeasure == "I")
             {
-                soundService.SignalInsuranceTree();
+                await soundService.SignalInsuranceTreeAsync();
             }
         }
 

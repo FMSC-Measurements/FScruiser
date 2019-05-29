@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
-    public interface ISoundService
+    public interface ISoundService : IDisposable
     {
-        void SignalMeasureTree();
+        Task SignalMeasureTreeAsync();
 
-        void SignalInsuranceTree();
+        Task SignalInsuranceTreeAsync();
 
-        void SignalTally(bool force = false);
+        Task SignalTallyAsync(bool force = false);
 
-        void SignalInvalidAction();
+        Task SignalInvalidActionAsync();
     }
 }
