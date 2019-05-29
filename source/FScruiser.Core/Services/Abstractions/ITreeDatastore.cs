@@ -28,7 +28,15 @@ namespace FScruiser.Services
 
         #region util
 
+        int? GetTreeNumber(string treeID);
+
         IEnumerable<TreeError> GetTreeErrors(string treeID);
+
+        TreeError GetTreeError(string treeID, string treeAuditRuleID);
+
+        void SetTreeAuditResolution(string treeID, string treeAuditRuleID, string resolution, string initials);
+
+        void ClearTreeAuditResolution(string treeID, string treeAuditRuleID);
 
         bool IsTreeNumberAvalible(string unit, int treeNumber, int? plotNumber = null);
 

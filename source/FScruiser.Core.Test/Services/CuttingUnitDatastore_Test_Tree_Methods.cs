@@ -148,5 +148,35 @@ namespace FScruiser.Core.Test.Services
                 tree.Should().BeNull();
             }
         }
+
+        [Fact]
+        public void GetTreeError_SpeciesMissing()
+        {
+            var unitCode = "u1";
+            var stratumCode = "st1";
+            var sgCode = "sg1";
+            var species = (string)null;
+            var liveDead = "L";
+            //var countMeasure = "M";
+            var treeCount = 1;
+
+            using (var database = CreateDatabase())
+            {
+
+                var datastore = new CuttingUnitDatastore(database);
+                
+
+
+                var treeID = datastore.CreateMeasureTree(unitCode, stratumCode, sgCode, species, liveDead, treeCount);
+
+                var treeErrors = datastore.GetTreeErrors(treeID).ToArray();
+
+                treeErrors.Should().HaveCount(1);
+
+                var speciesError = treeErrors.First();
+                speciesError.Level.Should().Be("E");
+                speciesError.Field.Should().Be(nameof(Models.Tree.Species));
+            }
+        }
     }
 }

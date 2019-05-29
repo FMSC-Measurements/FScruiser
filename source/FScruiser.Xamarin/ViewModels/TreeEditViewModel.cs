@@ -32,6 +32,7 @@ namespace FScruiser.XF.ViewModels
         private Tree _tree;
         private bool _hasSampleGroupError;
         private bool _hasSpeciesError;
+        private Command<TreeError> _showEditTreeErrorCommand;
 
         protected ICuttingUnitDatastore Datastore { get; set; }
         protected IDialogService DialogService { get; set; }
@@ -147,7 +148,7 @@ namespace FScruiser.XF.ViewModels
             //    Tree.SampleGroupCode = "";
             //}
 
-            
+
             RefreshSampleGroups(tree);
             RefreshSubPopulations(tree);
             RefreshTreeFieldValues(tree);
@@ -398,6 +399,20 @@ namespace FScruiser.XF.ViewModels
         #endregion LiveDead
 
         public ICommand ShowLogsCommand => _showLogsCommand ?? (_showLogsCommand = new Command(ShowLogs));
+
+        public ICommand ShowEditTreeErrorCommand => _showEditTreeErrorCommand ?? (_showEditTreeErrorCommand = new Command<TreeError>(ShowEditTreeError));
+        private void ShowEditTreeError(TreeError treeError)
+        {
+            if (treeError.Level != "W"
+                || treeError.TreeAuditRuleID == null)
+            { return; }
+            else
+            {
+
+                NavigationService.NavigateAsync("TreeErrorEdit",
+                    new Prism.Navigation.NavigationParameters($"{NavParams.TreeID}={treeError.TreeID}&{NavParams.TreeAuditRuleID}={treeError.TreeAuditRuleID}"));
+            }
+        }
 
         public TreeEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
             , IDialogService dialogService)

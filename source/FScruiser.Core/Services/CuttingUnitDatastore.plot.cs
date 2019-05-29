@@ -599,6 +599,7 @@ namespace FScruiser.Services
                 "te.Field, " +
                 "te.Level, " +
                 "te.Message, " +
+                "te.IsResolved," +
                 "te.Resolution " +
                 "FROM TreeError AS te " +
                 "JOIN Tree_V3 AS t USING (TreeID) " +

@@ -3,7 +3,6 @@ using FScruiser.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FScruiser.Services
@@ -214,7 +213,6 @@ namespace FScruiser.Services
                .LeftJoin("TreeMeasurment", "USING (TreeID)");
         }
 
-
         public IEnumerable<TreeFieldValue> GetTreeFieldValues(string treeID)
         {
             return Database.Query<TreeFieldValue>(
@@ -388,25 +386,51 @@ namespace FScruiser.Services
                 treeFieldValue.TreeID, treeFieldValue.Value);
         }
 
-
         public void DeleteTree(string tree_guid)
         {
             Database.Execute("Delete FROM Tree_V3 WHERE TreeID = @p1", tree_guid);
         }
 
         #region util
+
+        public int? GetTreeNumber(string treeID)
+        {
+            return Database.ExecuteScalar<int?>("SELECT TreeNumber FROM Tree_V3 WHERE TreeID = @p1;", treeID);
+        }
+
         public IEnumerable<TreeError> GetTreeErrors(string treeID)
         {
             return Database.Query<TreeError>(
                 "SELECT " +
                 "te.TreeID, " +
+                "te.TreeAuditRuleID, " +
                 "te.Field, " +
                 "te.Level, " +
                 "te.Message, " +
-                "te.Resolution " +
+                "te.IsResolved," +
+                "te.Resolution, " +
+                "te.ResolutionInitials " +
                 "FROM TreeError AS te " +
                 "WHERE te.TreeID = @p1;",
                 new object[] { treeID }).ToArray();
+        }
+
+        public TreeError GetTreeError(string treeID, string treeAuditRuleID)
+        {
+            return Database.Query<TreeError>(
+                "SELECT " +
+                "te.TreeID, " +
+                "te.TreeAuditRuleID, " +
+                "te.Field, " +
+                "te.Level, " +
+                "te.Message, " +
+                "te.IsResolved," +
+                "te.Resolution, " +
+                "te.ResolutionInitials " +
+                "FROM TreeError AS te " +
+                "WHERE te.TreeID = @p1 " +
+                "AND te.TreeAuditRuleID = @p2;",
+                new object[] { treeID, treeAuditRuleID }).FirstOrDefault();
         }
 
         public bool IsTreeNumberAvalible(string unit, int treeNumber, int? plotNumber = null)
@@ -438,6 +462,21 @@ namespace FScruiser.Services
                 value, tree_guid);
         }
 
-        #endregion
+        public void SetTreeAuditResolution(string treeID, string treeAuditRuleID, string resolution, string initials)
+        {
+            Database.Execute("INSERT OR REPLACE INTO TreeAuditResolution " +
+                "(TreeID, TreeAuditRuleID, Resolution, Initials)" +
+                "VALUES" +
+                "(@p1, @p2, @p3, @p4);"
+                , treeID, treeAuditRuleID, resolution, initials);
+        }
+
+        public void ClearTreeAuditResolution(string treeID, string treeAuditRuleID)
+        {
+            Database.Execute("DELETE FROM TreeAuditResolution WHERE TreeID = @p1 AND TreeAuditRuleID = @p2"
+                , treeID, treeAuditRuleID);
+        }
+
+        #endregion util
     }
 }

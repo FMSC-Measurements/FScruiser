@@ -18,6 +18,9 @@ namespace FScruiser.Models
         [Field("Message")]
         public string Message { get; set; }
 
+        [Field("IsResolved")]
+        public bool IsResolved { get; set; }
+
         [Field("Resolution")]
         public string Resolution { get; set; }
 

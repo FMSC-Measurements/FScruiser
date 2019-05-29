@@ -6,6 +6,26 @@
              x:Class="FScruiser.XF.Pages.PlotEditPage"
              x:Name="_page">
 
+  <ContentPage.Resources>
+    <Style x:Key="errorWarningLabel"
+                   TargetType="Label">
+      <Setter Property="TextColor"
+              Value="Black" />
+
+      <Setter Property="FontSize"
+              Value="Large" />
+
+      <Setter Property="Margin"
+              Value="0,0,0,7" />
+
+      <Setter Property="BackgroundColor"
+              Value="{Binding Level, Converter={StaticResource errorLevelToColorConverter}}" />
+
+      <Setter Property="Text"
+              Value="{Binding Message}" />
+    </Style>
+  </ContentPage.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />

@@ -7,5 +7,8 @@ namespace FScruiser.Models
     {
         [Field("TreeID")]
         public string TreeID { get; set; }
+
+        [Field("TreeAuditRuleID")]
+        public string TreeAuditRuleID { get; set; }
     }
 }

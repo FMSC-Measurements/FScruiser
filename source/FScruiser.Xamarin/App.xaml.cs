@@ -205,6 +205,7 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.FixCntTallyPage, ViewModels.FixCNTViewModel>("FixCNTTally");
             containerRegistry.RegisterForNavigation<Pages.PlotEditPage, ViewModels.PlotEditViewModel>("PlotEdit");
             containerRegistry.RegisterForNavigation<Pages.TreeCountEditPage, ViewModels.TreeCountEditViewModel>("TreeCountEdit");
+            containerRegistry.RegisterForNavigation<Pages.TreeErrorEditPage, ViewModels.TreeErrorEditViewModel>("TreeErrorEdit");
 
             containerRegistry.RegisterForNavigation<Pages.ThreePPNTPlotPage, ViewModels.ThreePPNTPlotViewModel>("ThreePPNTPlot");
             containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManageCruisersViewModel>("Cruisers");

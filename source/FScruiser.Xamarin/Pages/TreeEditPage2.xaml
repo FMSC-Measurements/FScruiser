@@ -4,7 +4,9 @@
              xmlns:effects="clr-namespace:Xamarin.Toolkit.Effects;assembly=Xamarin.Toolkit.Effects"
              xmlns:tk_converters="clr-namespace:Xamarin.Toolkit.Converters;assembly=Xamarin.Toolkit.Converters"
              xmlns:widgiwhats="clr-namespace:Backpack.XF.WidgiWhats;assembly=Backpack.XF.WidgiWhats"
+             xmlns:converters="clr-namespace:FScruiser.XF.Converters"
              x:Class="FScruiser.XF.Pages.TreeEditPage2"
+             x:Name="_page"
              Title="{Binding TreeNumber, StringFormat='{}Tree Number {0}'}"
              BackgroundColor="White"
              TreeNumber="{Binding TreeNumber}"
@@ -14,6 +16,30 @@
                      Command="{Binding ShowLogsCommand}" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
+        <converters:ErrorToColorConverter x:Key="errorToColorConverter"
+                                          Default="White"
+                                          Error="{StaticResource error}"
+                                          Warning="{StaticResource warning}"
+                                          SuppressedColor="{StaticResource error_suppressed}" />
+
+        <Style x:Key="errorWarningButton"
+               TargetType="Button">
+            <Setter Property="TextColor"
+                    Value="Black" />
+
+            <Setter Property="FontSize"
+                    Value="Large" />
+
+            <Setter Property="Margin"
+                    Value="0,0,0,7" />
+
+            <Setter Property="BackgroundColor"
+                    Value="{Binding ., Converter={StaticResource errorToColorConverter}}" />
+
+            <Setter Property="Text"
+                    Value="{Binding Message}" />
+        </Style>
+
         <tk_converters:BooleanToObjectConverter x:Key="hasErrorConverter"
                                                 x:TypeArguments="Color"
                                                 TrueObject="Red"
@@ -71,7 +97,8 @@
                 <Label Text="Stratum" />
                 <widgiwhats:ValuePicker x:Name="_stratumCodeEntry"
                                         SelectedValue="{Binding StratumCode}"
-                                        ValueSource="{Binding StratumCodes}">
+                                        ValueSource="{Binding StratumCodes}"
+                                        WidthRequest="40">
                 </widgiwhats:ValuePicker>
 
             </StackLayout>
@@ -82,7 +109,8 @@
                 <Label Text="Sample Group" />
                 <widgiwhats:ValuePicker x:Name="_sampleGroupEntry"
                                         SelectedValue="{Binding SampleGroupCode}"
-                                        ValueSource="{Binding SampleGroupCodes}">
+                                        ValueSource="{Binding SampleGroupCodes}"
+                                        WidthRequest="40">
                 </widgiwhats:ValuePicker>
 
             </StackLayout>
@@ -93,7 +121,8 @@
                 <Label Text="Species" />
                 <widgiwhats:ValuePicker x:Name="_speciesEntry"
                                         SelectedValue="{Binding Species}"
-                                        ValueSource="{Binding SpeciesOptions}">
+                                        ValueSource="{Binding SpeciesOptions}"
+                                        WidthRequest="40">
                 </widgiwhats:ValuePicker>
 
             </StackLayout>
@@ -101,12 +130,16 @@
             <StackLayout Orientation="Horizontal">
 
                 <Label Text="Live/Dead" />
-                <Entry x:Name="_liveDeadEntry"
-                       Text="{Binding LiveDead}">
-                    <Entry.GestureRecognizers>
-                        <TapGestureRecognizer x:Name="_liveDeadTapped" />
-                    </Entry.GestureRecognizers>
-                </Entry>
+                <widgiwhats:ValuePicker x:Name="_liveDeadPicker"
+                                        SelectedValue="{Binding LiveDead}"
+                                        WidthRequest="40">
+                    <widgiwhats:ValuePicker.ValueSource>
+                        <Array Type="{x:Type x:String}">
+                            <x:String>L</x:String>
+                            <x:String>D</x:String>
+                        </Array>
+                    </widgiwhats:ValuePicker.ValueSource>
+                </widgiwhats:ValuePicker>
 
             </StackLayout>
 
@@ -143,7 +176,10 @@
                      VerticalOptions="End">
             <BindableLayout.ItemTemplate>
                 <DataTemplate>
-                    <Label Style="{StaticResource errorWarningLabel}" />
+                    <Button Style="{StaticResource errorWarningButton}"
+                            FontSize="Medium"
+                            Command="{Binding BindingContext.ShowEditTreeErrorCommand, Source={Reference _page}}"
+                            CommandParameter="{Binding .}"/>
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </StackLayout>
