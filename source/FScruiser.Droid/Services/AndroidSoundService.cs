@@ -23,8 +23,16 @@ namespace FScruiser.Droid.Services
 
             var values = assetManager.List("sounds");
 
+            
+            var audioAttrs = new AudioAttributes.Builder()
+                .SetContentType(AudioContentType.Sonification)
+                .SetUsage(AudioUsageKind.AssistanceSonification)
+                .Build();
 
-            _soundPool = new SoundPool(5, Stream.Notification, 0);
+            _soundPool = new SoundPool.Builder()
+                .SetAudioAttributes(audioAttrs)
+                .SetMaxStreams(5)
+                .Build();
 
             _tally = _soundPool.Load(assetManager.OpenFd("sounds/tally.wav"), 1);
             _measure = _soundPool.Load(assetManager.OpenFd("sounds/measure.wav"), 1);
@@ -32,23 +40,51 @@ namespace FScruiser.Droid.Services
 
         }
 
-        public void SignalInsuranceTree()
+        public Task SignalInsuranceTreeAsync()
         {
-            _soundPool.Play(_insurance, 1.0f, 1.0f, 0, 0, 1.0f);
+            return Task.Run(() => _soundPool.Play(_insurance, 1.0f, 1.0f, 0, 0, 1.0f));            
         }
 
-        public void SignalInvalidAction()
+        public Task SignalInvalidActionAsync()
         {
+            return Task.CompletedTask;
         }
 
-        public void SignalMeasureTree()
+        public Task SignalMeasureTreeAsync()
         {
-            _soundPool.Play(_measure, 1.0f, 1.0f, 0, 0, 1.0f);
+            return Task.Run(() => _soundPool.Play(_measure, 1.0f, 1.0f, 0, 0, 1.0f));
         }
 
-        public void SignalTally(bool force)
+        public Task SignalTallyAsync(bool force)
         {
-            _soundPool.Play(_tally, 1.0f, 1.0f, 0, 0, 1.0f);
+            return Task.Run(() => _soundPool.Play(_tally, 1.0f, 1.0f, 0, 0, 1.0f));
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _soundPool?.Release();
+                    _soundPool = null;
+                }
+
+                
+
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
+        #endregion
     }
 }
