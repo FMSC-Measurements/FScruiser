@@ -57,7 +57,8 @@ namespace FScruiser.XF.ViewModels
 
             LogFields = Datastore.GetLogFields(tree_guid);
 
-            Logs = Datastore.GetLogs(tree_guid).ToObservableCollection();
+            Logs = Datastore.GetLogs(tree_guid).ToObservableCollection()
+                ?? new ObservableCollection<Log>();
         }
 
         private void ShowAddLogPage(object obj)

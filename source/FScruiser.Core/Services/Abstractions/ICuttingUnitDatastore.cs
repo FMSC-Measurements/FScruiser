@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
-    public interface ICuttingUnitDatastore : IPlotDatastore, ITreeDatastore
+    public interface ICuttingUnitDatastore : IPlotDatastore, ITreeDatastore, ILogDatastore
     {
         string GetCruisePurpose();
 
@@ -54,10 +54,6 @@ namespace FScruiser.Services
 
         IEnumerable<PlotError> GetPlotErrorsByUnit(string cuttingUnitCode);
 
-        IEnumerable<LogError> GetLogErrorsByLog(string logID);
-
-        IEnumerable<LogError> GetLogErrorsByTree(string treeID);
-
         //IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead);
 
         #endregion validation
@@ -75,24 +71,6 @@ namespace FScruiser.Services
         IEnumerable<TreeStub> GetTreeStubsByUnitCode(string unitCode);
 
         #endregion tree
-
-        #region logs
-
-        IEnumerable<Log> GetLogs(string tree_guid);
-
-        Log GetLog(string log_guid);
-
-        Log GetLog(string tree_guid, int logNumber);
-
-        void InsertLog(Log log);
-
-        void UpdateLog(Log log);
-
-        void DeleteLog(string log_guid);
-
-        IEnumerable<LogFieldSetup> GetLogFields(string tree_guid);
-
-        #endregion logs
 
         #region Tally Entries
         TallyEntry GetTallyEntry(string tallyLedgerID);

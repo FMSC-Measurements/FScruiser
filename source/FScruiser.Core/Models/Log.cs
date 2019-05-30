@@ -165,5 +165,8 @@ namespace FScruiser.Models
             get { return _createdBy; }
             set { _createdBy = value; }
         }
+
+        [Field("ErrorCount")]
+        public int ErrorCount { get; set; }
     }
 }

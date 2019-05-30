@@ -1,4 +1,6 @@
-﻿using FScruiser.Models;
+﻿using Backpack.XF.Converters;
+using CSharpForMarkup;
+using FScruiser.Models;
 using FScruiser.XF.ViewModels;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,14 @@ namespace FScruiser.XF.Pages
     public partial class LogsListPage : ContentPage
     {
         private const int COLUMN_COUNT = 3;
+        private const int error_col_width = 50;
+        private static readonly IValueConverter _greaterThanZeroConverter =
+            new ComparisonConverter<int>()
+            {
+                Default = true,
+                GreaterThan = true,
+                CompareToValue = 0
+            };
 
         #region LogFields
 
@@ -50,25 +60,59 @@ namespace FScruiser.XF.Pages
                 grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
             }
 
-            var logNumberLabel = new Label() { FontAttributes = FontAttributes.Bold };
-            logNumberLabel.SetBinding(Label.TextProperty, "LogNumber", stringFormat: "Log #{0}");
-            logNumberLabel.SetValue(Grid.ColumnSpanProperty, 3);
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = error_col_width });
 
-            grid.Children.Add(logNumberLabel, 0,0);
+            grid.Children.Add(
+                new Label()
+                { FontAttributes = FontAttributes.Bold }
+                    .Bind(Label.TextProperty, "LogNumber", stringFormat: "Log #{0}")
+                    .ColSpan(3)
+                    .Col(0)
+                    .Row(0));
 
             foreach (var (field, index) in fields.Where(x => x.Field != "LogNumber").Select((v, i) => (v, i)))
             {
-                var frame = new Frame() { Padding = 5, BackgroundColor = Color.Blue };
-                var label = new Label() { TextColor = Color.White };
-                label.SetBinding(Label.TextProperty, field.Field, stringFormat: $"{field.Heading}: {{0}}");
+                var frame = new Frame()
+                {
+                    Padding = 5,
+                    BackgroundColor = Color.Blue,
+                    Content = new Label
+                    { TextColor = Color.White }
+                    .Bind(Label.TextProperty, field.Field, stringFormat: $"{field.Heading}: {{0}}")
+                    ,
+                }
+                .Col(index % COLUMN_COUNT)
+                .Row((index / COLUMN_COUNT) + 1);//ajust down one because logNumber is first
 
-                frame.Content = label;
-
-                var column = (index % COLUMN_COUNT);
-                var row = (index / COLUMN_COUNT) + 1; //ajust down one because logNumber is first
-
-                grid.Children.Add(frame, column, row);
+                grid.Children.Add(frame);
             }
+
+            var errorCountIndicator = new Frame()
+            {
+                BackgroundColor = Color.Red,
+                CornerRadius = 5,
+                VerticalOptions = LayoutOptions.Center,
+                Content = new StackLayout
+                {
+                    Orientation = StackOrientation.Horizontal,
+                    Children =
+                    {
+                        new Xamarin.Forms.Image {Source = new FileImageSource{ File = "ic_error_outline_black_24dp.png"}},
+                        new Label
+                        {
+                            TextColor = Color.Black,
+                            VerticalTextAlignment = TextAlignment.Center
+                        }
+                        .Bind(Label.TextProperty, "ErrorCount"),
+                    }
+                }.Padding(0, 0)
+            }
+            .Padding(0, 0)
+            .Bind(Frame.IsVisibleProperty, "ErrorCount", converter: _greaterThanZeroConverter)
+            .Col(COLUMN_COUNT + 1)
+            .Row(0);
+
+            grid.Children.Add(errorCountIndicator);
 
             var viewCell = new ViewCell
             {
@@ -102,7 +146,7 @@ namespace FScruiser.XF.Pages
 
             _logListView.ItemTapped += _logListView_ItemTapped;
 
-            
+
         }
 
         private void _logListView_ItemTapped(object sender, ItemTappedEventArgs e)
