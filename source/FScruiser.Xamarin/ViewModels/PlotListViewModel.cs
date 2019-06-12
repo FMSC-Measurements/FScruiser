@@ -30,10 +30,10 @@ namespace FScruiser.XF.ViewModels
 
         public PlotListViewModel(INavigationService navigationService
             , IPageDialogService dialogService
-            , ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
+            , IDatastoreProvider datastoreProvider) : base(navigationService)
         {
             DialogService = dialogService;
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
 
         protected override void Refresh(INavigationParameters parameters)

@@ -25,20 +25,25 @@ namespace FScruiser.XF
         public const string CURRENT_NAV_PATH = "current_nav_path";
         public const string CURRENT_NAV_PARAMS = "current_nav_params";
 
+        private string _cruisePath;
+        private DatastoreProvider _datastoreProvider;
+
         public new INavigationService NavigationService => base.NavigationService;
 
         protected IPageDialogService DialogService => Container?.Resolve<IPageDialogService>();
 
-        public ICuttingUnitDatastoreProvider CuttingUnitDatastoresProvider { get; private set; } = new CuttingUnitDatastoreProvider();
+        public IDatastoreProvider DatastoresProvider => _datastoreProvider ?? (_datastoreProvider = new DatastoreProvider(this));
 
         public IApplicationSettings Settings { get; } = new ApplicationSettings();
 
-        public App() : this(new BasePlatformInitializer())
+        public App() : this(new BasePlatformInitializer(), (string)null)
         {
         }
 
-        public App(IPlatformInitializer platformInitializer) : base(platformInitializer)
-        { }
+        public App(IPlatformInitializer platformInitializer, string cruisePath) : base(platformInitializer)
+        {
+            _cruisePath = cruisePath;
+        }
 
         protected override async void OnInitialized()
         {
@@ -88,36 +93,20 @@ namespace FScruiser.XF
                 {
                     try
                     {
-                        var database = new DAL(path);
-
-                        if (CruiseDAL.Updater.CheckNeedsMajorUpdate(database))
+                        if(System.IO.Path.GetExtension(path).ToLowerInvariant() == ".cruise")
                         {
-                            var result = await DialogService.DisplayAlertAsync("Update Cruise File?",
-                                "Cruise file needs to be updated.\r\n" +
-                                "Onece updated file can only be opened with latest cruise software",
-                                "Update", "Cancel");
-                            if (result)
-                            {
-                                CruiseDAL.Updater.UpdateMajorVersion(database);
-                            }
-                            else
-                            {
-                                return;
-                            }
+                            path = Migrator.MigrateFromV2ToV3(path);
+
+                            var fileName = System.IO.Path.GetFileName(path);
+                            await DialogService.DisplayAlertAsync("Message",
+                                $"Your cruise file has been updated and the file {fileName} has been created",
+                                "OK", null);
                         }
 
-                        var datastore = new CuttingUnitDatastore(database);
-
-                        CuttingUnitDatastoresProvider.CuttingUnitDatastore = datastore;
-                        CuttingUnitDatastoresProvider.SampleSelectorDataService = new SampleSelectorRepository(datastore);
-
-                        //((IContainerRegistry)Container).RegisterInstance<ICuttingUnitDatastore>(datastore);
-                        //((IContainerRegistry)Container).RegisterInstance<ISampleSelectorDataService>(new SampleSelectorRepository(datastore));
-
-                        //var test = Container.Resolve<ICuttingUnitDatastore>();
+                        DatastoresProvider.CruisePath = path;
 
                         Properties.SetValue("cruise_path", path);
-                        CuttingUnitDatastoresProvider.Cruise_Path = path;
+                        
                         await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
 
                         MessagingCenter.Send<object, string>(this, Messages.CRUISE_FILE_OPENED, path);
@@ -167,7 +156,7 @@ namespace FScruiser.XF
                 Properties.SetValue("isFirstLaunch", false);
             }
 
-            var cruise_path = Properties.GetValueOrDefault("cruise_path") as string;
+            var cruise_path = _cruisePath ?? Properties.GetValueOrDefault("cruise_path") as string;
 
             if (!string.IsNullOrEmpty(cruise_path))
             {
@@ -192,7 +181,7 @@ namespace FScruiser.XF
             containerRegistry.RegisterSingleton<ITallySettingsDataService, TallySettingsDataService>();
             //containerRegistry.RegisterInstance<ICuttingUnitDatastore>(null);
 
-            containerRegistry.RegisterInstance<ICuttingUnitDatastoreProvider>(this.CuttingUnitDatastoresProvider);
+            containerRegistry.RegisterInstance<IDatastoreProvider>(DatastoresProvider);
 
             containerRegistry.RegisterForNavigation<MyNavigationPage>("Navigation");
             containerRegistry.RegisterForNavigation<MainPage, ViewModels.MainViewModel>("Main");

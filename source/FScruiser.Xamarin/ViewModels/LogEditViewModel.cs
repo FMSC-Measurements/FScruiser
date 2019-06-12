@@ -29,9 +29,9 @@ namespace FScruiser.XF.ViewModels
 
         public IEnumerable<LogError> Errors { get => _errors; set => SetValue(ref _errors, value); }
 
-        public LogEditViewModel(INavigationService navigationService, ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
+        public LogEditViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
 
         protected override void Refresh(INavigationParameters parameters)

@@ -114,13 +114,13 @@ namespace FScruiser.XF.ViewModels
         public ISoundService SoundService { get; }
 
         public UnitTreeTallyViewModel(INavigationService navigationService,
-            ICuttingUnitDatastoreProvider datastoreProvider,
+            IDatastoreProvider datastoreProvider,
             IDialogService dialogService,
             ITallySettingsDataService tallySettings,
             ISoundService soundService) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
-            SampleSelectorService = datastoreProvider.SampleSelectorDataService;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
+            SampleSelectorService = datastoreProvider.Get<ISampleSelectorDataService>();
             DialogService = dialogService;
             TallySettings = tallySettings;
             SoundService = soundService;

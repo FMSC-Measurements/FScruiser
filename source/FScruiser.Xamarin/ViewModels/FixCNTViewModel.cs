@@ -30,9 +30,9 @@ namespace FScruiser.XF.ViewModels
 
         public FixCNTViewModel() { }
 
-        public FixCNTViewModel(INavigationService navigationService, ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
+        public FixCNTViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
 
         public void Tally(FixCNTTallyBucket tallyBucket)

@@ -137,9 +137,9 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public LimitingDistanceViewModel(ICuttingUnitDatastoreProvider datastoreProvider)
+        public LimitingDistanceViewModel(IDatastoreProvider datastoreProvider)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
 
         public override void OnNavigatedFrom(INavigationParameters parameters)

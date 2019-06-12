@@ -52,10 +52,10 @@ namespace FScruiser.XF.ViewModels
 
         public TreeListViewModel(IDialogService dialogService
             , INavigationService navigationService
-            , ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
+            , IDatastoreProvider datastoreProvider) : base(navigationService)
         {
             DialogService = dialogService;
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
 
         protected override void Refresh(INavigationParameters parameters)

@@ -1,5 +1,7 @@
-﻿using FScruiser.XF.Services;
+﻿using FScruiser.Services;
+using FScruiser.XF.Services;
 using Prism.Navigation;
+using System.Collections.Generic;
 using System.Windows.Input;
 using Xamarin.Forms;
 
@@ -10,41 +12,40 @@ namespace FScruiser.XF.ViewModels
         private Command<string> _addCruiserCommand;
         private Command<string> _removeCruiserCommand;
 
-        public TallySettingsDataService Data { get; }
+        public ICruisersDataservice CruisersDataservice { get; }
 
         public ICommand AddCruiserCommand => _addCruiserCommand ?? (_addCruiserCommand = new Command<string>(AddCruiser));
 
         public ICommand RemoveCruiserCommand => _removeCruiserCommand ?? (_removeCruiserCommand = new Command<string>(RemoveCruiser));
 
-        public ManageCruisersViewModel(INavigationService navigationService) : base(navigationService)
+        public IEnumerable<string> Cruisers => CruisersDataservice.GetCruisers();
+
+        public bool PromptCruiserOnSample
         {
-            Data = new TallySettingsDataService();
+            get { return CruisersDataservice.PromptCruiserOnSample; }
+            set { CruisersDataservice.PromptCruiserOnSample = value; }
+        }
+
+        public ManageCruisersViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider) : base(navigationService)
+        {
+            CruisersDataservice = datastoreProvider.Get<ICruisersDataservice>();
         }
 
         public void AddCruiser(string cruiser)
         {
-            Data.AddCruiser(cruiser);
-
-            Data.Save();
+            CruisersDataservice.AddCruiser(cruiser);
+            RaisePropertyChanged(nameof(Cruisers));
         }
 
         public void RemoveCruiser(string cruiser)
         {
-            Data.RemoveCruiser(cruiser);
-
-            Data.Save();
+            CruisersDataservice.RemoveCruiser(cruiser);
+            RaisePropertyChanged(nameof(Cruisers));
         }
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            Data.Refresh();
-        }
-
-        public override void OnNavigatedFrom(INavigationParameters parameters)
-        {
-            base.OnNavigatedFrom(parameters);
-
-            Data.Save();
+            
         }
     }
 }

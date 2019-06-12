@@ -58,5 +58,11 @@ namespace FScruiser.XF
             Output.WriteLine($"ShowMessageAsync::msg={message}::caption={caption}");
             return Task.CompletedTask;
         }
+
+        public Task<AskTreeCountResult> AskTreeCount(int? defaultTreeCount)
+        {
+            Output.WriteLine($"AskTreeCount::defaultTreeCount={defaultTreeCount}");
+            return Task.FromResult(new AskTreeCountResult { TreeCount = defaultTreeCount });
+        }
     }
 }

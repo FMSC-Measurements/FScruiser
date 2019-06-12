@@ -18,9 +18,9 @@ namespace FScruiser.Services
             .Append(CruiseMethods.FIXCNT)
             .Select(x => "'" + x + "'").ToArray());
 
-        private DAL _database;
+        private CruiseDatastore_V3 _database;
 
-        public DAL Database
+        public CruiseDatastore_V3 Database
         {
             get { return _database; }
             set
@@ -35,12 +35,12 @@ namespace FScruiser.Services
 
         public CuttingUnitDatastore(string path)
         {
-            var database = new DAL(path ?? throw new ArgumentNullException(nameof(path)));
+            var database = new CruiseDatastore_V3(path ?? throw new ArgumentNullException(nameof(path)));
 
             Database = database;
         }
 
-        public CuttingUnitDatastore(DAL database)
+        public CuttingUnitDatastore(CruiseDatastore_V3 database)
         {
             Database = database;
         }

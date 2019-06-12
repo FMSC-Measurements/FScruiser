@@ -23,9 +23,9 @@ namespace FScruiser.XF.ViewModels
         private TallyPopulation _tallyPopulation;
         private ICommand _saveTreeCountEditCommand;
 
-        public TreeCountEditViewModel(INavigationService navigationService, ICuttingUnitDatastoreProvider datastoreProvider, IDialogService dialogService) : base(navigationService)
+        public TreeCountEditViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider, IDialogService dialogService) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
             DialogService = dialogService;
         }
 
