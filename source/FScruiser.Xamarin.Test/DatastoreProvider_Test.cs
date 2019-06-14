@@ -2,17 +2,23 @@
 using FluentAssertions;
 using FScruiser.Services;
 using FScruiser.XF.Services;
+using FScruiser.XF.Test;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace FScruiser.XF
 {
-    public class DatastoreProvider_Test
+    public class DatastoreProvider_Test : TestBase
     {
+        public DatastoreProvider_Test(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Theory]
         [InlineData(typeof(ICuttingUnitDatastore), typeof(CuttingUnitDatastore))]
         [InlineData(typeof(IPlotDatastore), typeof(CuttingUnitDatastore))]
@@ -24,7 +30,7 @@ namespace FScruiser.XF
             var cuDatastore = new CuttingUnitDatastore(cruiseDatastore);
             var samplerDatastore = new SampleSelectorRepository(cuDatastore);
 
-            var datastoreProvider = new DatastoreProvider()
+            var datastoreProvider = new DatastoreProvider(base.App)
             {
                 CruiseDatastore = cruiseDatastore,
                 CuttingUnitDatastore = cuDatastore,

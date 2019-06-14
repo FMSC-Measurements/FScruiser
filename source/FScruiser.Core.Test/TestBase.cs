@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using CruiseDAL;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using Xunit.Abstractions;
@@ -44,7 +45,7 @@ namespace FScruiser.Core.Test
             Output.WriteLine("Stopwatch Ended:" + _stopwatch.ElapsedMilliseconds.ToString() + "ms");
         }
 
-        public void DumpDatabaseInfo(CruiseDAL.DAL ds, params string[] tables)
+        public void DumpDatabaseInfo(CruiseDatastore_V3 ds, params string[] tables)
         {
             Output.WriteLine($"DAL Version: {ds.DatabaseVersion}");
 

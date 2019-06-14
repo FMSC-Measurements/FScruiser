@@ -1,75 +1,111 @@
 ﻿using CruiseDAL;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CruiseDAL.V3.Models;
+using FScruiser.Util;
 using Xunit.Abstractions;
 
 namespace FScruiser.Core.Test.Services
 {
     public class Datastore_TestBase : TestBase
     {
+        protected string[] Units { get; }
+        protected Stratum[] Strata { get; }
+        protected CuttingUnit_Stratum[] UnitStrata { get; }
+        protected string[] Species { get; }
+        protected SampleGroup_V3[] SampleGroups { get; }
+        protected TreeDefaultValue[] TreeDefaults { get; }
+        protected Subpopulation[] Subpops { get; }
+
         public Datastore_TestBase(ITestOutputHelper output) : base(output)
         {
+            var units = Units = new string[] { "u1", "u2" };
+            var strata = Strata = new[]
+            {
+                new Stratum{ Code = "st1", Method = "" },
+                new Stratum{ Code = "st2", Method = "" },
+            };
+
+            UnitStrata = new[]
+            {
+                new CuttingUnit_Stratum {CuttingUnitCode = units[0], StratumCode = strata[0].Code },
+                new CuttingUnit_Stratum {CuttingUnitCode = units[0], StratumCode = strata[1].Code},
+                new CuttingUnit_Stratum {CuttingUnitCode = units[1], StratumCode = strata[1].Code},
+            };
+
+            var species = Species = new string[] { "sp1", "sp2", "sp3" };
+
+            var sampleGroups = SampleGroups = new[]
+            {
+                new SampleGroup_V3 {SampleGroupCode = "sg1", StratumCode = strata[0].Code, SamplingFrequency = 101, TallyBySubPop = true},
+                new SampleGroup_V3 {SampleGroupCode = "sg2", StratumCode = strata[1].Code, SamplingFrequency = 102, TallyBySubPop = false},
+            };
+
+            TreeDefaults = new[]
+            {
+                new TreeDefaultValue {Species = species[0], LiveDead = "L", PrimaryProduct = "01"},
+                new TreeDefaultValue {Species = species[0], LiveDead = "D", PrimaryProduct = "01"},
+                new TreeDefaultValue {Species = species[1], LiveDead = "L", PrimaryProduct = "01"},
+                new TreeDefaultValue {Species = species[2], LiveDead = "L", PrimaryProduct = "01"},
+            };
+
+            Subpops = new[]
+            {
+                new Subpopulation {
+                    StratumCode = sampleGroups[0].StratumCode,
+                    SampleGroupCode = sampleGroups[0].SampleGroupCode,
+                    Species = species[0],
+                    LiveDead = "L",
+                },
+                new Subpopulation {
+                    StratumCode = sampleGroups[0].StratumCode,
+                    SampleGroupCode = sampleGroups[0].SampleGroupCode,
+                    Species = species[1],
+                    LiveDead = "L",
+                },
+                new Subpopulation {
+                    StratumCode = sampleGroups[0].StratumCode,
+                    SampleGroupCode = sampleGroups[0].SampleGroupCode,
+                    Species = species[2],
+                    LiveDead = "L",
+                },
+            };
         }
 
-        protected virtual DAL CreateDatabase()
+        protected CruiseDatastore_V3 CreateDatabase()
         {
-            var units = new string[] { "u1", "u2" };
-            var strata = new string[][]
-            {
-                new string[] {"st1", "" },
-                new string[] {"st2", "" },
-            };
-            var unit_strata = new string[][]
-            {
-                new string[] {"u1", "st1" },
-                new string[] { "u1", "st2" },
-                new string[] { "u2", "st2" },
-            };
+            var units = Units;
 
-            var sampleGroups = new[]
-            {
-                new{StCode = "st1", SgCode = "sg1", Freq = 101, TallyBySp = 1},
-                new{StCode = "st2", SgCode = "sg2", Freq = 101, TallyBySp = 0},
-            };
+            var strata = Strata;
 
-            var species = new string[] { "sp1", "sp2", "sp3" };
+            var unitStrata = UnitStrata;
 
-            var tdvs = new[]
-            {
-                // sp, L/D, Prod
-                new[] { "sp1", "L", "01" },
-                new[] { "sp1", "D", "01" },
-                new[] { "sp2", "L", "01" },
-                new[] { "sp3", "L", "01" },
-            };
+            var sampleGroups = SampleGroups;
 
-            var subPops = new string[][]
-            {
-                // st, sg, sp, ld
-                new[] { "st1", "sg1", "sp1", "L" },
-                new[] { "st1", "sg1", "sp2", "L" },
-                new[] { "st1", "sg1", "sp3", "L" },
-            };
+            var species = Species;
 
+            var tdvs = TreeDefaults;
 
-            var database = new DAL();
+            var subPops = Subpops;
 
-            InitializeDatabase(database, units, strata, unit_strata, sampleGroups, species, tdvs, subPops);
+            var database = new CruiseDatastore_V3();
+
+            InitializeDatabase(database, units, strata, unitStrata, sampleGroups, species, tdvs, subPops);
 
             return database;
         }
 
-        void InitializeDatabase(DAL database, string[] units, string[][] strata,
-    string[][] unit_strata, dynamic[] sampleGroups,
-    string[] species, string[][] tdvs, string[][] subPops)
+        protected void InitializeDatabase(CruiseDatastore_V3 db,
+            string[] units,
+            CruiseDAL.V3.Models.Stratum[] strata,
+            CruiseDAL.V3.Models.CuttingUnit_Stratum[] unitStrata,
+            CruiseDAL.V3.Models.SampleGroup_V3[] sampleGroups,
+            string[] species,
+            CruiseDAL.V3.Models.TreeDefaultValue[] tdvs,
+            CruiseDAL.V3.Models.Subpopulation[] subPops)
         {
             //Cutting Units
-            foreach (var unit in units)
+            foreach (var unit in units.OrEmpty())
             {
-                database.Execute(
+                db.Execute(
                     "INSERT INTO CuttingUnit (" +
                     "Code" +
                     ") VALUES " +
@@ -77,64 +113,111 @@ namespace FScruiser.Core.Test.Services
             }
 
             //Strata
-            foreach (var st in strata)
+            foreach (var st in strata.OrEmpty())
             {
-                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{st[0]}', '{st[1]}');");
+                db.Insert(st);
             }
 
             //Unit - Strata
-            foreach (var cust in unit_strata)
+            foreach (var cust in unitStrata.OrEmpty())
             {
-                database.Execute(
-                    "INSERT INTO CuttingUnit_Stratum " +
-                    "(CuttingUnitCode, StratumCode) " +
-                    "VALUES " +
-                    $"('{cust[0]}','{cust[1]}');");
+                db.Insert(cust);
             }
 
             //Sample Groups
-            foreach (var sg in sampleGroups)
+            foreach (var sg in sampleGroups.OrEmpty())
             {
-                database.Execute(
-                    "INSERT INTO SampleGroup_V3 (" +
-                    "StratumCode, " +
-                    "SampleGroupCode," +
-                    "SamplingFrequency, " +
-                    "TallyBySubPop " +
-                    ") VALUES " +
-                    $"('{sg.StCode}', '{sg.SgCode}', {sg.Freq}, {sg.TallyBySp}); ");
+                db.Insert(sg);
             }
 
-
-            //TreeDefaults
-
-            foreach (var sp in species)
+            foreach (var sp in species.OrEmpty())
             {
-                database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
+                db.Execute($"INSERT INTO SpeciesCode (Species) VALUES ('{sp}');");
             }
 
-            foreach (var tdv in tdvs)
+            foreach (var tdv in tdvs.OrEmpty())
             {
-                database.Execute(
-                    "INSERT INTO TreeDefaultValue (" +
-                    "Species, " +
-                    "LiveDead, " +
-                    "PrimaryProduct" +
-                    ") VALUES " +
-                    $"('{tdv[0]}', '{tdv[1]}', '{tdv[2]}');");
+                db.Insert(tdv);
             }
 
-            foreach (var sub in subPops)
+            foreach (var sub in subPops.OrEmpty())
             {
-                database.Execute(
-                    "INSERT INTO SubPopulation (" +
-                    "StratumCode, " +
-                    "SampleGroupCode, " +
-                    "Species, " +
-                    "LiveDead)" +
-                    "VALUES " +
-                    $"('{sub[0]}', '{sub[1]}', '{sub[2]}', '{sub[3]}');");
+                db.Insert(sub);
             }
         }
+
+    //    private void InitializeDatabase(CruiseDatastore_V3 database, string[] units, string[][] strata,
+    //string[][] unit_strata, dynamic[] sampleGroups,
+    //string[] species, string[][] tdvs, string[][] subPops)
+    //    {
+    //        //Cutting Units
+    //        foreach (var unit in units)
+    //        {
+    //            database.Execute(
+    //                "INSERT INTO CuttingUnit (" +
+    //                "Code" +
+    //                ") VALUES " +
+    //                $"('{unit}');");
+    //        }
+
+    //        //Strata
+    //        foreach (var st in strata)
+    //        {
+    //            database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{st[0]}', '{st[1]}');");
+    //        }
+
+    //        //Unit - Strata
+    //        foreach (var cust in unit_strata)
+    //        {
+    //            database.Execute(
+    //                "INSERT INTO CuttingUnit_Stratum " +
+    //                "(CuttingUnitCode, StratumCode) " +
+    //                "VALUES " +
+    //                $"('{cust[0]}','{cust[1]}');");
+    //        }
+
+    //        //Sample Groups
+    //        foreach (var sg in sampleGroups)
+    //        {
+    //            database.Execute(
+    //                "INSERT INTO SampleGroup_V3 (" +
+    //                "StratumCode, " +
+    //                "SampleGroupCode," +
+    //                "SamplingFrequency, " +
+    //                "TallyBySubPop " +
+    //                ") VALUES " +
+    //                $"('{sg.StCode}', '{sg.SgCode}', {sg.Freq}, {sg.TallyBySp}); ");
+    //        }
+
+    //        //TreeDefaults
+
+    //        foreach (var sp in species)
+    //        {
+    //            database.Execute($"INSERT INTO SpeciesCode (Species) VALUES ('{sp}');");
+    //        }
+
+    //        foreach (var tdv in tdvs)
+    //        {
+    //            database.Execute(
+    //                "INSERT INTO TreeDefaultValue (" +
+    //                "Species, " +
+    //                "LiveDead, " +
+    //                "PrimaryProduct" +
+    //                ") VALUES " +
+    //                $"('{tdv[0]}', '{tdv[1]}', '{tdv[2]}');");
+    //        }
+
+    //        foreach (var sub in subPops)
+    //        {
+    //            database.Execute(
+    //                "INSERT INTO SubPopulation (" +
+    //                "StratumCode, " +
+    //                "SampleGroupCode, " +
+    //                "Species, " +
+    //                "LiveDead)" +
+    //                "VALUES " +
+    //                $"('{sub[0]}', '{sub[1]}', '{sub[2]}', '{sub[3]}');");
+    //        }
+    //    }
     }
 }

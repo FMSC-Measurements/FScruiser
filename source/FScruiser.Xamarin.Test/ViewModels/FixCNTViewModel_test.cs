@@ -4,14 +4,21 @@ using FluentAssertions;
 using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.XF.Constants;
+using FScruiser.XF.Test;
 using Prism.Navigation;
+using System;
 using System.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace FScruiser.XF.ViewModels
 {
-    public class FixCNTViewModel_test
+    public class FixCNTViewModel_test : TestBase
     {
+        public FixCNTViewModel_test(ITestOutputHelper output) : base(output)
+        {
+        }
+
         private CruiseDatastore_V3 CreateDatabase()
         {
             var database = new CruiseDatastore_V3();
@@ -39,6 +46,8 @@ namespace FScruiser.XF.ViewModels
             };
             database.Insert(sg);
 
+            database.Execute($"INSERT INTO SpeciesCode (Species) values ('someSpecies');");
+
             var tdv = new CruiseDAL.V3.Models.TreeDefaultValue()
             {
                 Species = "someSpecies",
@@ -47,10 +56,12 @@ namespace FScruiser.XF.ViewModels
             };
             database.Insert(tdv);
 
-            var sgTdv = new CruiseDAL.V3.Models.SampleGroupTreeDefaultValue()
+            var sgTdv = new CruiseDAL.V3.Models.Subpopulation()
             {
-                SampleGroup_CN = sg.SampleGroup_CN,
-                TreeDefaultValue_CN = tdv.TreeDefaultValue_CN
+                StratumCode = sg.StratumCode,
+                SampleGroupCode = sg.SampleGroupCode,
+                Species = tdv.Species,
+                LiveDead = tdv.LiveDead,
             };
             database.Insert(sgTdv);
 
@@ -76,6 +87,7 @@ namespace FScruiser.XF.ViewModels
 
             database.Insert(new CruiseDAL.V3.Models.Plot_V3
             {
+                PlotID = Guid.NewGuid().ToString(),
                 CuttingUnitCode = "u1",
                 PlotNumber = 1
             });
@@ -91,7 +103,7 @@ namespace FScruiser.XF.ViewModels
                 var datastore = new CuttingUnitDatastore(database);
 
                 var viewModel = new FixCNTViewModel((INavigationService)null,
-                    new Services.DatastoreProvider() { CuttingUnitDatastore = datastore });
+                    new Services.DatastoreProvider(App) { CuttingUnitDatastore = datastore });
 
                 var navParams = new NavigationParameters($"{NavParams.UNIT}=u1&{NavParams.PLOT_NUMBER}=1&{NavParams.STRATUM}=fixCnt1");
 
@@ -104,7 +116,6 @@ namespace FScruiser.XF.ViewModels
                     tp.Buckets.Should().NotBeEmpty();
                     foreach(var b in tp.Buckets)
                     {
-                        b.Tree.Should().NotBeNull();
                         b.Value.Should().NotBe(0.0);
                     }
                 }
@@ -119,7 +130,7 @@ namespace FScruiser.XF.ViewModels
                 var datastore = new CuttingUnitDatastore(database);
 
                 var viewModel = new FixCNTViewModel((INavigationService)null,
-                    new Services.DatastoreProvider() { CuttingUnitDatastore = datastore });
+                    new Services.DatastoreProvider(App) { CuttingUnitDatastore = datastore });
 
                 var navParams = new NavigationParameters($"{NavParams.UNIT}=u1&{NavParams.PLOT_NUMBER}=1&{NavParams.STRATUM}=fixCnt1");
                 viewModel.OnNavigatedTo(navParams);
@@ -133,8 +144,12 @@ namespace FScruiser.XF.ViewModels
 
                 viewModel.Tally(bucket);
 
-                // TODO
-                //bucket.Tree.TreeCount.Should().Be(1);
+                bucket.TreeCount.Should().Be(1);
+
+                viewModel.OnNavigatedTo(navParams);
+
+                bucket = tallyPop.Buckets.FirstOrDefault();
+                bucket.TreeCount.Should().Be(1);
             }
         }
     }

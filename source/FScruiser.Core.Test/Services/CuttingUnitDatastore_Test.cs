@@ -27,6 +27,9 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
+                var strata = database.Query<FScruiser.Models.Stratum>
+                    ("select * from stratum;").ToArray();
+
                 var results = datastore.GetStrataByUnitCode(unitCode);
 
                 var strata_codes = results.Select(x => x.Code);
@@ -44,7 +47,7 @@ namespace FScruiser.Core.Test.Services
             var hotKey = "A";
             var method = CruiseDAL.Schema.CruiseMethods.FIX;
 
-            using (var database = new DAL())
+            using (var database = new CruiseDatastore_V3())
             {
                 database.Execute($"INSERT INTO CuttingUnit (Code) VALUES ('{unitCode}');");
 
@@ -56,7 +59,7 @@ namespace FScruiser.Core.Test.Services
                 database.Execute($"INSERT INTO SampleGroup_V3 (StratumCode, SampleGroupCode, SamplingFrequency, TallyBySubPop ) VALUES " +
                     $"('{stratum}', '{sampleGroup}', 101, {tallyBySubpop});");
 
-                database.Execute($"INSERT INTO Species (Species) VALUES ('{((species == null || species == "") ? "dummy" : species)}');");
+                database.Execute($"INSERT INTO SpeciesCode (Species) VALUES ('{((species == null || species == "") ? "dummy" : species)}');");
 
                 database.Execute(
                 "INSERT INTO SubPopulation (" +
@@ -100,7 +103,7 @@ namespace FScruiser.Core.Test.Services
             var tallyBySubpop = true;
             //var method = CruiseDAL.Schema.CruiseMethods.FIX;
 
-            using (var database = new DAL())
+            using (var database = new CruiseDatastore_V3())
             {
                 database.Execute($"INSERT INTO CuttingUnit (Code) VALUES ('{unitCode}');");
 
@@ -114,7 +117,7 @@ namespace FScruiser.Core.Test.Services
 
                 foreach (var sp in species)
                 {
-                    database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
+                    database.Execute($"INSERT INTO SpeciesCode (Species) VALUES ('{sp}');");
 
                     database.Execute(
                         "INSERT INTO SubPopulation (" +
@@ -150,7 +153,7 @@ namespace FScruiser.Core.Test.Services
             var tallyBySubpop = false;
             //var method = CruiseDAL.Schema.CruiseMethods.FIX;
 
-            using (var database = new DAL())
+            using (var database = new CruiseDatastore_V3())
             {
                 database.Execute($"INSERT INTO CuttingUnit (Code) VALUES ('{unitCode}');");
 
@@ -164,7 +167,7 @@ namespace FScruiser.Core.Test.Services
 
                 foreach (var sp in species)
                 {
-                    database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
+                    database.Execute($"INSERT INTO SpeciesCode (Species) VALUES ('{sp}');");
 
                     database.Execute(
                         "INSERT INTO SubPopulation (" +
@@ -199,7 +202,7 @@ namespace FScruiser.Core.Test.Services
 
             var tallyBySubpop = false;
 
-            using (var database = new DAL())
+            using (var database = new CruiseDatastore_V3())
             {
                 var datastore = new CuttingUnitDatastore(database);
 
@@ -215,7 +218,7 @@ namespace FScruiser.Core.Test.Services
 
                 foreach (var sp in species)
                 {
-                    database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
+                    database.Execute($"INSERT INTO SpeciesCode (Species) VALUES ('{sp}');");
 
                     database.Execute(
                         "INSERT INTO SubPopulation (" +
@@ -301,6 +304,9 @@ namespace FScruiser.Core.Test.Services
             {
                 var datastore = new CuttingUnitDatastore(database);
 
+                var tallyPops = database.QueryGeneric($"Select * from TallyPopulation WHERE StratumCode = '{stratumCode}';")
+                    .ToArray();
+
                 var pop = datastore.GetTallyPopulation(unitCode, stratumCode, sgCode, species, liveDead);
 
                 pop.Should().NotBeNull();
@@ -363,11 +369,11 @@ namespace FScruiser.Core.Test.Services
         [Fact]
         public void InsertTallyLedger()
         {
-            string unitCode = "u1";
-            string stratum = "st1";
-            string sampleGroup = "sg1";
-            string species = "sp1";
-            string liveDead = "L";
+            string unitCode = UnitStrata[0].CuttingUnitCode;
+            string stratum = UnitStrata[0].StratumCode;
+            string sampleGroup = Subpops[0].SampleGroupCode;
+            string species = Subpops[0].Species;
+            string liveDead = Subpops[0].LiveDead;
 
             int treeCountDiff = 1;
             int kpi = 1;
