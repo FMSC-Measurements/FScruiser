@@ -93,20 +93,36 @@ namespace FScruiser.XF
                 {
                     try
                     {
-                        if(System.IO.Path.GetExtension(path).ToLowerInvariant() == ".cruise")
+                        if (System.IO.Path.GetExtension(path).ToLowerInvariant() == ".cruise")
                         {
-                            path = Migrator.MigrateFromV2ToV3(path);
+                            var convertedPath = Migrator.GetConvertedPath(path);
 
-                            var fileName = System.IO.Path.GetFileName(path);
-                            await DialogService.DisplayAlertAsync("Message",
-                                $"Your cruise file has been updated and the file {fileName} has been created",
-                                "OK", null);
+                            // if converted file already exists let the user know that we
+                            // are just going to open it instead of the file they selected
+                            // otherwise convert the .cruise file and open the convered .crz3 file
+                            if (System.IO.File.Exists(convertedPath) == false)
+                            {
+                                await DialogService.DisplayAlertAsync("Message",
+                                    $"Opening {convertedPath}",
+                                    "OK");
+                            }
+                            else
+                            {
+                                Migrator.MigrateFromV2ToV3(path, convertedPath);
+
+                                var fileName = System.IO.Path.GetFileName(path);
+                                await DialogService.DisplayAlertAsync("Message",
+                                    $"Your cruise file has been updated and the file {fileName} has been created",
+                                    "OK");
+                            }
+
+                            path = convertedPath;
                         }
 
                         DatastoresProvider.CruisePath = path;
 
                         Properties.SetValue("cruise_path", path);
-                        
+
                         await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
 
                         MessagingCenter.Send<object, string>(this, Messages.CRUISE_FILE_OPENED, path);
