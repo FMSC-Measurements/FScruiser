@@ -72,12 +72,22 @@ namespace FScruiser.XF.ViewModels
             var datastore = Datastore;
 
             var stratumCode = await DialogService.AskValueAsync("Select Stratum", StratumCodes);
+
+            
             if (stratumCode != null)
             {
-                var tree_guid = datastore.CreateMeasureTree(UnitCode, stratumCode);
-                var newTree = datastore.GetTreeStub(tree_guid);
-                _trees.Add(newTree);
-                OnTreeAdded(null);
+                var sampleGroups = datastore.GetSampleGroupCodes(stratumCode).OrEmpty()
+                    .ToArray();
+
+                var sampleGroupCode = await DialogService.AskValueAsync("Select Sample Group", sampleGroups);
+
+                if (sampleGroupCode != null)
+                {
+                    var tree_guid = datastore.CreateMeasureTree(UnitCode, stratumCode, sampleGroupCode);
+                    var newTree = datastore.GetTreeStub(tree_guid);
+                    _trees.Add(newTree);
+                    OnTreeAdded(null);
+                }
             }
         }
 
