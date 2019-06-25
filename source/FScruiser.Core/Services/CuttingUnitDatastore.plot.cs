@@ -424,6 +424,12 @@ namespace FScruiser.Services
             );
         }
 
+        #endregion tree
+
+
+
+        #region fixCnt
+
         public Tree CreateFixCNTTallyTree(string unitCode, int plotNumber,
             string stratumCode, string sgCode, string species, string liveDead,
             string fieldName, double value, int treeCount = 0)
@@ -525,9 +531,25 @@ namespace FScruiser.Services
                 .FirstOrDefault();
         }
 
-        #endregion
+        public void DeleteLastTree(string unitCode, int plotNumber,
+            string stratumCode, string sgCode, string species, string field, double value)
+        {
+            var database = Database;
+            var lastTreeID = database.ExecuteScalar<string>(
+                "SELECT t.TreeID FROM Tree_V3 AS t " +
+                "JOIN TreeFieldValue_All AS tfv USING (TreeID) " +
+                "WHERE t.CuttingUnitCode = @p1 " +
+                "AND t.PlotNumber = @p2 " +
+                "AND t.StratumCode = @p3 " +
+                "AND t.SampleGroupCode = @p4 " +
+                "AND t.Species = @p5 " +
+                "AND tfv.Field = @p6 " +
+                "AND tfv.ValueReal = @p7 " +
+                "ORDER BY t.CreatedDate " +
+                "LIMIT 1;", unitCode, plotNumber, stratumCode, sgCode, species, field, value);
 
-        #region tally population
+            database.Execute("DELETE FROM Tree_V3 WHERE TreeID = @p1;", lastTreeID);
+        }
 
         public IEnumerable<FixCntTallyPopulation> GetFixCNTTallyPopulations(string stratumCode)
         {
@@ -547,7 +569,26 @@ namespace FScruiser.Services
                 new object[] { stratumCode });
         }
 
-        #endregion
+        public int GetTreeCount(string unit,
+            int plotNumber,
+            string stratumCode,
+            string sampleGroupCode,
+            string field,
+            double value)
+        {
+            return Database.ExecuteScalar<int>(
+                "SELECT count(*) FROM Tree_V3 AS t " +
+                "JOIN TreeFieldValue_All AS tfv USING (TreeID) " +
+                "WHERE t.CuttingUnitCode = @p1 " +
+                "AND t.PlotNumber = @p2 " +
+                "AND t.StratumCode = @p3 " +
+                "AND t.SampleGroupCode = @p4 " +
+                "AND tfv.Field = @p5 " +
+                "AND tfv.ValueReal = @p6;",
+                unit, plotNumber, stratumCode, sampleGroupCode, field, value);
+        }
+
+        #endregion fixCnt
 
         public void AddPlotRemark(string cuttingUnitCode, int plotNumber, string remark)
         {
@@ -607,7 +648,5 @@ namespace FScruiser.Services
                 "WHERE p.PlotID = @p1;",
                 new object[] { plotID }).ToArray();
         }
-
-
     }
 }

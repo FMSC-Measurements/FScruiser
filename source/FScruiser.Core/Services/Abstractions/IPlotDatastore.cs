@@ -77,8 +77,16 @@ namespace FScruiser.Services
             double value,
             int treeCount = 0);
 
-        
+        void DeleteLastTree(string unitCode, int plotNumber,
+            string stratumCode, string sgCode, string species, string field, double value);
 
+
+        int GetTreeCount(string unit,
+            int plotNumber,
+            string stratumCode,
+            string sampleGroupCode,
+            string field,
+            double value);
 
         #endregion tree
 

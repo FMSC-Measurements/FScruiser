@@ -28,6 +28,9 @@ namespace FScruiser.XF.ViewModels
             set { SetValue(ref _isUntallyEnabled, value); }
         }
 
+        public string Unit { get; private set; }
+        public int PlotNumber { get; private set; }
+
         public FixCNTViewModel() { }
 
         public FixCNTViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider) : base(navigationService)
@@ -37,9 +40,20 @@ namespace FScruiser.XF.ViewModels
 
         public void Tally(FixCNTTallyBucket tallyBucket)
         {
-            //var tree = tallyBucket.Tree;
-            //tree.TreeCount++;
-            //Datastore.UpdateTree(tree);
+
+            var tallyPop = tallyBucket.TallyPopulation;
+
+            Datastore.CreateFixCNTTallyTree(
+                Unit,
+                PlotNumber,
+                tallyPop.StratumCode,
+                tallyPop.SampleGroupCode,
+                tallyPop.Species,
+                tallyPop.LiveDead,
+                tallyPop.FieldName,
+                tallyBucket.Value, 1);
+
+            tallyBucket.TreeCount += 1;
         }
 
         //public void Tally(string species, Double midValue)
@@ -53,13 +67,18 @@ namespace FScruiser.XF.ViewModels
 
         public void UnTally(FixCNTTallyBucket tallyBucket)
         {
-            //var tree = tallyBucket.Tree;
-            //var treeCount = tree.TreeCount;
-            //if (treeCount > 0)
-            //{
-            //    tree.TreeCount = treeCount - 1;
-            //    Datastore.UpdateTree(tree);
-            //}
+            var tallyPop = tallyBucket.TallyPopulation;
+
+            Datastore.DeleteLastTree(
+                Unit,
+                PlotNumber,
+                tallyPop.StratumCode,
+                tallyPop.SampleGroupCode,
+                tallyPop.Species,
+                tallyPop.FieldName,
+                tallyBucket.Value);
+
+            tallyBucket.TreeCount = Math.Max(0, tallyBucket.TreeCount - 1);
         }
 
         public void ProcessTally(FixCNTTallyBucket tallyBucket)
@@ -76,9 +95,10 @@ namespace FScruiser.XF.ViewModels
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            var unit = parameters.GetValue<string>(NavParams.UNIT);
+            var unit = Unit = parameters.GetValue<string>(NavParams.UNIT);
+            var plotNumber = PlotNumber = parameters.GetValue<int>(NavParams.PLOT_NUMBER);
             var stratumCode = parameters.GetValue<string>(NavParams.STRATUM);
-            var plotNumber = parameters.GetValue<int>(NavParams.PLOT_NUMBER);
+            
 
             //read fixcount tally populations
             var tallyPopulations = Datastore.GetFixCNTTallyPopulations(stratumCode).ToArray();
@@ -92,14 +112,9 @@ namespace FScruiser.XF.ViewModels
                 //foreach interval value try to read a tree
                 do
                 {
-                    var tree = Datastore.GetFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SampleGroupCode, tp.Species, tp.LiveDead, tp.FieldName, interval);
-                    //if tree doesn't exist create it
-                    if (tree == null)
-                    {
-                        tree = Datastore.CreateFixCNTTallyTree(unit, plotNumber, stratumCode, tp.SampleGroupCode, tp.Species, tp.LiveDead, tp.FieldName, interval);
-                    }
+                    var treeCount = Datastore.GetTreeCount(unit, plotNumber, stratumCode, tp.SampleGroupCode, tp.FieldName, interval);
 
-                    buckets.Add(new FixCNTTallyBucket() { Value = interval, Tree = tree });
+                    buckets.Add(new FixCNTTallyBucket(tp, interval, treeCount));
 
                     interval += tp.IntervalSize;
                 } while (interval <= tp.Max);

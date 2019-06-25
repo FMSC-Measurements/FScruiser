@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -16,29 +12,31 @@ namespace FScruiser.XF.Pages
         {
             InitializeComponent();
 
-            var viewMode = new ViewModels.FixCNTViewModel()
-            {
-                
-                TallyPopulations = new Models.FixCntTallyPopulation[]
-                {
-                    new Models.FixCntTallyPopulation
-                    {
-                        FieldName = "DBH",
-                        Buckets = new List<Models.FixCNTTallyBucket>()
-                        {
-                            new Models.FixCNTTallyBucket { Value = 1.0 },
-                            new Models.FixCNTTallyBucket { Value = 2.0 },
-                            new Models.FixCNTTallyBucket { Value = 3.0 },
-                            new Models.FixCNTTallyBucket { Value = 4.0 },
-                            new Models.FixCNTTallyBucket { Value = 5.0 },
-                        }
-                    },
-                }
-            };
+            //Models.FixCntTallyPopulation MakeTallyPop(string fieldName)
+            //{
+            //    var tallyPop = new Models.FixCntTallyPopulation() { FieldName = fieldName };
+            //    var buckets = new List<Models.FixCNTTallyBucket>()
+            //    {
+            //        new Models.FixCNTTallyBucket(tallyPop, 1.0, 0),
+            //        new Models.FixCNTTallyBucket(tallyPop, 2.0, 0),
+            //        new Models.FixCNTTallyBucket(tallyPop, 3.0, 0),
+            //        new Models.FixCNTTallyBucket(tallyPop, 4.0, 0),
+            //        new Models.FixCNTTallyBucket(tallyPop, 5.0, 0),
+            //    };
 
-            BindingContext = viewMode;
+            //    tallyPop.Buckets = buckets;
+            //    return tallyPop;
+            //}
 
+            //var viewMode = new ViewModels.FixCNTViewModel()
+            //{
+            //    TallyPopulations = new Models.FixCntTallyPopulation[]
+            //    {
+            //        MakeTallyPop("DBH"),
+            //    }
+            //};
+
+            //BindingContext = viewMode;
         }
-
     }
 }
