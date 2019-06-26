@@ -7,6 +7,7 @@
     <AssemblyName>FScruiser.XF</AssemblyName>
     <Version>$(FScruiserVersion)</Version>
     <Configurations>Debug;Release;Profile</Configurations>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
