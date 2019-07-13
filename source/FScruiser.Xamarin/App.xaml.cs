@@ -100,7 +100,7 @@ namespace FScruiser.XF
                             // if converted file already exists let the user know that we
                             // are just going to open it instead of the file they selected
                             // otherwise convert the .cruise file and open the convered .crz3 file
-                            if (System.IO.File.Exists(convertedPath) == false)
+                            if (System.IO.File.Exists(convertedPath) == true)
                             {
                                 await DialogService.DisplayAlertAsync("Message",
                                     $"Opening {convertedPath}",
