@@ -2,7 +2,6 @@
 using FScruiser.Services;
 using FScruiser.XF.Services;
 using Microsoft.AppCenter.Crashes;
-using Plugin.FilePicker;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
@@ -70,12 +69,16 @@ namespace FScruiser.XF.ViewModels
         public IDatastoreProvider DatastoreProvider { get; }
         protected IDialogService DialogService { get; set; }
 
+        protected IFilePickerService FilePickerService { get; }
+
         public MainViewModel(INavigationService navigationService
             , IDialogService dialogService
-            , IDatastoreProvider datastoreProvider) : base(navigationService)
+            , IDatastoreProvider datastoreProvider,
+            IFilePickerService filePickerService) : base(navigationService)
         {
             DialogService = dialogService;
             DatastoreProvider = datastoreProvider;
+            FilePickerService = filePickerService ?? throw new ArgumentNullException(nameof(filePickerService));
 
             RefreshNavigation(null);
         }
@@ -147,7 +150,6 @@ namespace FScruiser.XF.ViewModels
                     Debug.WriteLine("ERROR::::" + ex);
                     Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", obj.NavigationPath } });
                 }
-
             }
             catch (Exception ex)
             {
@@ -170,10 +172,13 @@ namespace FScruiser.XF.ViewModels
         {
             try
             {
-                var fileData = await CrossFilePicker.Current.PickFile(new string[] { ".cruise", ".crz3" });
-                if (fileData == null) { return; }//user canceled file picking
+                var filePath = await FilePickerService.PickCruiseFileAsync();
+                if (filePath == null) { return; }
 
-                var filePath = fileData.FilePath;
+                //var fileData = await CrossFilePicker.Current.PickFile(new string[] { ".cruise", ".crz3" });
+                //if (fileData == null) { return; }//user canceled file picking
+
+                //var filePath = fileData.FilePath;
 
                 //Check path exists
                 if (File.Exists(filePath) == false)

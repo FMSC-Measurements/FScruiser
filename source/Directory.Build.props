@@ -4,6 +4,6 @@
   </PropertyGroup>
   
  <PropertyGroup Label="Custom Properties">
-   <FScruiserVersion>0.12.0.0</FScruiserVersion>
+   <FScruiserVersion>0.13.0.0</FScruiserVersion>
  </PropertyGroup>
 </Project>

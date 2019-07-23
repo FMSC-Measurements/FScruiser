@@ -1,16 +1,7 @@
-﻿using FScruiser.Services;
-using FScruiser.XF.ViewModels;
-using Microsoft.AppCenter.Crashes;
-using Plugin.FilePicker;
-using Plugin.FilePicker.Abstractions;
+﻿using FScruiser.XF.ViewModels;
 using Prism.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -83,6 +74,4 @@ namespace FScruiser.XF.Pages
         //    IsPresented = false;
         //}
     }
-
-
 }
