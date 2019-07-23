@@ -137,6 +137,8 @@ namespace FScruiser.Services
             string sampleGroupCode = null, string species = null, string liveDead = "L",
             int treeCount = 1, int kpi = 0, bool stm = false)
         {
+            liveDead = liveDead ?? GetDefaultLiveDead(stratumCode, sampleGroupCode);
+
             var tallyLedgerID = treeID;
 
             Database.Execute2(
@@ -198,6 +200,12 @@ namespace FScruiser.Services
                     KPI = kpi,
                     STM = stm,
                 });
+        }
+
+        public string GetDefaultLiveDead(string stratumCode, string sampleGroupCode)
+        {
+            return Database.ExecuteScalar<string>("SELECT DefaultLiveDead FROM SampleGroup_V3 WHERE StratumCode = @p1 AND SampleGroupCode = @p2;"
+                , stratumCode, sampleGroupCode);
         }
 
         public Tree GetTree(string treeID)
