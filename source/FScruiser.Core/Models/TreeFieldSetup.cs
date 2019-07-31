@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("TreeFieldSetup_V3")]
+    [Table("TreeFieldSetup_V3")]
     public class TreeFieldSetup
     {
         [Field("Field")]
@@ -20,6 +20,7 @@ namespace FScruiser.Models
         public int FieldOrder { get; set; }
 
         [Obsolete]
+        [IgnoreField]
         public string ColumnType { get; set; }
     }
 }

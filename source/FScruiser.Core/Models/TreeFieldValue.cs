@@ -68,6 +68,7 @@ namespace FScruiser.Models
             set => SetValue(ref _valueText, value);
         }
 
+        [IgnoreField]
         public object Value
         {
             get

@@ -4,7 +4,7 @@ using FScruiser.Util;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Log_V3")]
+    [Table("Log_V3")]
     public class Log : INPC_Base, IHasTreeID
     {
         [Field("LogID")]

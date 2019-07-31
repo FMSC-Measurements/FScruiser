@@ -503,7 +503,7 @@ namespace FScruiser.Services
                 }
             );
 
-            var tree = QueryTree_Base().Where("TreeID = @p1").Query(treeID).First();
+            var tree = GetTree(treeID);
             return tree;
         }
 

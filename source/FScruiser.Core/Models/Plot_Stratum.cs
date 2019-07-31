@@ -3,7 +3,7 @@ using FScruiser.Util;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Plot_Stratum")]
+    [Table("Plot_Stratum")]
     public class Plot_Stratum : INPC_Base
     {
         private int _plotNumber;
@@ -64,6 +64,7 @@ namespace FScruiser.Models
         [Field(Alias = "KZ3PPNT", PersistanceFlags = PersistanceFlags.Never)]
         public int KZ3PPNT { get; set; }
 
+        [Field("ThreePRandomValue")]
         public int ThreePRandomValue { get; set; }
 
 

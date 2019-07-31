@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Stratum")]
+    [Table("Stratum")]
     public class StratumProxy
     {
         //[Field(Name = "Stratum_CN")]

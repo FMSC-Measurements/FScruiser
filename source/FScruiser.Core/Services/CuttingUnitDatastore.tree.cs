@@ -210,15 +210,10 @@ namespace FScruiser.Services
 
         public Tree GetTree(string treeID)
         {
-            return QueryTree_Base()
-                .Where("Tree_V3.TreeID = @p1")
-                .Query(treeID).FirstOrDefault();
-        }
-
-        private IQuerryAcceptsJoin<Tree_Ex> QueryTree_Base()
-        {
-            return Database.From<Tree_Ex>()
-               .LeftJoin("TreeMeasurment", "USING (TreeID)");
+            return Database.Query<Tree_Ex>(
+                "SELECT t.*, tm.* FROM Tree_V3 AS t " +
+                "LEFT JOIN TreeMeasurment AS tm USING (TreeID) " +
+                "WHERE t.TreeID = @p1;", treeID).FirstOrDefault();
         }
 
         public IEnumerable<TreeFieldValue> GetTreeFieldValues(string treeID)

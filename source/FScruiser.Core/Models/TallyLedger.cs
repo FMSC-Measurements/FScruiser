@@ -4,7 +4,7 @@ using System;
 
 namespace FScruiser.Models
 {
-    [EntitySource("TallyLedger")]
+    [Table("TallyLedger")]
     public class TallyLedger : IHasTreeID
     {
         public class EntryTypeValues

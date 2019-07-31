@@ -402,10 +402,12 @@ namespace FScruiser.Services
 
         public IEnumerable<Tree> GetTreesByUnitCode(string unitCode)
         {
-            return QueryTree_Base()
-                //.Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1 AND PlotNumber IS NULL")
-                .Query(unitCode).ToArray();
+            return Database.Query<Tree_Ex>(
+                "SELECT t.*, tm.* FROM Tree AS t " +
+                "LEFT JOIN TreeMeasurment AS tm USING (TreeID) " +
+                "JOIN CuttingUnit AS cu ON cu.Code = t.CuttingUnitCode " +
+                "WHERE CuttingUnit.Code = @p1 AND PlotNumber IS NULL",
+                unitCode).ToArray();
         }
 
         public TreeStub GetTreeStub(string treeID)

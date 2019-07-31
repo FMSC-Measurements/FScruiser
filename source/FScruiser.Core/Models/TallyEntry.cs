@@ -3,7 +3,7 @@ using FScruiser.Models;
 
 namespace FScruiser.Models
 {
-    [EntitySource("TallyLedger")]
+    [Table("TallyLedger")]
     public class TallyEntry : IHasTreeID
     {
         public TallyEntry()
@@ -53,7 +53,7 @@ namespace FScruiser.Models
         [Field("Reason")]
         public string Reason { get; set; }
 
-        [Field("TreeNumber", SourceName = "Tree_V3")]
+        [Field("TreeNumber")]
         public int? TreeNumber { get; set; }
 
         [Field("TreeID")]

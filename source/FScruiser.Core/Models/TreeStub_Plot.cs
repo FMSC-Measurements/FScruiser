@@ -3,7 +3,7 @@ using FScruiser.Models;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Tree")]
+    [Table("Tree")]
     public class TreeStub_Plot : TreeStub, IHasTreeID
     {
         [Field(Alias = "CuttingUnitCode", SQLExpression = "CuttingUnit.Code")]
@@ -21,6 +21,7 @@ namespace FScruiser.Models
         [Field("STM")]
         public string STM { get; set; }
 
+        [IgnoreField]
         public bool IsSTM
         {
             get { return STM == "Y"; }
