@@ -27,6 +27,11 @@ namespace FScruiser.XF.ViewModels
 
         public event EventHandler TallyEntryAdded;
 
+        public string Title
+        {
+            get => _title;
+            set => SetValue(ref _title, value);
+        }
         public IList<TallyEntry> TallyFeed
         {
             get { return _tallyFeed; }
@@ -79,7 +84,14 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public string UnitCode { get; set; }
+        public string UnitCode
+        {
+            get => _unitCode;
+            set
+            {
+                _unitCode = value;
+            }
+        }
 
         #region Commands
 
@@ -88,6 +100,8 @@ namespace FScruiser.XF.ViewModels
         private ICommand _stratumSelectedCommand;
         private ICommand _tallyCommand;
         private ICommand _untallyCommand;
+        private string _title;
+        private string _unitCode;
 
         public ICommand ShowTallyMenuCommand => _showTallyMenuCommand
             ?? (_showTallyMenuCommand = new Command<TallyPopulation>(ShowTallyMenu));
@@ -129,6 +143,8 @@ namespace FScruiser.XF.ViewModels
         protected override void Refresh(INavigationParameters parameters)
         {
             var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
+
+            Title = $"Unit {unitCode}";
 
             var datastore = Datastore;
 

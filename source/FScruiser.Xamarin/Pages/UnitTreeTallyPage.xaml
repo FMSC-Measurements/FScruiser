@@ -7,6 +7,7 @@
              xmlns:local_views="clr-namespace:FScruiser.XF.Views"
              x:Class="FScruiser.XF.Pages.UnitTreeTallyPage"
              BackgroundColor ="White"
+             Title="{Binding Title}"
              x:Name="_page">
     <ContentPage.Resources>
         <ResourceDictionary>
