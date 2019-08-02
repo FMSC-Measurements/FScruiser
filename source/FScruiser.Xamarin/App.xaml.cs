@@ -52,8 +52,8 @@ namespace FScruiser.XF
 #if RELEASE
             //start app center services
             Microsoft.AppCenter.AppCenter.Start($"ios={Secrets.APPCENTER_KEY_IOS};android={Secrets.APPCENTER_KEY_DROID};uwp={Secrets.APPCENTER_KEY_UWP}"
-                , typeof(Microsoft.AppCenter.Distribute.Distribute)
-                , typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Crashes));
+                , typeof(Microsoft.AppCenter.Analytics.Analytics)
+                ,typeof(Crashes));
 
 #endif
 
