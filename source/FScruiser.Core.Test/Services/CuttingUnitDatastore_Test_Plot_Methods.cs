@@ -76,7 +76,7 @@ namespace FScruiser.Core.Test.Services
 
                 database.ExecuteScalar<int>("SELECT count(*) from Tree_V3;").Should().Be(1);
 
-                //var mytree = database.QueryGeneric("SELECT * FROM Tree_V3;")
+                //var mytree = database.QueryGeneric("SELECT * FROM Tree_V3;").ToArray();
 
                 var tree = datastore.GetTree(treeID);
                 tree.Should().NotBeNull();

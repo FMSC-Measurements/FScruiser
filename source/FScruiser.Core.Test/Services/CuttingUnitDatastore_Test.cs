@@ -288,14 +288,29 @@ namespace FScruiser.Core.Test.Services
                 tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
 
                 tallyEntries.Should().HaveCount(2);
+
+
+                // inset a tally ledger with plot number
+                // and conferm that GetTallyEntriesByUnitCode doesn't return plot tally entries
+                datastore.InsertTallyAction(new TallyAction(unit, 1, pop));
+
+                tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
+
+                tallyEntries.Should().HaveCount(2);
+
+
             }
         }
 
         [Theory]
-        [InlineData("st2", "sg2", null, null, false)]
-        [InlineData("st2", "sg2", "", "", false)]// not tally by subpop
-        [InlineData("st1", "sg1", "sp1", "L", false)]// tally by subpop
-        public void InsertTallyEntry(string stratumCode, string sgCode, string species, string liveDead, bool isSample)
+        [InlineData("st2", "sg2", null, null, false, false)]// non sample, null values
+        [InlineData("st2", "sg2", "", "", false, false)]//non sample, not tally by subpop
+        [InlineData("st1", "sg1", "sp1", "L", false, false)]//non sample, tally by subpop
+        [InlineData("st2", "sg2", "", "", true, false)]//non sample, not tally by subpop
+        [InlineData("st1", "sg1", "sp1", "L", true, false)]//non sample, tally by subpop
+        [InlineData("st2", "sg2", "", "", true, true)]// not tally by subpop - insurance
+        [InlineData("st1", "sg1", "sp1", "L", true, true)]// tally by subpop - insurance
+        public void InsertTallyAction(string stratumCode, string sgCode, string species, string liveDead, bool isSample, bool isInsuranceSample)
         {
             var unitCode = "u1";
             var treeCount = 50;
@@ -315,6 +330,7 @@ namespace FScruiser.Core.Test.Services
                 {
                     IsSample = isSample,
                     TreeCount = treeCount,
+                    IsInsuranceSample = isInsuranceSample,
                 };
 
                 var entry = datastore.InsertTallyAction(tallyAction);
@@ -338,9 +354,9 @@ namespace FScruiser.Core.Test.Services
                     tree.TreeID.Should().Be(entry.TreeID);
                     tree.StratumCode.Should().Be(stratumCode);
                     tree.SampleGroupCode.Should().Be(sgCode);
-                    tree.Species.Should().Be(species ?? "");
-                    tree.LiveDead.Should().Be(liveDead ?? "");
-                    tree.CountOrMeasure.Should().Be(isSample ? "M" : "C");
+                    tree.Species.Should().Be(pop.Species);
+                    tree.LiveDead.Should().Be(pop.LiveDead);
+                    tree.CountOrMeasure.Should().Be(isSample ? (isInsuranceSample) ? "I" : "M" : "C");
                 }
 
                 var tallyPopulate = datastore.GetTallyPopulationsByUnitCode(unitCode).Where(x => (x.Species ?? "") == (species ?? "")).Single();
