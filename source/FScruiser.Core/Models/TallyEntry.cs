@@ -18,6 +18,7 @@ namespace FScruiser.Models
             Species = action.Species;
             LiveDead = action.LiveDead;
             EntryType = action.EntryType;
+            CountOrMeasure = action.IsSample ? action.IsInsuranceSample ? "I" : "M" : "C";
         }
 
         [Field("CuttingUnitCode")]
@@ -58,6 +59,9 @@ namespace FScruiser.Models
 
         [Field("TreeID")]
         public string TreeID { get; set; }
+
+        [Field("CountOrMeasure")]
+        public string CountOrMeasure { get; set; }
 
         [Field("TallyLedgerID")]
         public string TallyLedgerID { get; set; }

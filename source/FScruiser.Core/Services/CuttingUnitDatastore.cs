@@ -577,14 +577,15 @@ namespace FScruiser.Services
                     "tl.SampleGroupCode, " +
                     "tl.Species, " +
                     "tl.LiveDead, " +
-                    "TreeCount, " +
-                    "Reason, " +
-                    "KPI, " +
-                    "EntryType, " +
-                    "Remarks, " +
-                    "Signature, " +
+                    "tl.TreeCount, " +
+                    "tl.Reason, " +
+                    "tl.KPI, " +
+                    "tl.EntryType, " +
+                    "tl.Remarks, " +
+                    "tl.Signature, " +
                     "tl.CreatedDate, " +
                     "t.TreeNumber, " +
+                    "t.CountOrMeasure, " +
                     "tl.STM, " +
                     "(SELECT count(*) FROM TreeError AS te WHERE tl.TreeID IS NOT NULL AND Level = 'E' AND te.TreeID = tl.TreeID AND Resolution IS NULL) AS ErrorCount, " +
                     "(SELECT count(*) FROM TreeError AS te WHERE tl.TreeID IS NOT NULL AND Level = 'W' AND te.TreeID = tl.TreeID AND Resolution IS NULL) AS WarningCount " +
@@ -604,7 +605,7 @@ namespace FScruiser.Services
         {
             return Database.Query<TallyEntry>(
                 QUERY_TALLYENTRY_BASE +
-                "WHERE tl.CuttingUnitCode = @p1 " +
+                "WHERE tl.CuttingUnitCode = @p1 AND tl.PlotNumber IS NULL " +
                 "ORDER BY tl.CreatedDate DESC;",
                 new object[] { unitCode })
                 .ToArray();
@@ -753,7 +754,7 @@ namespace FScruiser.Services
                             atn.SampleGroupCode,
                             atn.Species,
                             atn.LiveDead,
-                            CountOrMeasure = (atn.IsInsuranceSample ? "I" : "M"),
+                            tallyEntry.CountOrMeasure,
                             UserName,
                         });
                 }
