@@ -17,7 +17,7 @@
                                  Binding="{Binding CountOrMeasure}"
                                  Value="M">
                         <Setter Property="BackgroundColor"
-                                Value="#30C1BC" />
+                                Value="{StaticResource accent}" />
                     </DataTrigger>
 
                     <DataTrigger TargetType="Frame"
