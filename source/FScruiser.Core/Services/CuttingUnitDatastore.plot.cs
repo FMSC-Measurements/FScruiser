@@ -175,7 +175,7 @@ namespace FScruiser.Services
                 "JOIN CuttingUnit_Stratum AS cust USING (CuttingUnitCode) " +
                 "JOIN Stratum AS st ON cust.StratumCode = st.Code " +
                 "LEFT JOIN Plot_Stratum AS ps USING (CuttingUnitCode, StratumCode, PlotNumber) " +
-                "WHERE p.CuttingUnitCode = @p1 " +
+                $"WHERE p.CuttingUnitCode = @p1 AND st.Method IN ({PLOT_METHODS}) " +
                 "AND p.PlotNumber = @p2;",
                 new object[] { unitCode, plotNumber }).ToArray();
         }
