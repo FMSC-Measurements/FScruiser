@@ -25,21 +25,21 @@ namespace FScruiser.Logic
             return tallyEntry;
         }
 
-        private static TallyAction CreateTallyWithTree(string unitCode, TallyPopulation population,
-            bool isInsurance = false, int treeCount = 1, int kpi = 0,
-            int threePRandomeValue = 0, bool stm = false)
-        {
-            var tallyEntry = new TallyAction(unitCode, population)
-            {
-                CountOrMeasure = isInsurance ? TallyAction.CountOrMeasureValue.I : TallyAction.CountOrMeasureValue.M,
-                TreeCount = treeCount,
-                KPI = kpi,
-                ThreePRandomValue = threePRandomeValue,
-                STM = stm,
-            };
+        //private static TallyAction CreateTallyWithTree(string unitCode, TallyPopulation population,
+        //    bool isInsurance = false, int treeCount = 1, int kpi = 0,
+        //    int threePRandomeValue = 0, bool stm = false)
+        //{
+        //    var tallyEntry = new TallyAction(unitCode, population)
+        //    {
+        //        CountOrMeasure = isInsurance ? TallyAction.CountOrMeasureValue.I : TallyAction.CountOrMeasureValue.M,
+        //        TreeCount = treeCount,
+        //        KPI = kpi,
+        //        ThreePRandomValue = threePRandomeValue,
+        //        STM = stm,
+        //    };
 
-            return tallyEntry;
-        }
+        //    return tallyEntry;
+        //}
 
         public static async Task<TallyAction> TallyAsync(string unitCode,
             TallyPopulation pop,
