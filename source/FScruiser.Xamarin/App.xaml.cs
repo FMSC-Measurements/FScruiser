@@ -3,6 +3,7 @@ using FScruiser.Services;
 using FScruiser.Util;
 using FScruiser.XF.Pages;
 using FScruiser.XF.Services;
+using FScruiser.XF.Util;
 using Microsoft.AppCenter.Crashes;
 using Plugin.Permissions;
 using Prism;
@@ -108,7 +109,17 @@ namespace FScruiser.XF
                             }
                             else
                             {
-                                Migrator.MigrateFromV2ToV3(path, convertedPath);
+                                try
+                                {
+                                    Migrator.MigrateFromV2ToV3(path, convertedPath);
+                                }
+                                catch(Exception e)
+                                {
+                                    LogAndShowExceptionAsync("File Error", "Unable to Migrate File", e
+                                        , new Dictionary<string, string>(){ { "FileName", path } })
+                                        .FireAndForget();
+                                    return;
+                                }
 
                                 var fileName = System.IO.Path.GetFileName(path);
                                 await DialogService.DisplayAlertAsync("Message",
@@ -129,11 +140,15 @@ namespace FScruiser.XF
                     }
                     catch (FileNotFoundException ex)
                     {
-                        var task = LogAndShowExceptionAsync("File Error", "File Not Found", ex, new Dictionary<string, string> { { "FilePath", path } });
+                        LogAndShowExceptionAsync("File Error", "File Not Found",
+                            ex, new Dictionary<string, string> { { "FilePath", path } })
+                            .FireAndForget();
                     }
                     catch (Exception ex)
                     {
-                        var task = LogAndShowExceptionAsync("File Error", "File Could Not Be Opended", ex, new Dictionary<string, string> { { "FilePath", path } });
+                         LogAndShowExceptionAsync("File Error", "File Could Not Be Opended",
+                             ex, new Dictionary<string, string> { { "FilePath", path } })
+                            .FireAndForget();
                     }
                 }
             }
