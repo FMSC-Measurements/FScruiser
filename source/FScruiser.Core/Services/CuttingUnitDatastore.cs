@@ -6,6 +6,7 @@ using FScruiser.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
@@ -695,6 +696,11 @@ namespace FScruiser.Services
                 });
 
             tallyLedger.TallyLedgerID = tallyLedgerID;
+        }
+
+        public Task<TallyEntry> InsertTallyActionAsync(TallyAction tallyAction)
+        {
+            return Task.Factory.StartNew(() => InsertTallyAction(tallyAction));
         }
 
         public TallyEntry InsertTallyAction(TallyAction atn)

@@ -124,7 +124,7 @@ namespace FScruiser.XF.ViewModels
 
         public IDialogService DialogService { get; }
         public ISampleSelectorDataService SampleSelectorService { get; }
-        public ITallySettingsDataService TallySettings { get; }
+        public ICruisersDataservice CruisersDataService { get; }
         public ISoundService SoundService { get; }
 
         public UnitTreeTallyViewModel(INavigationService navigationService,
@@ -136,7 +136,7 @@ namespace FScruiser.XF.ViewModels
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
             SampleSelectorService = datastoreProvider.Get<ISampleSelectorDataService>();
             DialogService = dialogService;
-            TallySettings = tallySettings;
+            CruisersDataService = datastoreProvider.Get<ICruisersDataservice>();
             SoundService = soundService;
         }
 
@@ -186,7 +186,7 @@ namespace FScruiser.XF.ViewModels
             // database will assign tree a tree number if there is a tree
             // action might be null if user dosn't enter kpi or tree count for clicker entry
             if (action == null) { return; }
-            var entry = Datastore.InsertTallyAction(action);
+            var entry = await Datastore.InsertTallyActionAsync(action);
 
             // trigger updates due to tally
             await HandleTally(pop, action, entry);
@@ -218,15 +218,16 @@ namespace FScruiser.XF.ViewModels
                     await SoundService.SignalMeasureTreeAsync();
                 }
 
-                if (TallySettings.EnableCruiserPopup)
-                {
-                    var cruiser = await DialogService.AskCruiserAsync();
-                    if (cruiser != null)
-                    {
-                        Datastore.UpdateTreeInitials(entry.TreeID, cruiser);
-                    }
-                }
-                else if (method != CruiseMethods.H_PCT)
+                //if (CruisersDataService.PromptCruiserOnSample)
+                //{
+                //    var cruiser = await DialogService.AskCruiserAsync();
+                //    if (cruiser != null)
+                //    {
+                //        Datastore.UpdateTreeInitials(entry.TreeID, cruiser);
+                //    }
+                //}
+                //else
+                if (method != CruiseMethods.H_PCT)
                 {
                     var sampleType = (action.IsInsuranceSample) ? "Insurance Tree" : "Measure Tree";
                     await DialogService.ShowMessageAsync("Tree #" + entry.TreeNumber.ToString(), sampleType);

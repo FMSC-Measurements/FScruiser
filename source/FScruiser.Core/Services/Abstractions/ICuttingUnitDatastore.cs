@@ -80,6 +80,8 @@ namespace FScruiser.Services
 
         TallyEntry InsertTallyAction(TallyAction entry);
 
+        Task<TallyEntry> InsertTallyActionAsync(TallyAction tallyAction);
+
         void InsertTallyLedger(TallyLedger tallyLedger);
 
         void DeleteTallyEntry(string tallyLedgerID);
