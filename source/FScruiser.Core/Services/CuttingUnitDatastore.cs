@@ -749,6 +749,11 @@ namespace FScruiser.Services
                             "@TreeNumber," +
                             "@CountOrMeasure," +
                             "@UserName " +
+                        ");" +
+                        "INSERT INTO TreeMeasurment (" +
+                            "TreeID" +
+                        ") VALUES ( " +
+                            "@TreeID" +
                         ");",
                         new
                         {
