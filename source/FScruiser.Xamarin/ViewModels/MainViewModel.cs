@@ -127,11 +127,11 @@ namespace FScruiser.XF.ViewModels
                 }
             }
 
-            navigationItems.Add(new NavigationListItem
-            {
-                Title = "Cruisers",
-                NavigationPath = "Navigation/Cruisers"
-            });
+            //navigationItems.Add(new NavigationListItem
+            //{
+            //    Title = "Cruisers",
+            //    NavigationPath = "Navigation/Cruisers"
+            //});
 
             NavigationListItems = navigationItems;
         }
