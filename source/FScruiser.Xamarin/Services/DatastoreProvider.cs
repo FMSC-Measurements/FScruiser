@@ -19,10 +19,12 @@ namespace FScruiser.XF.Services
     public class DatastoreProvider : IDatastoreProvider
     {
         private string _cruisePath;
+        ICruisersDataservice _cruisersDataservice;
 
         public DatastoreProvider(Application application)
         {
             Application = application ?? throw new ArgumentNullException(nameof(application));
+
         }
 
         public Xamarin.Forms.Application Application { get; }
@@ -62,7 +64,7 @@ namespace FScruiser.XF.Services
             if (type.IsAssignableFrom(typeof(ISampleSelectorDataService)))
             { return SampleSelectorDataService; }
             if (type.IsAssignableFrom(typeof(ICruisersDataservice)))
-            { return new CruisersDataservice(Application); }
+            { return _cruisersDataservice ?? (_cruisersDataservice = new CruisersDataservice(Application)); }
             else
             { return null; }
         }
