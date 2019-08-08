@@ -61,96 +61,96 @@ namespace FScruiser.XF.Util
             return editView;
         }
 
-        public static View MakeEditView(TreeFieldSetup field)
-        {
-            View editView = null;
-            switch (field.Field)
-            {
-                // unsupported fields 
-                case "KPI":
-                case "TreeCount":
-                case "TreeNumber":
-                    {
-                        return null;
-                    }
+        //public static View MakeEditView(TreeFieldSetup field)
+        //{
+        //    View editView = null;
+        //    switch (field.Field)
+        //    {
+        //        // unsupported fields 
+        //        case "KPI":
+        //        case "TreeCount":
+        //        case "TreeNumber":
+        //            {
+        //                return null;
+        //            }
 
-                case "StratumCode":
-                case "Stratum":
-                    {
-                        editView = MakeStratumPicker();
-                        break;
-                    }
-                case "SampleGroupCode":
-                case "Samplegroup":
-                    {
-                        editView = MakeSampleGroupPicker();
-                        break;
-                    }
-                //case nameof(Tree.Species):
-                //    {
-                //        editView = MakeSpeciesPicker();
-                //        break;
-                //    }
-                case nameof(Tree.CountOrMeasure):
-                    {
-                        editView = MakeCountMeasurePicker();
-                        break;
-                    }
-                case nameof(TreeMeasurment.Aspect):
-                case nameof(TreeMeasurment.CrownRatio):
-                case nameof(TreeMeasurment.DBH):
-                case nameof(TreeMeasurment.DBHDoubleBarkThickness):
-                //case nameof(Tree.Diameter):
-                case nameof(TreeMeasurment.DiameterAtDefect):
-                case nameof(TreeMeasurment.DRC):
-                case nameof(TreeMeasurment.FormClass):
-                //case nameof(Tree.Height):
-                case nameof(TreeMeasurment.HeightToFirstLiveLimb):
-                case nameof(TreeMeasurment.MerchHeightPrimary):
-                case nameof(TreeMeasurment.MerchHeightSecondary):
-                case nameof(TreeMeasurment.PoleLength):
-                case nameof(TreeMeasurment.RecoverablePrimary):
-                case nameof(TreeMeasurment.SeenDefectPrimary):
-                case nameof(TreeMeasurment.SeenDefectSecondary):
-                case nameof(TreeMeasurment.Slope):
-                case nameof(TreeMeasurment.TopDIBPrimary):
-                case nameof(TreeMeasurment.TopDIBSecondary):
-                case nameof(TreeMeasurment.TotalHeight):
-                case nameof(TreeMeasurment.UpperStemDiameter):
-                case nameof(TreeMeasurment.UpperStemHeight):
-                case nameof(TreeMeasurment.VoidPercent):
-                    {
-                        editView = new Entry();
-                        ((InputView)editView).Keyboard = Keyboard.Numeric;
-                        ((Entry)editView).Behaviors.Add(new Xamarin.Toolkit.Behaviors.NumericValidationBehavior { TextColorInvalid = Color.Red });
-                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
-                        editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
-                        break;
-                    }
-                case nameof(TreeMeasurment.DefectCode):
-                    {
-                        editView = new Entry();
-                        ((InputView)editView).Keyboard = Keyboard.Default;
-                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
-                        editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
-                        break;
-                    }
-                default:
-                    {
-                        editView = new Entry();
-                        Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
-                        editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
-                        break;
-                    }
-            }
+        //        case "StratumCode":
+        //        case "Stratum":
+        //            {
+        //                editView = MakeStratumPicker();
+        //                break;
+        //            }
+        //        case "SampleGroupCode":
+        //        case "Samplegroup":
+        //            {
+        //                editView = MakeSampleGroupPicker();
+        //                break;
+        //            }
+        //        //case nameof(Tree.Species):
+        //        //    {
+        //        //        editView = MakeSpeciesPicker();
+        //        //        break;
+        //        //    }
+        //        case nameof(Tree.CountOrMeasure):
+        //            {
+        //                editView = MakeCountMeasurePicker();
+        //                break;
+        //            }
+        //        case nameof(TreeMeasurment.Aspect):
+        //        case nameof(TreeMeasurment.CrownRatio):
+        //        case nameof(TreeMeasurment.DBH):
+        //        case nameof(TreeMeasurment.DBHDoubleBarkThickness):
+        //        //case nameof(Tree.Diameter):
+        //        case nameof(TreeMeasurment.DiameterAtDefect):
+        //        case nameof(TreeMeasurment.DRC):
+        //        case nameof(TreeMeasurment.FormClass):
+        //        //case nameof(Tree.Height):
+        //        case nameof(TreeMeasurment.HeightToFirstLiveLimb):
+        //        case nameof(TreeMeasurment.MerchHeightPrimary):
+        //        case nameof(TreeMeasurment.MerchHeightSecondary):
+        //        case nameof(TreeMeasurment.PoleLength):
+        //        case nameof(TreeMeasurment.RecoverablePrimary):
+        //        case nameof(TreeMeasurment.SeenDefectPrimary):
+        //        case nameof(TreeMeasurment.SeenDefectSecondary):
+        //        case nameof(TreeMeasurment.Slope):
+        //        case nameof(TreeMeasurment.TopDIBPrimary):
+        //        case nameof(TreeMeasurment.TopDIBSecondary):
+        //        case nameof(TreeMeasurment.TotalHeight):
+        //        case nameof(TreeMeasurment.UpperStemDiameter):
+        //        case nameof(TreeMeasurment.UpperStemHeight):
+        //        case nameof(TreeMeasurment.VoidPercent):
+        //            {
+        //                editView = new Entry();
+        //                ((InputView)editView).Keyboard = Keyboard.Numeric;
+        //                ((Entry)editView).Behaviors.Add(new Xamarin.Toolkit.Behaviors.NumericValidationBehavior { TextColorInvalid = Color.Red });
+        //                Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
+        //                editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
+        //                break;
+        //            }
+        //        case nameof(TreeMeasurment.DefectCode):
+        //            {
+        //                editView = new Entry();
+        //                ((InputView)editView).Keyboard = Keyboard.Default;
+        //                Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
+        //                editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
+        //                break;
+        //            }
+        //        default:
+        //            {
+        //                editView = new Entry();
+        //                Xamarin.Forms.PlatformConfiguration.AndroidSpecific.Entry.SetImeOptions(editView, Xamarin.Forms.PlatformConfiguration.AndroidSpecific.ImeFlags.Next);
+        //                editView.SetBinding(Entry.TextProperty, $"Tree.{field.Field}");
+        //                break;
+        //            }
+        //    }
 
-            if (editView is Entry entry)
-            {
-                entry.Effects.Add(new Xamarin.Toolkit.Effects.EntrySelectAllText());
-            }
+        //    if (editView is Entry entry)
+        //    {
+        //        entry.Effects.Add(new Xamarin.Toolkit.Effects.EntrySelectAllText());
+        //    }
 
-            return editView;
-        }
+        //    return editView;
+        //}
 
         public static View MakeStratumPicker()
         {
