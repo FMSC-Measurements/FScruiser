@@ -20,8 +20,8 @@ namespace FScruiser.Core.Test.Services
             var units = Units = new string[] { "u1", "u2" };
             var strata = Strata = new[]
             {
-                new Stratum{ Code = "st1", Method = "" },
-                new Stratum{ Code = "st2", Method = "" },
+                new Stratum{ Code = "st1", Method = "PCM" },
+                new Stratum{ Code = "st2", Method = "PCM" },
             };
 
             UnitStrata = new[]
