@@ -34,6 +34,7 @@ namespace FScruiser.XF.ViewModels
         private bool _hasSpeciesError;
         private Command<TreeError> _showEditTreeErrorCommand;
         private IEnumerable<string> _cruisers;
+        private string _initials;
 
         protected ICuttingUnitDatastore Datastore { get; set; }
         public ICruisersDataservice CruisersDataservice { get; }
