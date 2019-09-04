@@ -1,6 +1,7 @@
 ﻿using CruiseDAL;
 using CruiseDAL.V3.Models;
 using FScruiser.Util;
+using System.Linq;
 using Xunit.Abstractions;
 
 namespace FScruiser.Core.Test.Services
@@ -14,15 +15,22 @@ namespace FScruiser.Core.Test.Services
         protected SampleGroup_V3[] SampleGroups { get; }
         protected TreeDefaultValue[] TreeDefaults { get; }
         protected Subpopulation[] Subpops { get; }
+        public Stratum[] PlotStrata { get; }
+        public Stratum[] NonPlotStrata { get; }
 
         public Datastore_TestBase(ITestOutputHelper output) : base(output)
         {
             var units = Units = new string[] { "u1", "u2" };
-            var strata = Strata = new[]
+
+            var plotStrata = PlotStrata = new[]
             {
                 new Stratum{ Code = "st1", Method = "PCM" },
                 new Stratum{ Code = "st2", Method = "PCM" },
             };
+
+            var nonPlotStrata= NonPlotStrata = new Stratum[0]; 
+
+            var strata = Strata = plotStrata.Concat(nonPlotStrata).ToArray();
 
             UnitStrata = new[]
             {

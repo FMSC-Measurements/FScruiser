@@ -40,7 +40,7 @@ namespace FScruiser.XF.Behaviors
         {
             base.OnDetachingFrom(listView);
 
-            listView.PropertyChanged += ListView_PropertyChanged;
+            listView.PropertyChanged -= ListView_PropertyChanged;
         }
     }
 }

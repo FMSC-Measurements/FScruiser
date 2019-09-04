@@ -31,6 +31,8 @@ namespace FScruiser.Services
 
         void UpdatePlot_Stratum(Plot_Stratum stratumPlot);
 
+        void UpdatePlotNumber(string plotID, int plotNumber);
+
         void DeletePlot_Stratum(string cuttingUnitCode, string stratumCode, int plotNumber);
 
         #endregion plot stratum

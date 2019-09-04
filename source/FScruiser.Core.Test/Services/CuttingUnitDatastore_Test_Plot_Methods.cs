@@ -3,12 +3,8 @@ using FluentAssertions;
 using FScruiser.Models;
 using FScruiser.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using FScruiser.Util;
 using Xunit.Abstractions;
 using dbModels = CruiseDAL.V3.Models;
 
@@ -25,7 +21,7 @@ namespace FScruiser.Core.Test.Services
         [Fact]
         public void AddNewPlot()
         {
-            var unitCode = "u1";
+            var unitCode = Units.First();
             //var plotNumber = 1;
 
             using (var database = CreateDatabase())
@@ -34,22 +30,25 @@ namespace FScruiser.Core.Test.Services
 
                 var plotID = datastore.AddNewPlot(unitCode);
 
-                plotID.Should().NotBeNullOrEmpty();
-
-
-
-                var plot1 = datastore.GetPlot(plotID);
-
-                var strat_plots = datastore.GetPlot_Strata(unitCode, plot1.PlotNumber);
-
-
+                validatePlot(datastore, unitCode, plotID, 1);
 
                 var plotID2 = datastore.AddNewPlot(unitCode);
-
-                plotID2.Should().NotBeNullOrEmpty();
-
-
+                validatePlot(datastore, unitCode, plotID2, 2);
             }
+        }
+
+        private static void validatePlot(CuttingUnitDatastore datastore, string unitCode, string plotID, int expectedPlotNumber)
+        {
+            plotID.Should().NotBeNullOrEmpty();
+
+            var plot = datastore.GetPlot(plotID);
+            plot.Should().NotBeNull();
+            plot.PlotNumber.Should().Be(expectedPlotNumber);
+
+            var strat_plots = datastore.GetPlot_Strata(unitCode, plot.PlotNumber);
+            strat_plots.Should().NotBeEmpty();
+
+            strat_plots.All(x => x.PlotNumber == expectedPlotNumber).Should().BeTrue();
         }
 
         [Fact]
@@ -106,7 +105,6 @@ namespace FScruiser.Core.Test.Services
 
             using (var database = CreateDatabase())
             {
-
                 var datastore = new CuttingUnitDatastore(database);
 
                 database.Execute(
@@ -208,13 +206,13 @@ namespace FScruiser.Core.Test.Services
         public void GetPlot_Stratum()
         {
             var units = new string[] { "u1" };
-            var strata = new []
+            var strata = new[]
             {
                 new dbModels.Stratum {Code = "st1", Method = "" },
                 new dbModels.Stratum {Code = "st2", Method = "" },
                 new dbModels.Stratum {Code = "st3", Method = "" },
             };
-            var unit_strata = new []
+            var unit_strata = new[]
             {
                 new dbModels.CuttingUnit_Stratum {CuttingUnitCode = "u1", StratumCode = "st1" },
                 new dbModels.CuttingUnit_Stratum {CuttingUnitCode = "u1", StratumCode = "st2" },
@@ -252,7 +250,7 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
-        void ValidatePlot_Stratum(Plot_Stratum ps, bool inCruise)
+        private void ValidatePlot_Stratum(Plot_Stratum ps, bool inCruise)
         {
             ps.CuttingUnitCode.Should().NotBeNullOrWhiteSpace();
             ps.StratumCode.Should().NotBeNullOrWhiteSpace();
@@ -304,18 +302,26 @@ namespace FScruiser.Core.Test.Services
         [InlineData("FIX")]
         [InlineData("PCM")]
         [InlineData("FCM")]
+        [InlineData("FIXCNT")]
+        [InlineData("F3P")]
+        [InlineData("P3P")]
         public void GetPlotStrataProxies(string method)
         {
-            using (var database = CreateDatabase())
+            var units = Units;
+            var unit = units[0];
+            var newStratumCode = "01";
+
+            using (var database = new CruiseDatastore_V3())
             {
                 var datastore = new CuttingUnitDatastore(database);
+                InitializeDatabase(database, units, null, null, null, null, null, null);
 
-                datastore.GetPlotStrataProxies("u1").Should().HaveCount(0);
+                datastore.GetPlotStrataProxies(unit).Should().HaveCount(0);
 
-                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('03', '{method}');");
-                database.Execute("INSERT INTO CuttingUnit_Stratum (CuttingUnitCode, StratumCode) VALUES ('u1', '03')");
+                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{newStratumCode}', '{method}');");
+                database.Execute($"INSERT INTO CuttingUnit_Stratum (CuttingUnitCode, StratumCode) VALUES ('{unit}', '{newStratumCode}')");
 
-                var result = datastore.GetPlotStrataProxies("u1").ToArray();
+                var result = datastore.GetPlotStrataProxies(unit).ToArray();
 
                 result.Should().HaveCount(1);
             }
@@ -393,7 +399,6 @@ namespace FScruiser.Core.Test.Services
                 var aspect = random.Double();
                 plot.Aspect = aspect;
 
-
                 var remarks = random.String2(24);
                 plot.Remarks = remarks;
 
@@ -404,6 +409,32 @@ namespace FScruiser.Core.Test.Services
                 plotAgain.Slope.Should().Be(slope);
                 plotAgain.Aspect.Should().Be(aspect);
                 plotAgain.Remarks.Should().Be(remarks);
+            }
+        }
+
+        [Fact]
+        public void UpdatePlotNumber()
+        {
+            var unitCode = Units.First();
+            //var plotNumber = 1;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var plotID = datastore.AddNewPlot(unitCode);
+
+                validatePlot(datastore, unitCode, plotID, 1);
+
+                var treeID = datastore.CreatePlotTree(unitCode, 1, "st1", "sg1");
+
+                datastore.UpdatePlotNumber(plotID, 2);
+
+                validatePlot(datastore, unitCode, plotID, 2);
+
+                // verify that plot number updates on tree records
+                var treeAfter = datastore.GetTree(treeID);
+                treeAfter.PlotNumber.Should().Be(2);
             }
         }
 
@@ -501,7 +532,7 @@ namespace FScruiser.Core.Test.Services
                         new dbModels.SampleGroup_V3 {StratumCode = stCode, SampleGroupCode = sgCode, SamplingFrequency = 101, TallyBySubPop = tallyBySp}
                     },
                     // species
-                    new[] { "sp4" }, 
+                    new[] { "sp4" },
                     new[]
                     {
                         new dbModels.TreeDefaultValue {Species ="sp4", LiveDead = "L", PrimaryProduct = "01"},
@@ -553,11 +584,9 @@ namespace FScruiser.Core.Test.Services
 
         public void GetTreeCount()
         {
-            using(var database = CreateDatabase())
+            using (var database = CreateDatabase())
             {
                 var datastore = new CuttingUnitDatastore(database);
-
-
             }
         }
 

@@ -119,6 +119,11 @@ namespace FScruiser.Services
                     });
         }
 
+        public void UpdatePlotNumber(string plotID, int plotNumber)
+        {
+            Database.Execute("UPDATE Plot_V3 SET PlotNumber = @p1 WHERE PlotID = @p2;", plotNumber, plotID);
+        }
+
         public void DeletePlot(string unitCode, int plotNumber)
         {
             Database.Execute(
@@ -414,8 +419,8 @@ namespace FScruiser.Services
                     PlotNumber = plotNumber,
                     StratumCode = stratumCode,
                     SampleGroupCode = sampleGroupCode,
-                    Species = species ?? "",
-                    LiveDead = liveDead ?? "",
+                    Species = species,
+                    LiveDead = liveDead,
                     CountOrMeasure = countMeasure,
                     TreeCount = treeCount,
                     KPI = kpi,

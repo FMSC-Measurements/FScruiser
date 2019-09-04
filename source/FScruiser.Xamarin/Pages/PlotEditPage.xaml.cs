@@ -11,5 +11,7 @@ namespace FScruiser.XF.Pages
         {
             InitializeComponent();
         }
+
+        
     }
 }
