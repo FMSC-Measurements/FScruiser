@@ -18,7 +18,7 @@ namespace FScruiser.XF.ViewModels
         private double _bafOrFps;
         private double _dbh;
         private int _slopePCT;
-        private double _slopeDistance;
+        private double? _slopeDistance;
         private double _limitingDistance;
         private double _azimuth;
         private bool _isToFace = true;
@@ -58,7 +58,27 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public double SlopeDistance
+        // HACK xamarin really doesn't like binding to nullible types
+        // so instead we will bind the text box to a property that exposes SlopeDistance as a string.
+        // see: https://forums.xamarin.com/discussion/144704/binding-to-nullable-int 
+        public string SlopeDistanceStr
+        {
+            get => SlopeDistance?.ToString() ?? "";
+            set
+            {
+                if(value != null && double.TryParse(value, out var d))
+                {
+                    SlopeDistance = d;
+                }
+                else
+                {
+                    SlopeDistance = null;
+                }
+            }
+
+        }
+
+        public double? SlopeDistance
         {
             get { return _slopeDistance; }
             set
@@ -185,8 +205,16 @@ namespace FScruiser.XF.ViewModels
             }
 
             var limitingDistance = LimitingDistance = Logic.CalculateLimitingDistance.Calculate(BafOrFps, DBH, SlopePCT, IsVariableRadius, IsToFace);
+            var slopeDistance = SlopeDistance;
 
-            IsTreeIn = Logic.CalculateLimitingDistance.DeterminTreeInOrOut(SlopeDistance, limitingDistance);
+            if (slopeDistance.HasValue)
+            {
+                IsTreeIn = Logic.CalculateLimitingDistance.DeterminTreeInOrOut(slopeDistance.Value, limitingDistance);
+            }
+            else
+            {
+                IsTreeIn = null;
+            }
         }
 
         protected string GenerateReport()
@@ -195,7 +223,7 @@ namespace FScruiser.XF.ViewModels
 
             if (IsTreeIn.HasValue)
             {
-                return Logic.CalculateLimitingDistance.GenerateReport(TreeStatus, LimitingDistance, SlopeDistance,
+                return Logic.CalculateLimitingDistance.GenerateReport(TreeStatus, LimitingDistance, SlopeDistance.Value,
                     SlopePCT, Azimuth, BafOrFps, DBH, SlopePCT, IsVariableRadius, IsToFace);
             }
             else { return null; }
