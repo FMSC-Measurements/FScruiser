@@ -24,6 +24,10 @@
     </ContentPage.Resources>
     <ContentPage.Content>
         <StackLayout>
+            
+            <!-- the order that the entries appear on the screen is significant as this is the order that 
+            users typicaly enter in their measurments Dbh, then slope, then slope distance-->
+            
             <Frame BackgroundColor="LightBlue">
                 <StackLayout Orientation="Horizontal">
                     <StackLayout Orientation="Horizontal">
@@ -89,11 +93,6 @@
                                         ItemsSource="{Binding MeasureToOptions}" />
                             </StackLayout>
                         </StackLayout>
-                    </Frame>
-
-
-                    <Frame>
-
                     </Frame>
 
                     <Frame BackgroundColor="Yellow">
