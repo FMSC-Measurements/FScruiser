@@ -92,6 +92,11 @@ namespace FScruiser.Services
 
         #region strata
 
+        public string GetCruiseMethod(string stratumCode)
+        {
+            return Database.ExecuteScalar<string>("SELECT Method FROM Stratum WHERE Code = @p1;", stratumCode);
+        }
+
         public IEnumerable<string> GetStratumCodesByUnit(string unitCode)
         {
             var stratumCodes = Database.ExecuteScalar<string>(

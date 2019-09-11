@@ -22,6 +22,7 @@ namespace FScruiser.XF.ViewModels
         private string _remarks;
         private TallyPopulation _tallyPopulation;
         private ICommand _saveTreeCountEditCommand;
+        private string _cruiseMethod;
 
         public TreeCountEditViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider, IDialogService dialogService) : base(navigationService)
         {
@@ -69,6 +70,18 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
+        public string CruiseMethod
+        {
+            get => _cruiseMethod;
+            set
+            {
+                SetValue(ref _cruiseMethod, value);
+                RaisePropertyChanged(nameof(IsSTR));
+            }
+        }
+
+        public bool IsSTR => CruiseMethod == CruiseDAL.Schema.CruiseMethods.STR;
+
         public int AdjustedTreeCount
         {
             get => (TreeCount ?? 0) + TreeCountDelta;
@@ -100,9 +113,10 @@ namespace FScruiser.XF.ViewModels
             var datastore = Datastore;
 
             var tallyPopulation = datastore.GetTallyPopulation(unit, stratum, sampleGroup, species, liveDead);
-
+            
             TallyPopulation = tallyPopulation;
             UnitCode = unit;
+            CruiseMethod = datastore.GetCruiseMethod(tallyPopulation.StratumCode);
 
         }
 

@@ -13,6 +13,7 @@ namespace FScruiser.Services
         IEnumerable<CuttingUnit> GetUnits();
 
         #region stratra
+        string GetCruiseMethod(string stratumCode);
 
         IEnumerable<string> GetStratumCodesByUnit(string unitCode);
 
