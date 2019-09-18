@@ -216,6 +216,7 @@ namespace FScruiser.XF
 
             containerRegistry.RegisterForNavigation<MyNavigationPage>("Navigation");
             containerRegistry.RegisterForNavigation<MainPage, ViewModels.MainViewModel>("Main");
+            containerRegistry.RegisterForNavigation<SalePage, ViewModels.SalePageViewModel>("Sale");
             containerRegistry.RegisterForNavigation<CuttingUnitListPage, ViewModels.CuttingUnitListViewModel>("CuttingUnits");
             containerRegistry.RegisterForNavigation<UnitTreeTallyPage, ViewModels.UnitTreeTallyViewModel>("Tally");
             containerRegistry.RegisterForNavigation<TreeListPage, ViewModels.TreeListViewModel>("Trees");

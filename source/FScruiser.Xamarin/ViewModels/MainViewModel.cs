@@ -93,6 +93,12 @@ namespace FScruiser.XF.ViewModels
             {
                 navigationItems.Add(new NavigationListItem
                 {
+                    Title = "Sale",
+                    NavigationPath = "Navigation/Sale",
+                });
+
+                navigationItems.Add(new NavigationListItem
+                {
                     Title = "Cutting Units",
                     NavigationPath = "Navigation/CuttingUnits"
                 });

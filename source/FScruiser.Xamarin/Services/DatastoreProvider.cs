@@ -65,6 +65,10 @@ namespace FScruiser.XF.Services
             { return SampleSelectorDataService; }
             if (type.IsAssignableFrom(typeof(ICruisersDataservice)))
             { return _cruisersDataservice ?? (_cruisersDataservice = new CruisersDataservice(Application)); }
+            if (type.IsAssignableFrom(typeof(ISaleDataservice)))
+            {
+                return new SaleDataservice(CruisePath);
+            }
             else
             { return null; }
         }
