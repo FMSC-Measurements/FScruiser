@@ -37,6 +37,37 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
+        [Fact]
+        public void AddPlotRemarks()
+        {
+            var remarks = "something";
+            var unitCode = Units.First();
+            var plotNumber = 1;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var plotID = datastore.AddNewPlot(unitCode);
+
+                validatePlot(datastore, unitCode, plotID, plotNumber);
+
+                var plot = datastore.GetPlot(plotID);
+
+                datastore.AddPlotRemark(plot.CuttingUnitCode, plot.PlotNumber, remarks);
+
+                var stuff = database.QueryGeneric("select * from plot_V3").ToArray();
+
+                var plotAgain = datastore.GetPlot(plotID);
+                plotAgain.Remarks.Should().Be(remarks);
+
+                datastore.AddPlotRemark(plot.CuttingUnitCode, plot.PlotNumber, remarks);
+
+                plotAgain = datastore.GetPlot(plotID);
+                plotAgain.Remarks.Should().Be(remarks + ", " + remarks);
+            }
+        }
+
         private static void validatePlot(CuttingUnitDatastore datastore, string unitCode, string plotID, int expectedPlotNumber)
         {
             plotID.Should().NotBeNullOrEmpty();
@@ -507,7 +538,7 @@ namespace FScruiser.Core.Test.Services
         public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_noPlot(bool tallyBySp)
         {
             var unitCode = "u3";
-            var stCode = "st3";
+            var stCode = "st5";
             var sgCode = "sg4";
 
             var method = CruiseDAL.Schema.CruiseMethods.PNT;
@@ -549,7 +580,7 @@ namespace FScruiser.Core.Test.Services
                     //we are going to check that the tally population returned is vallid for a
                     //tally population with no count tree record associated
                     //it should return one tally pop per sample group in the unit, that is associated with a FIX or PNT stratum
-                    var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
+                    var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode(unitCode, 1);
 
                     if (tallyBySp == false)
                     {
@@ -574,8 +605,8 @@ namespace FScruiser.Core.Test.Services
 
                     void ValidateTallyPop(TallyPopulation_Plot tp)
                     {
-                        tp.StratumCode.Should().Be("st3");
-                        tp.SampleGroupCode.Should().Be("sg4");
+                        tp.StratumCode.Should().Be(stCode);
+                        tp.SampleGroupCode.Should().Be(sgCode);
                         tp.InCruise.Should().BeFalse();
                     }
                 }

@@ -53,15 +53,7 @@ namespace FScruiser.Services
         {
             return Database.Query<Plot>(
                 "SELECT " +
-                    "p.PlotID, " +
-                    "p.CuttingUnitCode, " +
-                    "p.PlotNumber, " +
-                    "p.Slope, " +
-                    "p.Aspect, " +
-                    "p.Remarks, " +
-                    "p.XCoordinate, " +
-                    "p.YCoordinate, " +
-                    "p.ZCoordinate " +
+                    "p.* " +
                 "FROM Plot_V3 AS p " +
                 "WHERE PlotID = @p1;", new object[] { plotID })
                 .FirstOrDefault();
@@ -598,7 +590,7 @@ namespace FScruiser.Services
         public void AddPlotRemark(string cuttingUnitCode, int plotNumber, string remark)
         {
             Database.Execute(
-                "UPDATE Plot_V3 SET Remarks = Remarks || ', ' || @p3 " +
+                "UPDATE Plot_V3 SET Remarks = ifnull(Remarks || ', ' || @p3, @p3) " +
                 "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2;", cuttingUnitCode, plotNumber, remark);
         }
 

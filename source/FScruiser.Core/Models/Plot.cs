@@ -3,7 +3,7 @@ using FScruiser.Util;
 
 namespace FScruiser.Models
 {
-    [Table("Plot")]
+    [Table("Plot_V3")]
     public class Plot : INPC_Base
     {
         private double _slope;
