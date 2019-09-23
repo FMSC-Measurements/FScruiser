@@ -17,10 +17,10 @@ namespace FScruiser.Core.Test.Services
         {
         }
 
-        
+
         [Theory]
-        [InlineData("u1", "st1", "st2")]
-        [InlineData("u2", "st2")]
+        [InlineData("u1", "st3", "st4")]
+        [InlineData("u2", "st4")]
         public void GetStrataByUnitCode_Test(string unitCode, params string[] expectedStrataCodes)
         {
             using (var database = CreateDatabase())
@@ -29,6 +29,8 @@ namespace FScruiser.Core.Test.Services
 
                 var strata = database.Query<FScruiser.Models.Stratum>
                     ("select * from stratum;").ToArray();
+
+                var stuff = database.QueryGeneric("select * from Stratum;").ToArray();
 
                 var results = datastore.GetStrataByUnitCode(unitCode);
 
@@ -258,7 +260,7 @@ namespace FScruiser.Core.Test.Services
             result.Frequency.Should().BeGreaterThan(0);
         }
 
-       
+
 
         #region tally entry
 
@@ -303,13 +305,13 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Theory]
-        [InlineData("st2", "sg2", null, null, false, false)]// non sample, null values
-        [InlineData("st2", "sg2", "", "", false, false)]//non sample, not tally by subpop
-        [InlineData("st1", "sg1", "sp1", "L", false, false)]//non sample, tally by subpop
-        [InlineData("st2", "sg2", "", "", true, false)]//non sample, not tally by subpop
-        [InlineData("st1", "sg1", "sp1", "L", true, false)]//non sample, tally by subpop
-        [InlineData("st2", "sg2", "", "", true, true)]// not tally by subpop - insurance
-        [InlineData("st1", "sg1", "sp1", "L", true, true)]// tally by subpop - insurance
+        [InlineData("st4", "sg2", null, null, false, false)]// non sample, null values
+        [InlineData("st4", "sg2", "", "", false, false)]//non sample, not tally by subpop
+        [InlineData("st3", "sg1", "sp1", "L", false, false)]//non sample, tally by subpop
+        [InlineData("st4", "sg2", "", "", true, false)]//non sample, not tally by subpop
+        [InlineData("st3", "sg1", "sp1", "L", true, false)]//non sample, tally by subpop
+        [InlineData("st4", "sg2", "", "", true, true)]// not tally by subpop - insurance
+        [InlineData("st3", "sg1", "sp1", "L", true, true)]// tally by subpop - insurance
         public void InsertTallyAction(string stratumCode, string sgCode, string species, string liveDead, bool isSample, bool isInsuranceSample)
         {
             var unitCode = "u1";
@@ -423,7 +425,7 @@ namespace FScruiser.Core.Test.Services
         public void DeleteTallyEntry()
         {
             var unitCode = "u1";
-            var stratumCode = "st1";
+            var stratumCode = "st3";
             var sgCode = "sg1";
             var species = "sp1";
             var liveDead = "L";
@@ -448,9 +450,10 @@ namespace FScruiser.Core.Test.Services
 
                 datastore.DeleteTallyEntry(entry.TallyLedgerID);
 
-                var tallyPopAgain = datastore.GetTallyPopulationsByUnitCode(unitCode).Where(x => x.StratumCode == stratumCode
-                && x.SampleGroupCode == sgCode
-                && x.Species == species).Single();
+                var tallyPopAgain = datastore.GetTallyPopulationsByUnitCode(unitCode)
+                    .Where(x => x.StratumCode == stratumCode
+                        && x.SampleGroupCode == sgCode
+                        && x.Species == species).Single();
 
                 tallyPopAgain.TreeCount.Should().Be(0, "TreeCount");
                 tallyPopAgain.SumKPI.Should().Be(0, "SumKPI");

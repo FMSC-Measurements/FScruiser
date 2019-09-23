@@ -1,4 +1,6 @@
 ﻿using CruiseDAL;
+using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +15,8 @@ namespace FScruiser.Core.Test
         protected Stopwatch _stopwatch;
         private string _testTempPath;
 
+        List<string> FilesToBeDeleted { get; } = new List<string>();
+
         public TestBase(ITestOutputHelper output)
         {
             Output = output;
@@ -21,6 +25,21 @@ namespace FScruiser.Core.Test
             if (!Directory.Exists(testTempPath))
             {
                 Directory.CreateDirectory(testTempPath);
+            }
+        }
+
+        ~TestBase()
+        {
+            foreach (var file in FilesToBeDeleted)
+            {
+                try
+                {
+                    File.Delete(file);
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
         }
 
@@ -54,6 +73,16 @@ namespace FScruiser.Core.Test
                 var tableSql = ds.GetTableSQL(table);
                 Output.WriteLine(tableSql);
             }
+        }
+
+        public string GetTempFilePath(string extention, string fileName = null)
+        {
+            return Path.Combine(TestTempPath, (fileName ?? Guid.NewGuid().ToString()) + extention);
+        }
+
+        public void RegesterFileForCleanUp(string path)
+        {
+            FilesToBeDeleted.Add(path);
         }
     }
 }

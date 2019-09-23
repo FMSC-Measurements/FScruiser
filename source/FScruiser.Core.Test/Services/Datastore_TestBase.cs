@@ -24,27 +24,38 @@ namespace FScruiser.Core.Test.Services
 
             var plotStrata = PlotStrata = new[]
             {
-                new Stratum{ Code = "st1", Method = "PCM" },
+                new Stratum{ Code = "st1", Method = "PNT" },
                 new Stratum{ Code = "st2", Method = "PCM" },
             };
 
-            var nonPlotStrata= NonPlotStrata = new Stratum[0]; 
+            var nonPlotStrata= NonPlotStrata = new[]
+            {
+                new Stratum{ Code = "st3", Method = "STR" },
+                new Stratum{ Code = "st4", Method = "STR" },
+            };
 
             var strata = Strata = plotStrata.Concat(nonPlotStrata).ToArray();
 
             UnitStrata = new[]
             {
-                new CuttingUnit_Stratum {CuttingUnitCode = units[0], StratumCode = strata[0].Code },
-                new CuttingUnit_Stratum {CuttingUnitCode = units[0], StratumCode = strata[1].Code},
-                new CuttingUnit_Stratum {CuttingUnitCode = units[1], StratumCode = strata[1].Code},
+                new CuttingUnit_Stratum {CuttingUnitCode = units[0], StratumCode = plotStrata[0].Code },
+                new CuttingUnit_Stratum {CuttingUnitCode = units[0], StratumCode = plotStrata[1].Code},
+                new CuttingUnit_Stratum {CuttingUnitCode = units[1], StratumCode = plotStrata[1].Code},
+
+                new CuttingUnit_Stratum {CuttingUnitCode = units[0], StratumCode = nonPlotStrata[0].Code },
+                new CuttingUnit_Stratum {CuttingUnitCode = units[0], StratumCode = nonPlotStrata[1].Code},
+                new CuttingUnit_Stratum {CuttingUnitCode = units[1], StratumCode = nonPlotStrata[1].Code},
             };
 
             var species = Species = new string[] { "sp1", "sp2", "sp3" };
 
             var sampleGroups = SampleGroups = new[]
             {
-                new SampleGroup_V3 {SampleGroupCode = "sg1", StratumCode = strata[0].Code, SamplingFrequency = 101, TallyBySubPop = true},
-                new SampleGroup_V3 {SampleGroupCode = "sg2", StratumCode = strata[1].Code, SamplingFrequency = 102, TallyBySubPop = false},
+                new SampleGroup_V3 {SampleGroupCode = "sg1", StratumCode = plotStrata[0].Code, SamplingFrequency = 101, TallyBySubPop = true},
+                new SampleGroup_V3 {SampleGroupCode = "sg2", StratumCode = plotStrata[1].Code, SamplingFrequency = 102, TallyBySubPop = false},
+
+                new SampleGroup_V3 {SampleGroupCode = "sg1", StratumCode = nonPlotStrata[0].Code, SamplingFrequency = 101, TallyBySubPop = true},
+                new SampleGroup_V3 {SampleGroupCode = "sg2", StratumCode = nonPlotStrata[1].Code, SamplingFrequency = 102, TallyBySubPop = false},
             };
 
             TreeDefaults = new[]
@@ -72,6 +83,26 @@ namespace FScruiser.Core.Test.Services
                 new Subpopulation {
                     StratumCode = sampleGroups[0].StratumCode,
                     SampleGroupCode = sampleGroups[0].SampleGroupCode,
+                    Species = species[2],
+                    LiveDead = "L",
+                },
+
+                // plot strata
+                new Subpopulation {
+                    StratumCode = sampleGroups[2].StratumCode,
+                    SampleGroupCode = sampleGroups[2].SampleGroupCode,
+                    Species = species[0],
+                    LiveDead = "L",
+                },
+                new Subpopulation {
+                    StratumCode = sampleGroups[2].StratumCode,
+                    SampleGroupCode = sampleGroups[2].SampleGroupCode,
+                    Species = species[1],
+                    LiveDead = "L",
+                },
+                new Subpopulation {
+                    StratumCode = sampleGroups[2].StratumCode,
+                    SampleGroupCode = sampleGroups[2].SampleGroupCode,
                     Species = species[2],
                     LiveDead = "L",
                 },
