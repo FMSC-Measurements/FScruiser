@@ -5,7 +5,8 @@
                                    xmlns:local="clr-namespace:FScruiser.XF.ViewCells"
                                    xmlns:local_commands="clr-namespace:FScruiser.XF.Commands"
                                    xmlns:local_views="clr-namespace:FScruiser.XF.Views"
-                                   xmlns:converters="clr-namespace:Backpack.XF.Converters;assembly=Backpack.XF.Converters">
+                                   xmlns:converters="clr-namespace:Backpack.XF.Converters;assembly=Backpack.XF.Converters"
+                                   xmlns:prismxaml="clr-namespace:Prism.Navigation.Xaml;assembly=Prism.Forms">
 
 
     <ViewCell.View>
@@ -129,12 +130,13 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <ScrollView x:Name="_treeEditScrollView"
                                     Grid.Row="0"
                                     Grid.Column="0"
-                                    Grid.ColumnSpan="3">
+                                    Grid.ColumnSpan="4">
                             <Grid x:Name="_treeEditControlGrid">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
@@ -145,11 +147,18 @@
 
                         <Button Grid.Row="1"
                                 Grid.Column="1"
+                                x:Name="_logsButton"
+                                Text="Logs"
+                                Command="{prismxaml:NavigateTo Name='Logs'}"
+                                CommandParameter="{Binding TreeID}"/>
+
+                        <Button Grid.Row="1"
+                                Grid.Column="2"
                                 x:Name="_editButton"
                                 Text="Edit" />
 
                         <Button Grid.Row="1"
-                                Grid.Column="2"
+                                Grid.Column="3"
                                 x:Name="_untallyButton"
                                 Text="Untally" />
 

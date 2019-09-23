@@ -51,7 +51,8 @@ namespace FScruiser.XF.ViewModels
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            var tree_guid = Tree_GUID = parameters.GetValue<string>("Tree_Guid");
+            var tree_guid = Tree_GUID = parameters.GetValue<string>("Tree_Guid")
+                ?? parameters.GetValue<string>(KnownNavigationParameters.XamlParam);
 
             TreeNumber = Datastore.GetTreeStub(tree_guid)?.TreeNumber;
 
