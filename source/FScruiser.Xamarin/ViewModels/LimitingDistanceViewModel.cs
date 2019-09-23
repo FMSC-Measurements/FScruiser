@@ -33,7 +33,7 @@ namespace FScruiser.XF.ViewModels
             get { return _bafOrFps; }
             set
             {
-                SetValue(ref _bafOrFps, value);
+                _bafOrFps = value;
                 Calculate();
             }
         }
@@ -43,7 +43,7 @@ namespace FScruiser.XF.ViewModels
             get { return _dbh; }
             set
             {
-                SetValue(ref _dbh, value);
+                _dbh = value;
                 Calculate();
             }
         }
@@ -53,7 +53,7 @@ namespace FScruiser.XF.ViewModels
             get { return _slopePCT; }
             set
             {
-                SetValue(ref _slopePCT, value);
+                _slopePCT = value;
                 Calculate();
             }
         }
@@ -83,7 +83,7 @@ namespace FScruiser.XF.ViewModels
             get { return _slopeDistance; }
             set
             {
-                SetValue(ref _slopeDistance, value);
+                _slopeDistance = value;
                 Calculate();
             }
         }
@@ -91,7 +91,10 @@ namespace FScruiser.XF.ViewModels
         public double Azimuth
         {
             get { return _azimuth; }
-            set { SetValue(ref _azimuth, value); }
+            set
+            {
+                _azimuth = value;
+            }
         }
 
         public bool IsToFace
@@ -187,6 +190,8 @@ namespace FScruiser.XF.ViewModels
                 BafOrFps = (isVariableRadious) ? plot.BAF : plot.FPS;
 
                 Plot = plot;
+
+                RaisePropertyChanged(nameof(BafOrFps));
             }
         }
 

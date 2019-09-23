@@ -19,10 +19,10 @@ namespace FScruiser.XF.Pages
             InitializeComponent();
 
             _treeInOutLabel.PropertyChanged += _treeInOutLabel_PropertyChanged;
-            _bafOrFpsEntry.Completed += (s,e) => _slopeDistanceEntry.Focus();
-            _slopeDistanceEntry.Completed += (sender, e) => _dbhEntry.Focus();
-            _dbhEntry.Completed += (s, e) => _slopePctEntry.Focus();
-            _slopePctEntry.Completed += (s, e) => _azimuthEntry.Focus();
+            _bafOrFpsEntry.Completed += (s,e) => _dbhEntry.Focus();
+            _dbhEntry.Completed += (sender, e) => _slopePctEntry.Focus();
+            _slopePctEntry.Completed += (s, e) => _slopeDistanceEntry.Focus();
+            _slopeDistanceEntry.Completed += (s, e) => _azimuthEntry.Focus();
         }
 
 
