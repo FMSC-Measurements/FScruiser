@@ -24,7 +24,7 @@ namespace FScruiser.XF.ViewModels
         private ICommand _saveTreeCountEditCommand;
         private string _cruiseMethod;
 
-        public TreeCountEditViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider, IDialogService dialogService) : base(navigationService)
+        public TreeCountEditViewModel(INavigationService navigationService, IDataserviceProvider datastoreProvider, IDialogService dialogService) : base(navigationService)
         {
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
             DialogService = dialogService;

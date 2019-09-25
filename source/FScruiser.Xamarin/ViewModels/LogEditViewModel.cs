@@ -29,7 +29,7 @@ namespace FScruiser.XF.ViewModels
 
         public IEnumerable<LogError> Errors { get => _errors; set => SetValue(ref _errors, value); }
 
-        public LogEditViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider) : base(navigationService)
+        public LogEditViewModel(INavigationService navigationService, IDataserviceProvider datastoreProvider) : base(navigationService)
         {
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }

@@ -128,7 +128,7 @@ namespace FScruiser.XF.ViewModels
         public ISoundService SoundService { get; }
 
         public UnitTreeTallyViewModel(INavigationService navigationService,
-            IDatastoreProvider datastoreProvider,
+            IDataserviceProvider datastoreProvider,
             IDialogService dialogService,
             ITallySettingsDataService tallySettings,
             ISoundService soundService) : base(navigationService)

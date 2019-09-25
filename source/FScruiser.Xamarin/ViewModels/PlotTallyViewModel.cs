@@ -40,7 +40,7 @@ namespace FScruiser.XF.ViewModels
 
         public PlotTallyViewModel(INavigationService navigationService
             , IDialogService dialogService
-            , IDatastoreProvider datastoreProvider
+            , IDataserviceProvider datastoreProvider
             , ISoundService soundService
             , ITallySettingsDataService tallySettings) : base(navigationService)
         {

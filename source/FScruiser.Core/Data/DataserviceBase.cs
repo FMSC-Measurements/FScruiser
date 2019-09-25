@@ -1,7 +1,7 @@
 ﻿using CruiseDAL;
 using System;
 
-namespace FScruiser.Services
+namespace FScruiser.Data
 {
     public abstract class DataserviceBase
     {
@@ -13,13 +13,15 @@ namespace FScruiser.Services
             set
             {
                 _database = value;
-                OnDatabaseChanged(value);
+                OnDatabaseChanged();
             }
         }
 
-        protected virtual void OnDatabaseChanged(CruiseDatastore_V3 database)
+        private void OnDatabaseChanged()
         {
-            //if (database == null) { return; }
+            var database = Database;
+            if (database == null) { return; }
+
             //DatabaseUpdater.Update(database);
         }
 

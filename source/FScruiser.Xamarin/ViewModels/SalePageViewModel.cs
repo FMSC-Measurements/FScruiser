@@ -1,5 +1,5 @@
-﻿using FScruiser.Models;
-using FScruiser.Services;
+﻿using FScruiser.Data;
+using FScruiser.Models;
 using FScruiser.XF.Services;
 using Prism.Navigation;
 
@@ -11,7 +11,7 @@ namespace FScruiser.XF.ViewModels
 
         protected ISaleDataservice Dataservice { get; set; }
 
-        public SalePageViewModel(IDatastoreProvider datastoreProvider)
+        public SalePageViewModel(IDataserviceProvider datastoreProvider)
         {
             Dataservice = datastoreProvider.Get<ISaleDataservice>();
         }

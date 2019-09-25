@@ -429,7 +429,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public TreeEditViewModel(IDatastoreProvider datastoreProvider
+        public TreeEditViewModel(IDataserviceProvider datastoreProvider
             , IDialogService dialogService)
         {
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
@@ -437,7 +437,7 @@ namespace FScruiser.XF.ViewModels
             DialogService = dialogService;
         }
 
-        public TreeEditViewModel(IDatastoreProvider datastoreProvider
+        public TreeEditViewModel(IDataserviceProvider datastoreProvider
             , IDialogService dialogService, INavigationService navigationService) : base(navigationService)
         {
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();

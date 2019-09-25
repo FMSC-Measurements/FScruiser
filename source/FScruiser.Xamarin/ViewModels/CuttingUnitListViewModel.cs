@@ -21,9 +21,9 @@ namespace FScruiser.XF.ViewModels
             set { SetValue(ref _units, value); }
         }
 
-        public IDatastoreProvider DatastoreProvider { get; }
+        public IDataserviceProvider DatastoreProvider { get; }
 
-        public CuttingUnitListViewModel(IDatastoreProvider datastoreProvider, INavigationService navigationService) : base(navigationService)
+        public CuttingUnitListViewModel(IDataserviceProvider datastoreProvider, INavigationService navigationService) : base(navigationService)
         {
             DatastoreProvider = datastoreProvider ?? throw new ArgumentNullException(nameof(datastoreProvider));
 

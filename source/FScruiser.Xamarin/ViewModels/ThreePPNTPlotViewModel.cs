@@ -45,7 +45,7 @@ namespace FScruiser.XF.ViewModels
 
         public Plot_Stratum StratumPlot { get; protected set; }
 
-        public ThreePPNTPlotViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider, IDialogService dialogService)
+        public ThreePPNTPlotViewModel(INavigationService navigationService, IDataserviceProvider datastoreProvider, IDialogService dialogService)
             : base(navigationService)
         {
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();

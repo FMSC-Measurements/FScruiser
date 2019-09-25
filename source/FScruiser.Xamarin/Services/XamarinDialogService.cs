@@ -13,13 +13,13 @@ namespace FScruiser.XF.Services
     {
         private TaskCompletionSource<int?> _askKpiTcs;
         private TaskCompletionSource<AskTreeCountResult> _askTreeCountTcs;
-        private IDatastoreProvider _datastoreProvider;
+        private IDataserviceProvider _datastoreProvider;
         private IApplicationProvider _applicationProvider;
         private IContainerExtension _container;
 
         public XamarinDialogService(IApplicationProvider applicationProvider,
             IContainerExtension container,
-            IDatastoreProvider datastoreProvider )
+            IDataserviceProvider datastoreProvider )
         {
             _datastoreProvider = datastoreProvider;
             _applicationProvider = applicationProvider;

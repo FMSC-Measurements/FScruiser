@@ -13,7 +13,7 @@ namespace FScruiser.XF.ViewModels
         private TreeError _treeError;
         private string _treeAuditRuleID;
 
-        public TreeErrorEditViewModel(IDatastoreProvider datastoreProvider)
+        public TreeErrorEditViewModel(IDataserviceProvider datastoreProvider)
         {
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }

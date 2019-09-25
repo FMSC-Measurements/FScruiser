@@ -44,7 +44,7 @@ namespace FScruiser.XF.ViewModels
 
         public string Tree_GUID { get; private set; }
 
-        public LogsListViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider) : base(navigationService)
+        public LogsListViewModel(INavigationService navigationService, IDataserviceProvider datastoreProvider) : base(navigationService)
         {
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }

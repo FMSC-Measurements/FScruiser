@@ -1,8 +1,9 @@
 ﻿using CruiseDAL;
+using FScruiser.Data;
 using FScruiser.Models;
 using System.Linq;
 
-namespace FScruiser.Services
+namespace FScruiser.Data
 {
     public class SaleDataservice : DataserviceBase, ISaleDataservice
     {

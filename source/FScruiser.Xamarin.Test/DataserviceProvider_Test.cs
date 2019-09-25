@@ -30,7 +30,7 @@ namespace FScruiser.XF
             var cuDatastore = new CuttingUnitDatastore(cruiseDatastore);
             var samplerDatastore = new SampleSelectorRepository(cuDatastore);
 
-            var datastoreProvider = new DatastoreProvider(base.App)
+            var datastoreProvider = new DataserviceProvider(base.App)
             {
                 CruiseDatastore = cruiseDatastore,
                 CuttingUnitDatastore = cuDatastore,

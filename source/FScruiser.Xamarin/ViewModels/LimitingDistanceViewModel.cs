@@ -160,7 +160,7 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public LimitingDistanceViewModel(IDatastoreProvider datastoreProvider)
+        public LimitingDistanceViewModel(IDataserviceProvider datastoreProvider)
         {
             Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
@@ -229,17 +229,18 @@ namespace FScruiser.XF.ViewModels
             if (IsTreeIn.HasValue)
             {
                 return Logic.CalculateLimitingDistance.GenerateReport(TreeStatus, LimitingDistance, SlopeDistance.Value,
-                    SlopePCT, Azimuth, BafOrFps, DBH, SlopePCT, IsVariableRadius, IsToFace);
+                    SlopePCT, Azimuth, BafOrFps, DBH, SlopePCT, IsVariableRadius, IsToFace, Plot.StratumCode);
             }
             else { return null; }
         }
 
         public void SaveReport()
         {
+            var plot = Plot;
             var report = GenerateReport();
             if (!string.IsNullOrEmpty(report))
             {
-                Datastore.AddPlotRemark(Plot.CuttingUnitCode, Plot.PlotNumber, report);
+                Datastore.AddPlotRemark(plot.CuttingUnitCode, plot.PlotNumber, report);
             }
         }
     }

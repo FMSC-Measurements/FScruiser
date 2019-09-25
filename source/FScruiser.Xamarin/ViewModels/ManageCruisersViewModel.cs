@@ -26,7 +26,7 @@ namespace FScruiser.XF.ViewModels
             set { CruisersDataservice.PromptCruiserOnSample = value; }
         }
 
-        public ManageCruisersViewModel(INavigationService navigationService, IDatastoreProvider datastoreProvider) : base(navigationService)
+        public ManageCruisersViewModel(INavigationService navigationService, IDataserviceProvider datastoreProvider) : base(navigationService)
         {
             CruisersDataservice = datastoreProvider.Get<ICruisersDataservice>();
         }

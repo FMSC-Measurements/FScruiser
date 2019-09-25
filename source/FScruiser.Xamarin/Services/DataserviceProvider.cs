@@ -1,11 +1,12 @@
 ﻿using CruiseDAL;
+using FScruiser.Data;
 using FScruiser.Services;
 using System;
 using Xamarin.Forms;
 
 namespace FScruiser.XF.Services
 {
-    public interface IDatastoreProvider
+    public interface IDataserviceProvider
     {
         string CruisePath { get; set; }
 
@@ -16,12 +17,12 @@ namespace FScruiser.XF.Services
         //void Register<T>(T instance);
     }
 
-    public class DatastoreProvider : IDatastoreProvider
+    public class DataserviceProvider : IDataserviceProvider
     {
         private string _cruisePath;
         ICruisersDataservice _cruisersDataservice;
 
-        public DatastoreProvider(Application application)
+        public DataserviceProvider(Application application)
         {
             Application = application ?? throw new ArgumentNullException(nameof(application));
 
@@ -68,6 +69,10 @@ namespace FScruiser.XF.Services
             if (type.IsAssignableFrom(typeof(ISaleDataservice)))
             {
                 return new SaleDataservice(CruisePath);
+            }
+            if (type.IsAssignableFrom(typeof(IFixCNTDataservice)))
+            {
+                return new FixCNTDataservice(CruisePath);
             }
             else
             { return null; }

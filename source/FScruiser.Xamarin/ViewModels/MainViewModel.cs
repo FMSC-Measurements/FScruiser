@@ -66,14 +66,14 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public IDatastoreProvider DatastoreProvider { get; }
+        public IDataserviceProvider DatastoreProvider { get; }
         protected IDialogService DialogService { get; set; }
 
         protected IFilePickerService FilePickerService { get; }
 
         public MainViewModel(INavigationService navigationService
             , IDialogService dialogService
-            , IDatastoreProvider datastoreProvider,
+            , IDataserviceProvider datastoreProvider,
             IFilePickerService filePickerService) : base(navigationService)
         {
             DialogService = dialogService;

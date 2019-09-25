@@ -27,13 +27,13 @@ namespace FScruiser.XF
         public const string CURRENT_NAV_PARAMS = "current_nav_params";
 
         private string _cruisePath;
-        private DatastoreProvider _datastoreProvider;
+        private DataserviceProvider _datastoreProvider;
 
         public new INavigationService NavigationService => base.NavigationService;
 
         protected IPageDialogService DialogService => Container?.Resolve<IPageDialogService>();
 
-        public IDatastoreProvider DatastoresProvider => _datastoreProvider ?? (_datastoreProvider = new DatastoreProvider(this));
+        public IDataserviceProvider DatastoresProvider => _datastoreProvider ?? (_datastoreProvider = new DataserviceProvider(this));
 
         public IApplicationSettings Settings { get; } = new ApplicationSettings();
 
@@ -212,7 +212,7 @@ namespace FScruiser.XF
             containerRegistry.RegisterSingleton<ITallySettingsDataService, TallySettingsDataService>();
             //containerRegistry.RegisterInstance<ICuttingUnitDatastore>(null);
 
-            containerRegistry.RegisterInstance<IDatastoreProvider>(DatastoresProvider);
+            containerRegistry.RegisterInstance<IDataserviceProvider>(DatastoresProvider);
 
             containerRegistry.RegisterForNavigation<MyNavigationPage>("Navigation");
             containerRegistry.RegisterForNavigation<MainPage, ViewModels.MainViewModel>("Main");

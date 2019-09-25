@@ -171,7 +171,7 @@ namespace FScruiser.XF.ViewModels
         public IPlotDatastore Datastore { get; set; }
         public IDialogService DialogService { get; set; }
 
-        public PlotEditViewModel(IDatastoreProvider datastoreProvider
+        public PlotEditViewModel(IDataserviceProvider datastoreProvider
             , IDialogService dialogService
             , INavigationService navigationService) : base(navigationService)
         {
