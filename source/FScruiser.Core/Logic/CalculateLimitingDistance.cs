@@ -57,11 +57,11 @@ namespace FScruiser.Logic
         }
 
         public static string GenerateReport(string treeStatus, double limitingDistance, double slopeDistance, double slopePCT, double azimuth,
-            double bafORfps, double dbh, int slopPct, bool isVariableRadius, bool isToFace)
+            double bafORfps, double dbh, int slopPct, bool isVariableRadius, bool isToFace, string stratumCode)
         {
             var azimuthStr = (azimuth > 0) ? "Azimuth:" + azimuth.ToString() : String.Empty;
 
-            return String.Format("Tree was {0} (DBH:{1}, slope:{2}%, slope distance:{3:F2}', limiting distance:{4:F2}' to {5} of tree, {6}:{7}) {8}\r\n",
+            return String.Format("Tree was {0} (St:{9}, DBH:{1}, slope:{2}%, slope distance:{3:F2}', limiting distance:{4:F2}' to {5} of tree, {6}:{7}) {8}\r\n",
                     treeStatus,
                     dbh,
                     slopePCT,
@@ -70,7 +70,8 @@ namespace FScruiser.Logic
                     (isToFace) ? "Face" : "Center",
                     (isVariableRadius) ? "BAF" : "FPS",
                     bafORfps,
-                    azimuthStr);
+                    azimuthStr,
+                    stratumCode);
         }
     }
 }
