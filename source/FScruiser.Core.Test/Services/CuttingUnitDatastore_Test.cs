@@ -1,7 +1,5 @@
-﻿using Bogus;
-using CruiseDAL;
+﻿using CruiseDAL;
 using FluentAssertions;
-using FluentAssertions.Equivalency;
 using FScruiser.Models;
 using FScruiser.Services;
 using System;
@@ -16,7 +14,6 @@ namespace FScruiser.Core.Test.Services
         public CuttingUnitDatastore_Test(ITestOutputHelper output) : base(output)
         {
         }
-
 
         [Theory]
         [InlineData("u1", "st3", "st4")]
@@ -260,18 +257,17 @@ namespace FScruiser.Core.Test.Services
             result.Frequency.Should().BeGreaterThan(0);
         }
 
-
-
         #region tally entry
 
         [Fact]
         public void GetTallyEntriesByUnitCode()
         {
-            var unit = "u1";
-            var stratum = "st1";
-            var sampleGroup = "sg1";
-            var species = "sp1";
-            var liveDead = "L";
+            var unit = Units.First();
+            var subpop = Subpops[0];
+            var stratum = subpop.StratumCode;
+            var sampleGroup = subpop.SampleGroupCode;
+            var species = subpop.Species;
+            var liveDead = subpop.LiveDead;
 
             using (var database = CreateDatabase())
             {
@@ -279,28 +275,22 @@ namespace FScruiser.Core.Test.Services
 
                 var pop = datastore.GetTallyPopulation(unit, stratum, sampleGroup, species, liveDead);
 
+                // insert entry using InsertTallyAction
                 datastore.InsertTallyAction(new TallyAction(unit, pop));
-
                 var tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
-
                 tallyEntries.Should().HaveCount(1);
 
+                // add another entry using insertTallyLedger 
                 datastore.InsertTallyLedger(new TallyLedger(unit, pop));
-
                 tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
-
                 tallyEntries.Should().HaveCount(2);
-
 
                 // inset a tally ledger with plot number
                 // and conferm that GetTallyEntriesByUnitCode doesn't return plot tally entries
+                datastore.AddNewPlot(unit);
                 datastore.InsertTallyAction(new TallyAction(unit, 1, pop));
-
                 tallyEntries = datastore.GetTallyEntriesByUnitCode(unit);
-
                 tallyEntries.Should().HaveCount(2);
-
-
             }
         }
 
@@ -463,7 +453,5 @@ namespace FScruiser.Core.Test.Services
         }
 
         #endregion tally entry
-
-
     }
 }

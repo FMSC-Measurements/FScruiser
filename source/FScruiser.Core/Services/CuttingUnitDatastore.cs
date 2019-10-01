@@ -455,10 +455,12 @@ namespace FScruiser.Services
                 "max(tm.DBH, tm.DRC, tm.DBHDoubleBarkThickness) AS Diameter, " +
                 "t.CountOrMeasure " +
                 "FROM Tree_V3 AS t " +
-                "JOIN TallyLedger AS tl USING (TreeID) " +
+                "LEFT JOIN TallyLedger_Tree_Totals AS tl USING (TreeID) " +
                 "LEFT JOIN TreeMeasurment AS tm USING (TreeID) " +
                 "WHERE t.CuttingUnitCode = @p1 " +
-                "AND t.PlotNumber = @p2;", new object[] { unitCode, plotNumber });
+                "AND t.PlotNumber = @p2 " +
+                "GROUP BY tl.TreeID" +
+                ";", new object[] { unitCode, plotNumber });
         }
 
         public int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon)
