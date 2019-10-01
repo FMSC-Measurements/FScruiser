@@ -178,6 +178,35 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Fact]
+        public void GetPlotTreeProxies()
+        {
+            var unitCode = "u1";
+            var plotNumber = 1;
+            using(var db = CreateDatabase())
+            {
+                var ds = new CuttingUnitDatastore(db);
+                var plotid = ds.AddNewPlot(unitCode);
+
+                var plot_stratum = ds.GetPlot_Strata(unitCode, plotNumber).First();
+
+                var tp = ds.GetPlotTallyPopulationsByUnitCode(unitCode, plotNumber).First();
+
+                var firstTreeid = ds.CreatePlotTree(unitCode, plotNumber, tp.StratumCode, tp.SampleGroupCode);
+                ds.CreatePlotTree(unitCode, plotNumber, tp.StratumCode, tp.SampleGroupCode);
+
+                var trees = ds.GetPlotTreeProxies(unitCode, plotNumber).ToArray();
+
+                trees.Should().HaveCount(2);
+                trees.Select(x => x.TreeNumber).Should().BeInAscendingOrder();
+
+                db.Execute("UPDATE Tree_V3 SET TreeNumber = 3 WHERE TreeNumber = 1;");
+
+                var treesAgain = ds.GetPlotTreeProxies(unitCode, plotNumber).ToArray();
+                treesAgain.Select(x => x.TreeNumber).Should().BeInAscendingOrder();
+            }
+        }
+
+        [Fact]
         public void GetPlot_Strata()
         {
             var unitCode = "u1";

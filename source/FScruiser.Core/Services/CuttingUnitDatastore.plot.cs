@@ -421,6 +421,51 @@ namespace FScruiser.Services
             );
         }
 
+        public IEnumerable<TreeStub_Plot> GetPlotTreeProxies(string unitCode, int plotNumber)
+        {
+            return Database.Query<TreeStub_Plot>(
+                "SELECT " +
+                "t.TreeID, " +
+                "t.CuttingUnitCode, " +
+                "t.TreeNumber, " +
+                "t.PlotNumber, " +
+                "t.StratumCode, " +
+                "t.SampleGroupCode, " +
+                "t.Species, " +
+                "t.LiveDead, " +
+                "tl.TreeCount, " +
+                "tl.STM, " +
+                "tl.KPI, " +
+                "max(tm.TotalHeight, tm.MerchHeightPrimary, tm.UpperStemHeight) AS Height, " +
+                "max(tm.DBH, tm.DRC, tm.DBHDoubleBarkThickness) AS Diameter, " +
+                "t.CountOrMeasure " +
+                "FROM Tree_V3 AS t " +
+                "LEFT JOIN TallyLedger_Tree_Totals AS tl USING (TreeID) " +
+                "LEFT JOIN TreeMeasurment AS tm USING (TreeID) " +
+                "WHERE t.CuttingUnitCode = @p1 " +
+                "AND t.PlotNumber = @p2 " +
+                "GROUP BY tl.TreeID " +
+                "ORDER BY t.TreeNumber " +
+                ";", new object[] { unitCode, plotNumber });
+        }
+
+        public int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon)
+        {
+            if (isRecon)
+            {
+                // if cruise is a recon cruise we do number trees seperatly for each stratum
+                return Database.ExecuteScalar<int>("SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree_V3 " +
+                    "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2 AND StratumCode = @p3;"
+                    , unitCode, plotNumber, stratumCode);
+            }
+            else
+            {
+                return Database.ExecuteScalar<int>("SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree_V3 " +
+                    "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2;"
+                    , unitCode, plotNumber);
+            }
+        }
+
         #endregion tree
 
         public void AddPlotRemark(string cuttingUnitCode, int plotNumber, string remark)

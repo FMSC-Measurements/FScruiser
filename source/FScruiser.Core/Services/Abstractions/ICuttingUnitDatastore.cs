@@ -61,11 +61,7 @@ namespace FScruiser.Services
 
         #region tree
 
-        int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon);
-
         TreeStub GetTreeStub(string tree_GUID);
-
-        IEnumerable<TreeStub_Plot> GetPlotTreeProxies(string unitCode, int plotNumber);
 
         IEnumerable<Tree> GetTreesByUnitCode(string unitCode);
 

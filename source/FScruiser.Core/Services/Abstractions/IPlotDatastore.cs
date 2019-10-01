@@ -58,6 +58,10 @@ namespace FScruiser.Services
             int kpi = 0,
             bool stm = false);
 
+        IEnumerable<TreeStub_Plot> GetPlotTreeProxies(string unitCode, int plotNumber);
+
+        int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon);
+
         #endregion tree
 
         IEnumerable<PlotError> GetPlotErrors(string plotID);
