@@ -103,7 +103,7 @@ namespace FScruiser.XF.ViewModels
             }
             else
             {
-                await NavigationService.NavigateAsync($"PlotTally?{NavParams.UNIT}={UnitCode}&{NavParams.PLOT_NUMBER}={plot.PlotNumber}");
+                await NavigationService.NavigateAsync($"PlotTally?{NavParams.PlotID}={plot.PlotID}");
             }
         }
 
