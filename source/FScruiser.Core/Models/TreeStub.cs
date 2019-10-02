@@ -3,7 +3,7 @@ using FScruiser.Models;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Tree_V3")]
+    [Table("Tree_V3")]
     public class TreeStub : IHasTreeID
     {
         [Field("TreeID")]
@@ -30,6 +30,7 @@ namespace FScruiser.Models
         [Field(Name = "CountOrMeasure")]
         public string CountOrMeasure { get; set; }
 
+        [IgnoreField]
         public int Errors { get; set; }
     }
 }

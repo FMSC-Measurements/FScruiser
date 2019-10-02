@@ -143,6 +143,14 @@
 
             </StackLayout>
 
+            <StackLayout Orientation="Horizontal">
+                <Label Text="Initials" />
+                <Picker x:Name="_initialsPicker"
+                        WidthRequest="40"
+                        SelectedItem="{Binding Initials}"
+                        ItemsSource="{Binding Cruisers}" />
+            </StackLayout>
+
         </FlexLayout>
 
         <ScrollView x:Name="_editViewsHost"

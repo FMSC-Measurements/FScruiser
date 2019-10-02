@@ -1,8 +1,11 @@
-﻿using FScruiser.Models;
+﻿using Backpack.XF.WidgiWhats;
+using CSharpForMarkup;
+using FScruiser.Models;
 using FScruiser.XF.Constants;
 using FScruiser.XF.ViewModels;
 using Prism.Ioc;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Xamarin.Forms;
@@ -88,9 +91,9 @@ namespace FScruiser.XF.ViewCells
             if (e.PropertyName == nameof(TreeViewModel.TreeFieldValues))
             {
                 var view = MakeEditControlContainer(viewModel.TreeFieldValues);
+                view.BindingContext = TreeViewModel;
 
                 TreeFieldViewContainer.Content = view;
-                //view.BindingContext = TreeViewModel;
             }
             if (e.PropertyName == nameof(TreeViewModel.ErrorsAndWarnings))
             {
@@ -100,25 +103,53 @@ namespace FScruiser.XF.ViewCells
             }
         }
 
-        private View MakeEditControlContainer(System.Collections.Generic.IEnumerable<TreeFieldValue> treeFieldValues)
+        private View MakeEditControlContainer(IEnumerable<TreeFieldValue> treeFieldValues)
         {
             var grid = new Grid();
 
-            int counter = 0;
+            grid.Children.Add(new Label
+            { Text = "Spcies" }
+            .Col(0)
+            .Row(0));
+
+            grid.Children.Add(new ValuePicker()
+                .Bind(ValuePicker.SelectedValueProperty, nameof(TreeEditViewModel.Species))
+                .Bind(ValuePicker.ValueSourceProperty, nameof(TreeEditViewModel.SpeciesOptions))
+                .Col(0)
+                .Row(1));
+
+            grid.Children.Add(new Label
+            { Text = "L/D" }
+            .Col(1)
+            .Row(0));
+
+            grid.Children.Add(new ValuePicker()
+                .Bind(ValuePicker.SelectedValueProperty, nameof(TreeEditViewModel.LiveDead))
+                .Bind(ValuePicker.ValueSourceProperty, nameof(TreeEditViewModel.LiveDeadOptions))
+                .Col(1)
+                .Row(1));
+
+            int counter = 2;
             foreach (var field in treeFieldValues)
             {
-                var fieldLabel = new Label() { Text = field.Heading };
+                var fieldLabel = new Label()
+                {
+                    Text = field.Heading
+                }
+                .Col(counter)
+                .Row(0);
 
-                grid.Children.Add(fieldLabel, counter, 0);
-
-                var editControl = Util.TreeEditControlFactory.MakeEditView(field);
+                var editControl = Util.TreeEditControlFactory.MakeEditView(field)
+                    .Col(counter)
+                    .Row(1);
 
                 if (editControl is Entry entry)
                 {
                     entry.Completed += _entry_Completed;
                 }
 
-                grid.Children.Add(editControl, counter, 1);
+                grid.Children.Add(fieldLabel);
+                grid.Children.Add(editControl);
                 counter++;
             }
 

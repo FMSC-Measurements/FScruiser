@@ -4,7 +4,7 @@ using System;
 
 namespace FScruiser.Models
 {
-    [EntitySource("TallyLedger")]
+    [Table("TallyLedger")]
     public class TallyLedger : IHasTreeID
     {
         public class EntryTypeValues
@@ -20,8 +20,8 @@ namespace FScruiser.Models
             CuttingUnitCode = unitCode;
             StratumCode = tallyPopulation.StratumCode;
             SampleGroupCode = tallyPopulation.SampleGroupCode;
-            Species = tallyPopulation.Species ?? "";
-            LiveDead = tallyPopulation.LiveDead ?? "";
+            Species = tallyPopulation.Species;
+            LiveDead = tallyPopulation.LiveDead;
         }
 
         [Field(nameof(TallyLedgerID))]

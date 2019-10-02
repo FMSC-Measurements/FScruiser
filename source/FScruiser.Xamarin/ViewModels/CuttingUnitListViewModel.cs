@@ -1,4 +1,5 @@
 ﻿using FScruiser.Models;
+using FScruiser.Services;
 using FScruiser.XF.Services;
 using Prism.Ioc;
 using Prism.Navigation;
@@ -12,8 +13,6 @@ namespace FScruiser.XF.ViewModels
     {
         private IEnumerable<CuttingUnit> _units;
 
-        public IContainerExtension Container { get; protected set; }
-
         public bool IsFileNotOpen => Units == null;
 
         public IEnumerable<CuttingUnit> Units
@@ -22,11 +21,11 @@ namespace FScruiser.XF.ViewModels
             set { SetValue(ref _units, value); }
         }
 
-        public ICuttingUnitDatastoreProvider CuttingUnitDatastoreProvider { get; }
+        public IDataserviceProvider DatastoreProvider { get; }
 
-        public CuttingUnitListViewModel(ICuttingUnitDatastoreProvider cuttingUnitDatastoreProvider, INavigationService navigationService) : base(navigationService)
+        public CuttingUnitListViewModel(IDataserviceProvider datastoreProvider, INavigationService navigationService) : base(navigationService)
         {
-            CuttingUnitDatastoreProvider = cuttingUnitDatastoreProvider ?? throw new ArgumentNullException(nameof(cuttingUnitDatastoreProvider));
+            DatastoreProvider = datastoreProvider ?? throw new ArgumentNullException(nameof(datastoreProvider));
 
             MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_OPENED, (sender, path) =>
             {
@@ -43,7 +42,7 @@ namespace FScruiser.XF.ViewModels
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            var datastore = CuttingUnitDatastoreProvider.CuttingUnitDatastore;
+            var datastore = DatastoreProvider.Get<ICuttingUnitDatastore>();
             if (datastore != null)
             {
                 Units = datastore.GetUnits();

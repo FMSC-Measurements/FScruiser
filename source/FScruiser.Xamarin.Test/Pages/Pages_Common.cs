@@ -37,6 +37,8 @@ namespace FScruiser.XF.Pages
         [MemberData(nameof(PageTypes))]
         public void CreatePage(Type pageType)
         {
+            if(pageType.IsAbstract) { return; }
+
             var page = Activator.CreateInstance(pageType) as Xamarin.Forms.Page;
 
             page.Should().NotBeNull();
@@ -46,6 +48,8 @@ namespace FScruiser.XF.Pages
         [MemberData(nameof(PageTypes))]
         public void ResolveViewModel(Type pageType)
         {
+            if (pageType.IsAbstract) { return; }
+
             //get our page
             var page = Activator.CreateInstance(pageType) as Xamarin.Forms.Page;
 

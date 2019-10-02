@@ -137,6 +137,8 @@ namespace FScruiser.Services
             string sampleGroupCode = null, string species = null, string liveDead = "L",
             int treeCount = 1, int kpi = 0, bool stm = false)
         {
+            liveDead = liveDead ?? GetDefaultLiveDead(stratumCode, sampleGroupCode);
+
             var tallyLedgerID = treeID;
 
             Database.Execute2(
@@ -200,17 +202,18 @@ namespace FScruiser.Services
                 });
         }
 
-        public Tree GetTree(string treeID)
+        public string GetDefaultLiveDead(string stratumCode, string sampleGroupCode)
         {
-            return QueryTree_Base()
-                .Where("Tree_V3.TreeID = @p1")
-                .Query(treeID).FirstOrDefault();
+            return Database.ExecuteScalar<string>("SELECT DefaultLiveDead FROM SampleGroup_V3 WHERE StratumCode = @p1 AND SampleGroupCode = @p2;"
+                , stratumCode, sampleGroupCode);
         }
 
-        private IQuerryAcceptsJoin<Tree_Ex> QueryTree_Base()
+        public Tree GetTree(string treeID)
         {
-            return Database.From<Tree_Ex>()
-               .LeftJoin("TreeMeasurment", "USING (TreeID)");
+            return Database.Query<Tree_Ex>(
+                "SELECT t.*, tm.* FROM Tree_V3 AS t " +
+                "LEFT JOIN TreeMeasurment AS tm USING (TreeID) " +
+                "WHERE t.TreeID = @p1;", treeID).FirstOrDefault();
         }
 
         public IEnumerable<TreeFieldValue> GetTreeFieldValues(string treeID)

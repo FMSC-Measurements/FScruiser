@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("SampleGroup_V3")]
+    [Table("SampleGroup_V3")]
     public class SampleGroupProxy
     {
         [Field("SampleGroupCode")]

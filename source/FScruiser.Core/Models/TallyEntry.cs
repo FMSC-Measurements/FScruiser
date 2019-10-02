@@ -3,7 +3,7 @@ using FScruiser.Models;
 
 namespace FScruiser.Models
 {
-    [EntitySource("TallyLedger")]
+    [Table("TallyLedger")]
     public class TallyEntry : IHasTreeID
     {
         public TallyEntry()
@@ -18,6 +18,7 @@ namespace FScruiser.Models
             Species = action.Species;
             LiveDead = action.LiveDead;
             EntryType = action.EntryType;
+            CountOrMeasure = action.IsSample ? action.IsInsuranceSample ? "I" : "M" : "C";
         }
 
         [Field("CuttingUnitCode")]
@@ -53,11 +54,14 @@ namespace FScruiser.Models
         [Field("Reason")]
         public string Reason { get; set; }
 
-        [Field("TreeNumber", SourceName = "Tree_V3")]
+        [Field("TreeNumber")]
         public int? TreeNumber { get; set; }
 
         [Field("TreeID")]
         public string TreeID { get; set; }
+
+        [Field("CountOrMeasure")]
+        public string CountOrMeasure { get; set; }
 
         [Field("TallyLedgerID")]
         public string TallyLedgerID { get; set; }

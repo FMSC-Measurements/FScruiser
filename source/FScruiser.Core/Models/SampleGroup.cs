@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 namespace FScruiser.Models
 {
-    [EntitySource("SampleGroup_V3")]
+    [Table("SampleGroup_V3")]
     public class SampleGroup
     {
         [Field(Name = "SampleGroupCode")]

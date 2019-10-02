@@ -3,6 +3,7 @@ using FScruiser.Services;
 using FScruiser.Util;
 using FScruiser.XF.Pages;
 using FScruiser.XF.Services;
+using FScruiser.XF.Util;
 using Microsoft.AppCenter.Crashes;
 using Plugin.Permissions;
 using Prism;
@@ -25,20 +26,25 @@ namespace FScruiser.XF
         public const string CURRENT_NAV_PATH = "current_nav_path";
         public const string CURRENT_NAV_PARAMS = "current_nav_params";
 
+        private string _cruisePath;
+        private DataserviceProvider _datastoreProvider;
+
         public new INavigationService NavigationService => base.NavigationService;
 
         protected IPageDialogService DialogService => Container?.Resolve<IPageDialogService>();
 
-        public ICuttingUnitDatastoreProvider CuttingUnitDatastoresProvider { get; private set; } = new CuttingUnitDatastoreProvider();
+        public IDataserviceProvider DatastoresProvider => _datastoreProvider ?? (_datastoreProvider = new DataserviceProvider(this));
 
         public IApplicationSettings Settings { get; } = new ApplicationSettings();
 
-        public App() : this(new BasePlatformInitializer())
+        public App() : this(new BasePlatformInitializer(), (string)null)
         {
         }
 
-        public App(IPlatformInitializer platformInitializer) : base(platformInitializer)
-        { }
+        public App(IPlatformInitializer platformInitializer, string cruisePath) : base(platformInitializer)
+        {
+            _cruisePath = cruisePath;
+        }
 
         protected override async void OnInitialized()
         {
@@ -47,8 +53,8 @@ namespace FScruiser.XF
 #if RELEASE
             //start app center services
             Microsoft.AppCenter.AppCenter.Start($"ios={Secrets.APPCENTER_KEY_IOS};android={Secrets.APPCENTER_KEY_DROID};uwp={Secrets.APPCENTER_KEY_UWP}"
-                , typeof(Microsoft.AppCenter.Distribute.Distribute)
-                , typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Crashes));
+                , typeof(Microsoft.AppCenter.Analytics.Analytics)
+                ,typeof(Crashes));
 
 #endif
 
@@ -88,47 +94,61 @@ namespace FScruiser.XF
                 {
                     try
                     {
-                        var database = new DAL(path);
-
-                        if (CruiseDAL.Updater.CheckNeedsMajorUpdate(database))
+                        if (System.IO.Path.GetExtension(path).ToLowerInvariant() == ".cruise")
                         {
-                            var result = await DialogService.DisplayAlertAsync("Update Cruise File?",
-                                "Cruise file needs to be updated.\r\n" +
-                                "Onece updated file can only be opened with latest cruise software",
-                                "Update", "Cancel");
-                            if (result)
+                            var convertedPath = Migrator.GetConvertedPath(path);
+
+                            // if converted file already exists let the user know that we
+                            // are just going to open it instead of the file they selected
+                            // otherwise convert the .cruise file and open the convered .crz3 file
+                            if (System.IO.File.Exists(convertedPath) == true)
                             {
-                                CruiseDAL.Updater.UpdateMajorVersion(database);
+                                await DialogService.DisplayAlertAsync("Message",
+                                    $"Opening {convertedPath}",
+                                    "OK");
                             }
                             else
                             {
-                                return;
+                                try
+                                {
+                                    Migrator.MigrateFromV2ToV3(path, convertedPath);
+                                }
+                                catch(Exception e)
+                                {
+                                    LogAndShowExceptionAsync("File Error", "Unable to Migrate File", e
+                                        , new Dictionary<string, string>(){ { "FileName", path } })
+                                        .FireAndForget();
+                                    return;
+                                }
+
+                                var fileName = System.IO.Path.GetFileName(path);
+                                await DialogService.DisplayAlertAsync("Message",
+                                    $"Your cruise file has been updated and the file {fileName} has been created",
+                                    "OK");
                             }
+
+                            path = convertedPath;
                         }
 
-                        var datastore = new CuttingUnitDatastore(database);
-
-                        CuttingUnitDatastoresProvider.CuttingUnitDatastore = datastore;
-                        CuttingUnitDatastoresProvider.SampleSelectorDataService = new SampleSelectorRepository(datastore);
-
-                        //((IContainerRegistry)Container).RegisterInstance<ICuttingUnitDatastore>(datastore);
-                        //((IContainerRegistry)Container).RegisterInstance<ISampleSelectorDataService>(new SampleSelectorRepository(datastore));
-
-                        //var test = Container.Resolve<ICuttingUnitDatastore>();
+                        DatastoresProvider.CruisePath = path;
 
                         Properties.SetValue("cruise_path", path);
-                        CuttingUnitDatastoresProvider.Cruise_Path = path;
+
                         await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
 
                         MessagingCenter.Send<object, string>(this, Messages.CRUISE_FILE_OPENED, path);
                     }
                     catch (FileNotFoundException ex)
                     {
-                        var task = LogAndShowExceptionAsync("File Error", "File Not Found", ex, new Dictionary<string, string> { { "FilePath", path } });
+                        LogAndShowExceptionAsync("File Error", "File Not Found",
+                            ex, new Dictionary<string, string> { { "FilePath", path } })
+                            .FireAndForget();
                     }
                     catch (Exception ex)
                     {
-                        var task = LogAndShowExceptionAsync("File Error", "File Could Not Be Opended", ex, new Dictionary<string, string> { { "FilePath", path } });
+                         LogAndShowExceptionAsync("File Error", "File Could Not Be Opended",
+                             ex, new Dictionary<string, string> { { "FilePath", path } })
+                            .FireAndForget();
                     }
                 }
             }
@@ -167,7 +187,7 @@ namespace FScruiser.XF
                 Properties.SetValue("isFirstLaunch", false);
             }
 
-            var cruise_path = Properties.GetValueOrDefault("cruise_path") as string;
+            var cruise_path = _cruisePath ?? Properties.GetValueOrDefault("cruise_path") as string;
 
             if (!string.IsNullOrEmpty(cruise_path))
             {
@@ -192,10 +212,11 @@ namespace FScruiser.XF
             containerRegistry.RegisterSingleton<ITallySettingsDataService, TallySettingsDataService>();
             //containerRegistry.RegisterInstance<ICuttingUnitDatastore>(null);
 
-            containerRegistry.RegisterInstance<ICuttingUnitDatastoreProvider>(this.CuttingUnitDatastoresProvider);
+            containerRegistry.RegisterInstance<IDataserviceProvider>(DatastoresProvider);
 
             containerRegistry.RegisterForNavigation<MyNavigationPage>("Navigation");
             containerRegistry.RegisterForNavigation<MainPage, ViewModels.MainViewModel>("Main");
+            containerRegistry.RegisterForNavigation<SalePage, ViewModels.SalePageViewModel>("Sale");
             containerRegistry.RegisterForNavigation<CuttingUnitListPage, ViewModels.CuttingUnitListViewModel>("CuttingUnits");
             containerRegistry.RegisterForNavigation<UnitTreeTallyPage, ViewModels.UnitTreeTallyViewModel>("Tally");
             containerRegistry.RegisterForNavigation<TreeListPage, ViewModels.TreeListViewModel>("Trees");

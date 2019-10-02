@@ -14,8 +14,8 @@ namespace FScruiser.XF.ViewModels
     {
         private Log _log;
         private IEnumerable<LogFieldSetup> _logFields;
+        private IEnumerable<LogError> _errors;
 
-        
 
         public Log Log
         {
@@ -27,18 +27,23 @@ namespace FScruiser.XF.ViewModels
 
         public IEnumerable<LogFieldSetup> LogFields { get => _logFields; set => SetValue(ref _logFields, value); }
 
-        public LogEditViewModel(INavigationService navigationService, ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
+        public IEnumerable<LogError> Errors { get => _errors; set => SetValue(ref _errors, value); }
+
+        public LogEditViewModel(INavigationService navigationService, IDataserviceProvider datastoreProvider) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
 
         protected override void Refresh(INavigationParameters parameters)
         {
             var log_guid = parameters.GetValue<string>("Log_Guid");
 
-            Log = Datastore.GetLog(log_guid);
+            var log = Datastore.GetLog(log_guid);
 
-            LogFields = Datastore.GetLogFields(Log.TreeID);
+
+            LogFields = Datastore.GetLogFields(log.TreeID);
+            Errors = Datastore.GetLogErrorsByLog(log.LogID);
+            Log = log;
         }
 
         public override void OnNavigatedFrom(INavigationParameters parameters)

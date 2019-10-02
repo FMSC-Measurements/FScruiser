@@ -4,7 +4,7 @@ using FScruiser.Util;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Tree_V3")]
+    [Table("Tree_V3")]
     public class Tree : INPC_Base, IHasTreeID
     {
         #region table fields

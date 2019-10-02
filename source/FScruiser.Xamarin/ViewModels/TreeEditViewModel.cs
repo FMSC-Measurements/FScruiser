@@ -33,11 +33,20 @@ namespace FScruiser.XF.ViewModels
         private bool _hasSampleGroupError;
         private bool _hasSpeciesError;
         private Command<TreeError> _showEditTreeErrorCommand;
+        private IEnumerable<string> _cruisers;
+        private string _initials;
 
         protected ICuttingUnitDatastore Datastore { get; set; }
+        public ICruisersDataservice CruisersDataservice { get; }
         protected IDialogService DialogService { get; set; }
 
         public bool UseSimplifiedTreeFields { get; set; } = false;
+
+        public IEnumerable<string> Cruisers
+        {
+            get => _cruisers;
+            set => SetValue(ref _cruisers, value);
+        }
 
         public IEnumerable<TreeError> ErrorsAndWarnings
         {
@@ -66,6 +75,12 @@ namespace FScruiser.XF.ViewModels
                 RaisePropertyChanged(nameof(Species));
                 RaisePropertyChanged(nameof(LiveDead));
             }
+        }
+
+        public string Initials
+        {
+            get => _initials;
+            set => SetValue(ref _initials, value);
         }
 
         public bool HasSampleGroupError { get => _hasSampleGroupError; set => SetValue(ref _hasSampleGroupError, value); }
@@ -414,17 +429,19 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public TreeEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
+        public TreeEditViewModel(IDataserviceProvider datastoreProvider
             , IDialogService dialogService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
+            CruisersDataservice = datastoreProvider.Get<ICruisersDataservice>();
             DialogService = dialogService;
         }
 
-        public TreeEditViewModel(ICuttingUnitDatastoreProvider datastoreProvider
+        public TreeEditViewModel(IDataserviceProvider datastoreProvider
             , IDialogService dialogService, INavigationService navigationService) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
+            CruisersDataservice = datastoreProvider.Get<ICruisersDataservice>();
             DialogService = dialogService;
         }
 
@@ -451,6 +468,8 @@ namespace FScruiser.XF.ViewModels
             RefreshSubPopulations(tree);
             RefreshTreeFieldValues(tree);
             RefreshErrorsAndWarnings(tree);
+
+            Cruisers = CruisersDataservice.GetCruisers().ToArray();
 
             Tree = tree;
         }

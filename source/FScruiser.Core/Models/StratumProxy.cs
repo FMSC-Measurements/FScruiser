@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Stratum")]
+    [Table("Stratum")]
     public class StratumProxy
     {
-        [Field(Name = "Stratum_CN")]
-        public string Stratum_CN { get; set; }
+        //[Field(Name = "Stratum_CN")]
+        //public string Stratum_CN { get; set; }
 
         [Field(Name = "Code")]
         public string Code { get; set; }

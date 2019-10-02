@@ -40,12 +40,12 @@ namespace FScruiser.XF.ViewModels
 
         public PlotTallyViewModel(INavigationService navigationService
             , IDialogService dialogService
-            , ICuttingUnitDatastoreProvider datastoreProvider
+            , IDataserviceProvider datastoreProvider
             , ISoundService soundService
             , ITallySettingsDataService tallySettings) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
-            SampleSelectorDataService = datastoreProvider.SampleSelectorDataService;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
+            SampleSelectorDataService = datastoreProvider.Get<ISampleSelectorDataService>();
             DialogService = dialogService;
             TallySettings = tallySettings;
             SoundService = soundService;

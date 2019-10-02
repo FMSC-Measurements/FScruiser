@@ -6,6 +6,7 @@ using FScruiser.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
@@ -18,9 +19,9 @@ namespace FScruiser.Services
             .Append(CruiseMethods.FIXCNT)
             .Select(x => "'" + x + "'").ToArray());
 
-        private DAL _database;
+        private CruiseDatastore_V3 _database;
 
-        public DAL Database
+        public CruiseDatastore_V3 Database
         {
             get { return _database; }
             set
@@ -35,12 +36,12 @@ namespace FScruiser.Services
 
         public CuttingUnitDatastore(string path)
         {
-            var database = new DAL(path ?? throw new ArgumentNullException(nameof(path)));
+            var database = new CruiseDatastore_V3(path ?? throw new ArgumentNullException(nameof(path)));
 
             Database = database;
         }
 
-        public CuttingUnitDatastore(DAL database)
+        public CuttingUnitDatastore(CruiseDatastore_V3 database)
         {
             Database = database;
         }
@@ -90,6 +91,11 @@ namespace FScruiser.Services
         #endregion units
 
         #region strata
+
+        public string GetCruiseMethod(string stratumCode)
+        {
+            return Database.ExecuteScalar<string>("SELECT Method FROM Stratum WHERE Code = @p1;", stratumCode);
+        }
 
         public IEnumerable<string> GetStratumCodesByUnit(string unitCode)
         {
@@ -402,10 +408,12 @@ namespace FScruiser.Services
 
         public IEnumerable<Tree> GetTreesByUnitCode(string unitCode)
         {
-            return QueryTree_Base()
-                //.Join("CuttingUnit", "USING (CuttingUnit_CN)")
-                .Where("CuttingUnit.Code = @p1 AND PlotNumber IS NULL")
-                .Query(unitCode).ToArray();
+            return Database.Query<Tree_Ex>(
+                "SELECT t.*, tm.* FROM Tree AS t " +
+                "LEFT JOIN TreeMeasurment AS tm USING (TreeID) " +
+                "JOIN CuttingUnit AS cu ON cu.Code = t.CuttingUnitCode " +
+                "WHERE CuttingUnit.Code = @p1 AND PlotNumber IS NULL",
+                unitCode).ToArray();
         }
 
         public TreeStub GetTreeStub(string treeID)
@@ -426,48 +434,6 @@ namespace FScruiser.Services
             return QueryTreeStub()
                 .Where("CuttingUnitCode = @p1 AND PlotNumber IS NULL")
                 .Query(unitCode);
-        }
-
-        public IEnumerable<TreeStub_Plot> GetPlotTreeProxies(string unitCode, int plotNumber)
-        {
-            return Database.Query<TreeStub_Plot>(
-                "SELECT " +
-                "t.TreeID, " +
-                "t.CuttingUnitCode, " +
-                "t.TreeNumber, " +
-                "t.PlotNumber, " +
-                "t.StratumCode, " +
-                "t.SampleGroupCode, " +
-                "t.Species, " +
-                "t.LiveDead, " +
-                "tl.TreeCount, " +
-                "tl.STM, " +
-                "tl.KPI, " +
-                "max(tm.TotalHeight, tm.MerchHeightPrimary, tm.UpperStemHeight) AS Height, " +
-                "max(tm.DBH, tm.DRC, tm.DBHDoubleBarkThickness) AS Diameter, " +
-                "t.CountOrMeasure " +
-                "FROM Tree_V3 AS t " +
-                "JOIN TallyLedger AS tl USING (TreeID) " +
-                "LEFT JOIN TreeMeasurment AS tm USING (TreeID) " +
-                "WHERE t.CuttingUnitCode = @p1 " +
-                "AND t.PlotNumber = @p2;", new object[] { unitCode, plotNumber });
-        }
-
-        public int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon)
-        {
-            if (isRecon)
-            {
-                // if cruise is a recon cruise we do number trees seperatly for each stratum
-                return Database.ExecuteScalar<int>("SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree_V3 " +
-                    "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2 AND StratumCode = @p3;"
-                    , unitCode, plotNumber, stratumCode);
-            }
-            else
-            {
-                return Database.ExecuteScalar<int>("SELECT ifnull(max(TreeNumber), 0) + 1  FROM Tree_V3 " +
-                    "WHERE CuttingUnitCode = @p1 AND PlotNumber = @p2;"
-                    , unitCode, plotNumber);
-            }
         }
 
         //private Guid CreateTree(IDbConnection conn, IDbTransaction trans, string unitCode, string stratumCode, string sampleGroupCode, string species, string liveDead, string countMeasure, int treeCount = 1, int kpi = 0, bool stm = false)
@@ -530,28 +496,7 @@ namespace FScruiser.Services
                 cuttingUnitCode).ToArray();
         }
 
-        public IEnumerable<LogError> GetLogErrorsByLog(string logID)
-        {
-            return Database.Query<LogError>(
-                "SELECT " +
-                "LogID, Message " +
-                "FROM LogGradeError " +
-                "WHERE LogID = @p1;",
-                new object[] { logID })
-                .ToArray();
-        }
-
-        public IEnumerable<LogError> GetLogErrorsByTree(string treeID)
-        {
-            return Database.Query<LogError>(
-                "SELECT " +
-                "LogID, Message " +
-                "FROM LogGradeError " +
-                "JOIN Log_V3 USING (LogID) " +
-                "WHERE TreeID  = @p1;",
-                new object[] { treeID })
-                .ToArray();
-        }
+       
 
         //public IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead)
         //{
@@ -596,14 +541,15 @@ namespace FScruiser.Services
                     "tl.SampleGroupCode, " +
                     "tl.Species, " +
                     "tl.LiveDead, " +
-                    "TreeCount, " +
-                    "Reason, " +
-                    "KPI, " +
-                    "EntryType, " +
-                    "Remarks, " +
-                    "Signature, " +
+                    "tl.TreeCount, " +
+                    "tl.Reason, " +
+                    "tl.KPI, " +
+                    "tl.EntryType, " +
+                    "tl.Remarks, " +
+                    "tl.Signature, " +
                     "tl.CreatedDate, " +
                     "t.TreeNumber, " +
+                    "t.CountOrMeasure, " +
                     "tl.STM, " +
                     "(SELECT count(*) FROM TreeError AS te WHERE tl.TreeID IS NOT NULL AND Level = 'E' AND te.TreeID = tl.TreeID AND Resolution IS NULL) AS ErrorCount, " +
                     "(SELECT count(*) FROM TreeError AS te WHERE tl.TreeID IS NOT NULL AND Level = 'W' AND te.TreeID = tl.TreeID AND Resolution IS NULL) AS WarningCount " +
@@ -623,7 +569,7 @@ namespace FScruiser.Services
         {
             return Database.Query<TallyEntry>(
                 QUERY_TALLYENTRY_BASE +
-                "WHERE tl.CuttingUnitCode = @p1 " +
+                "WHERE tl.CuttingUnitCode = @p1 AND tl.PlotNumber IS NULL " +
                 "ORDER BY tl.CreatedDate DESC;",
                 new object[] { unitCode })
                 .ToArray();
@@ -715,6 +661,11 @@ namespace FScruiser.Services
             tallyLedger.TallyLedgerID = tallyLedgerID;
         }
 
+        public Task<TallyEntry> InsertTallyActionAsync(TallyAction tallyAction)
+        {
+            return Task.Factory.StartNew(() => InsertTallyAction(tallyAction));
+        }
+
         public TallyEntry InsertTallyAction(TallyAction atn)
         {
             if (atn.IsInsuranceSample == true && atn.IsSample == false) { throw new InvalidOperationException("If action is insurance sample it must be sample aswell"); }
@@ -761,6 +712,11 @@ namespace FScruiser.Services
                             "@TreeNumber," +
                             "@CountOrMeasure," +
                             "@UserName " +
+                        ");" +
+                        "INSERT INTO TreeMeasurment (" +
+                            "TreeID" +
+                        ") VALUES ( " +
+                            "@TreeID" +
                         ");",
                         new
                         {
@@ -772,7 +728,7 @@ namespace FScruiser.Services
                             atn.SampleGroupCode,
                             atn.Species,
                             atn.LiveDead,
-                            CountOrMeasure = (atn.IsInsuranceSample ? "I" : "M"),
+                            tallyEntry.CountOrMeasure,
                             UserName,
                         });
                 }
@@ -856,190 +812,6 @@ namespace FScruiser.Services
         }
 
         #endregion Tally Entry
-
-        #region Log
-
-        public IEnumerable<Log> GetLogs(string treeID)
-        {
-            return Database.From<Log>()
-                .Where("TreeID = @p1")
-                .Query(treeID).ToArray();
-        }
-
-        public Log GetLog(string logID)
-        {
-            return Database.From<Log>()
-                .Where("LogID = @p1")
-                .Query(logID).FirstOrDefault();
-        }
-
-        public Log GetLog(string treeID, int logNumber)
-        {
-            return Database.From<Log>()
-                .Where("TreeID = @p1 AND LogNumber = @p2")
-                .Query(treeID, logNumber).FirstOrDefault();
-        }
-
-        public void InsertLog(Log log)
-        {
-            var logID = Guid.NewGuid().ToString();
-
-            var logNumber = Database.ExecuteScalar<int>("SELECT ifnull(max(LogNumber), 0) + 1 FROM Log_V3 WHERE TreeID = @p1", log.TreeID);
-
-            Database.Execute2(
-                "INSERT INTO Log_V3 ( " +
-                    "LogID , " +
-                    "TreeID, " +
-                    "LogNumber, " +
-
-                    "Grade, " +
-                    "SeenDefect, " +
-                    "PercentRecoverable, " +
-                    "Length, " +
-                    "ExportGrade, " +
-
-                    "SmallEndDiameter, " +
-                    "LargeEndDiameter, " +
-                    "GrossBoardFoot, " +
-                    "NetBoardFoot, " +
-                    "GrossCubicFoot, " +
-
-                    "NetCubicFoot, " +
-                    "BoardFootRemoved, " +
-                    "CubicFootRemoved, " +
-                    "DIBClass, " +
-                    "BarkThickness, " +
-
-                    "CreatedBy " +
-                ") VALUES ( " +
-                    "@LogID, " +
-                    "@TreeID, " +
-                    "@LogNumber, " +
-
-                    "@Grade, " +
-                    "@SeenDefect, " +
-                    "@PercentRecoverable, " +
-                    "@Length," +
-                    "@ExportGrade, " +
-
-                    "@SmallEndDiameter, " +
-                    "@LargeEndDiameter, " +
-                    "@GrossBoardFoot, " +
-                    "@NetBoardFoot, " +
-                    "@GrossCubicFoot, " +
-
-                    "@NetCubicFoot, " +
-                    "@BoardFootRemoved, " +
-                    "@CubicFootRemoved, " +
-                    "@DIBClass, " +
-                    "@BarkThickness, " +
-
-                    "@CreatedBy" +
-                ");",
-                new
-                {
-                    LogID = logID,
-                    log.TreeID,
-                    LogNumber = logNumber,
-
-                    log.Grade,
-                    log.SeenDefect,
-                    log.PercentRecoverable,
-                    log.Length,
-                    log.ExportGrade,
-
-                    log.SmallEndDiameter,
-                    log.LargeEndDiameter,
-                    log.GrossBoardFoot,
-                    log.NetBoardFoot,
-                    log.GrossCubicFoot,
-
-                    log.NetCubicFoot,
-                    log.BoardFootRemoved,
-                    log.CubicFootRemoved,
-                    log.DIBClass,
-                    log.BarkThickness,
-
-                    CreatedBy = UserName,
-                });
-
-            log.LogNumber = logNumber;
-            log.LogID = logID;
-        }
-
-        public void UpdateLog(Log log)
-        {
-            Database.Execute("UPDATE Log_V3 SET " +
-                "LogNumber = @p1, " +
-                "Grade = @p2, " +
-                "SeenDefect = @p3, " +
-                "PercentRecoverable = @p4, " +
-                "Length = @p5, " +
-                "ExportGrade = @p6, " +
-                "SmallEndDiameter = @p7, " +
-                "LargeEndDiameter = @p8, " +
-                "GrossBoardFoot = @p9, " +
-                "NetBoardFoot = @p10, " +
-                "GrossCubicFoot = @p11, " +
-                "NetCubicFoot = @p12, " +
-                "BoardFootRemoved = @p13, " +
-                "CubicFootRemoved = @p14, " +
-                "DIBClass = @p15, " +
-                "BarkThickness = @p16, " +
-                "ModifiedBy = @p17 " +
-                "WHERE LogID = @p18;",
-                log.LogNumber,
-                log.Grade,
-                log.SeenDefect,
-                log.PercentRecoverable,
-                log.Length,
-                log.ExportGrade,
-                log.SmallEndDiameter,
-                log.LargeEndDiameter,
-                log.GrossBoardFoot,
-                log.NetBoardFoot,
-                log.GrossCubicFoot,
-                log.NetCubicFoot,
-                log.BoardFootRemoved,
-                log.CubicFootRemoved,
-                log.DIBClass,
-                log.BarkThickness,
-                UserName,
-                log.LogID);
-        }
-
-        public void DeleteLog(string logID)
-        {
-            Database.Execute("DELETE FROM Log_V3 WHERE LogID = @p1;", logID);
-        }
-
-        private static readonly LogFieldSetup[] DEFAULT_LOG_FIELDS = new LogFieldSetup[]{
-            new LogFieldSetup(){
-                Field = nameof(Log.LogNumber), Heading = "LogNum"},
-            new LogFieldSetup(){
-                Field = nameof(Log.Grade), Heading = "Grade"},
-            new LogFieldSetup() {
-                Field = nameof(Log.SeenDefect), Heading = "PctSeenDef"}
-        };
-
-        public IEnumerable<LogFieldSetup> GetLogFields(string treeID)
-        {
-            var fields = Database.From<LogFieldSetup>()
-                .Where("StratumCode = (SELECT StratumCode FROM Tree_V3 WHERE TreeID = @p1)")
-                .OrderBy("FieldOrder")
-                .Query(treeID).ToArray();
-
-            if (fields.Length == 0)
-            {
-                return DEFAULT_LOG_FIELDS;
-            }
-            else
-            {
-                return fields;
-            }
-        }
-
-        #endregion Log
 
         public void LogMessage(string message, string level)
         {

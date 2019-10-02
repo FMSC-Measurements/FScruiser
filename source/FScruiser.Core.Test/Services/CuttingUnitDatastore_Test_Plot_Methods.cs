@@ -3,138 +3,17 @@ using FluentAssertions;
 using FScruiser.Models;
 using FScruiser.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
-using FScruiser.Util;
+using Xunit.Abstractions;
+using dbModels = CruiseDAL.V3.Models;
 
 namespace FScruiser.Core.Test.Services
 {
-    public class CuttingUnitDatastore_Test_Plot_Methods
+    public class CuttingUnitDatastore_Test_Plot_Methods : Datastore_TestBase
     {
-        void InitializeDatabase(DAL database, string[] units, string[][] strata,
-            string[][] unit_strata, dynamic[] sampleGroups,
-            string[] species, string[][] tdvs, string[][] subPops)
+        public CuttingUnitDatastore_Test_Plot_Methods(ITestOutputHelper output) : base(output)
         {
-            //Cutting Units
-            foreach (var unit in units.OrEmpty())
-            {
-                database.Execute(
-                    "INSERT INTO CuttingUnit (" +
-                    "Code" +
-                    ") VALUES " +
-                    $"('{unit}');");
-            }
-
-            //Strata
-            foreach (var st in strata.OrEmpty())
-            {
-                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{st[0]}', '{st[1]}');");
-            }
-
-            //Unit - Strata
-            foreach (var cust in unit_strata.OrEmpty())
-            {
-                database.Execute(
-                    "INSERT INTO CuttingUnit_Stratum " +
-                    "(CuttingUnitCode, StratumCode) " +
-                    "VALUES " +
-                    $"('{cust[0]}','{cust[1]}');");
-            }
-
-            //Sample Groups
-            foreach (var sg in sampleGroups.OrEmpty())
-            {
-                database.Execute(
-                    "INSERT INTO SampleGroup_V3 (" +
-                    "StratumCode, " +
-                    "SampleGroupCode," +
-                    "SamplingFrequency, " +
-                    "TallyBySubPop " +
-                    ") VALUES " +
-                    $"('{sg.StCode}', '{sg.SgCode}', {sg.Freq}, {sg.TallyBySp}); ");
-            }
-
-
-            //TreeDefaults
-
-            foreach (var sp in species.OrEmpty())
-            {
-                database.Execute($"INSERT INTO Species (Species) VALUES ('{sp}');");
-            }
-
-            foreach (var tdv in tdvs.OrEmpty())
-            {
-                database.Execute(
-                    "INSERT INTO TreeDefaultValue (" +
-                    "Species, " +
-                    "LiveDead, " +
-                    "PrimaryProduct" +
-                    ") VALUES " +
-                    $"('{tdv[0]}', '{tdv[1]}', '{tdv[2]}');");
-            }
-
-            foreach (var sub in subPops.OrEmpty())
-            {
-                database.Execute(
-                    "INSERT INTO SubPopulation (" +
-                    "StratumCode, " +
-                    "SampleGroupCode, " +
-                    "Species, " +
-                    "LiveDead)" +
-                    "VALUES " +
-                    $"('{sub[0]}', '{sub[1]}', '{sub[2]}', '{sub[3]}');");
-            }
-        }
-
-        private DAL CreateDatabase()
-        {
-            var units = new string[] { "u1", "u2" };
-            var strata = new string[][]
-            {
-                new string[] {"st1", "" },
-                new string[] {"st2", "" },
-            };
-            var unit_strata = new string[][]
-            {
-                new string[] {"u1", "st1" },
-                new string[] { "u1", "st2" },
-                new string[] { "u2", "st2" },
-            };
-
-            var sampleGroups = new[]
-            {
-                new{StCode = "st1", SgCode = "sg1", Freq = 101, TallyBySp = 1},
-                new{StCode = "st2", SgCode = "sg2", Freq = 101, TallyBySp = 0},
-            };
-
-            var species = new string[] { "sp1", "sp2", "sp3" };
-
-            var tdvs = new[]
-            {
-                // sp, L/D, Prod
-                new[] { "sp1", "L", "01" },
-                new[] { "sp1", "D", "01" },
-                new[] { "sp2", "L", "01" },
-                new[] { "sp3", "L", "01" },
-            };
-
-            var subPops = new string[][]
-            {
-                // st, sg, sp, ld
-                new[] { "st1", "sg1", "sp1", "L" },
-                new[] { "st1", "sg1", "sp2", "L" },
-                new[] { "st1", "sg1", "sp3", "L" },
-            };
-
-
-            var database = new DAL();
-
-            InitializeDatabase(database, units, strata, unit_strata, sampleGroups, species, tdvs, subPops);
-
-            return database;
         }
 
         #region plot
@@ -142,7 +21,7 @@ namespace FScruiser.Core.Test.Services
         [Fact]
         public void AddNewPlot()
         {
-            var unitCode = "u1";
+            var unitCode = Units.First();
             //var plotNumber = 1;
 
             using (var database = CreateDatabase())
@@ -151,22 +30,56 @@ namespace FScruiser.Core.Test.Services
 
                 var plotID = datastore.AddNewPlot(unitCode);
 
-                plotID.Should().NotBeNullOrEmpty();
-
-
-
-                var plot1 = datastore.GetPlot(plotID);
-
-                var strat_plots = datastore.GetPlot_Strata(unitCode, plot1.PlotNumber);
-
-
+                validatePlot(datastore, unitCode, plotID, 1);
 
                 var plotID2 = datastore.AddNewPlot(unitCode);
-
-                plotID2.Should().NotBeNullOrEmpty();
-
-
+                validatePlot(datastore, unitCode, plotID2, 2);
             }
+        }
+
+        [Fact]
+        public void AddPlotRemarks()
+        {
+            var remarks = "something";
+            var unitCode = Units.First();
+            var plotNumber = 1;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var plotID = datastore.AddNewPlot(unitCode);
+
+                validatePlot(datastore, unitCode, plotID, plotNumber);
+
+                var plot = datastore.GetPlot(plotID);
+
+                datastore.AddPlotRemark(plot.CuttingUnitCode, plot.PlotNumber, remarks);
+
+                var stuff = database.QueryGeneric("select * from plot_V3").ToArray();
+
+                var plotAgain = datastore.GetPlot(plotID);
+                plotAgain.Remarks.Should().Be(remarks);
+
+                datastore.AddPlotRemark(plot.CuttingUnitCode, plot.PlotNumber, remarks);
+
+                plotAgain = datastore.GetPlot(plotID);
+                plotAgain.Remarks.Should().Be(remarks + ", " + remarks);
+            }
+        }
+
+        private static void validatePlot(CuttingUnitDatastore datastore, string unitCode, string plotID, int expectedPlotNumber)
+        {
+            plotID.Should().NotBeNullOrEmpty();
+
+            var plot = datastore.GetPlot(plotID);
+            plot.Should().NotBeNull();
+            plot.PlotNumber.Should().Be(expectedPlotNumber);
+
+            var strat_plots = datastore.GetPlot_Strata(unitCode, plot.PlotNumber);
+            strat_plots.Should().NotBeEmpty();
+
+            strat_plots.All(x => x.PlotNumber == expectedPlotNumber).Should().BeTrue();
         }
 
         [Fact]
@@ -193,7 +106,7 @@ namespace FScruiser.Core.Test.Services
 
                 database.ExecuteScalar<int>("SELECT count(*) from Tree_V3;").Should().Be(1);
 
-                //var mytree = database.QueryGeneric("SELECT * FROM Tree_V3;")
+                //var mytree = database.QueryGeneric("SELECT * FROM Tree_V3;").ToArray();
 
                 var tree = datastore.GetTree(treeID);
                 tree.Should().NotBeNull();
@@ -208,32 +121,7 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
-        [Fact]
-        public void CreateFixCNTTallyTree()
-        {
-            var unitCode = "u1";
-            var plotNumber = 1;
-            var stratumCode = "st1";
-            var sgCode = "sg1";
-            var species = "sp1";
-            var liveDead = "L";
-            var countMeasure = "C";
-            var treeCount = 1;
-            var fieldName = "DBH";
 
-            using (var database = CreateDatabase())
-            {
-
-                var datastore = new CuttingUnitDatastore(database);
-
-                database.Execute(
-                    $"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ({Guid.Empty.ToString()}, '{unitCode}', {plotNumber});" +
-                    $"INSERT INTO Plot_Stratum (CuttingUnitCode, PlotNumber, StratumCode) VALUES ('{unitCode}', {plotNumber}, '{stratumCode}');");
-
-                var tree = datastore.CreateFixCNTTallyTree(unitCode, plotNumber, stratumCode, sgCode, species, liveDead, fieldName, 1.0, treeCount);
-                tree.Should().NotBeNull();
-            }
-        }
 
         [Fact]
         public void GetNextPlotNumber()
@@ -290,6 +178,35 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Fact]
+        public void GetPlotTreeProxies()
+        {
+            var unitCode = "u1";
+            var plotNumber = 1;
+            using(var db = CreateDatabase())
+            {
+                var ds = new CuttingUnitDatastore(db);
+                var plotid = ds.AddNewPlot(unitCode);
+
+                var plot_stratum = ds.GetPlot_Strata(unitCode, plotNumber).First();
+
+                var tp = ds.GetPlotTallyPopulationsByUnitCode(unitCode, plotNumber).First();
+
+                var firstTreeid = ds.CreatePlotTree(unitCode, plotNumber, tp.StratumCode, tp.SampleGroupCode);
+                ds.CreatePlotTree(unitCode, plotNumber, tp.StratumCode, tp.SampleGroupCode);
+
+                var trees = ds.GetPlotTreeProxies(unitCode, plotNumber).ToArray();
+
+                trees.Should().HaveCount(2);
+                trees.Select(x => x.TreeNumber).Should().BeInAscendingOrder();
+
+                db.Execute("UPDATE Tree_V3 SET TreeNumber = 3 WHERE TreeNumber = 1;");
+
+                var treesAgain = ds.GetPlotTreeProxies(unitCode, plotNumber).ToArray();
+                treesAgain.Select(x => x.TreeNumber).Should().BeInAscendingOrder();
+            }
+        }
+
+        [Fact]
         public void GetPlot_Strata()
         {
             var unitCode = "u1";
@@ -325,22 +242,22 @@ namespace FScruiser.Core.Test.Services
         public void GetPlot_Stratum()
         {
             var units = new string[] { "u1" };
-            var strata = new string[][]
+            var strata = new[]
             {
-                new string[] {"st1", "" },
-                new string[] {"st2", "" },
-                new string[] {"st3", "" },
+                new dbModels.Stratum {Code = "st1", Method = "" },
+                new dbModels.Stratum {Code = "st2", Method = "" },
+                new dbModels.Stratum {Code = "st3", Method = "" },
             };
-            var unit_strata = new string[][]
+            var unit_strata = new[]
             {
-                new string[] {"u1", "st1" },
-                new string[] { "u1", "st2" },
-                new string[] { "u1", "st3" },
+                new dbModels.CuttingUnit_Stratum {CuttingUnitCode = "u1", StratumCode = "st1" },
+                new dbModels.CuttingUnit_Stratum {CuttingUnitCode = "u1", StratumCode = "st2" },
+                new dbModels.CuttingUnit_Stratum {CuttingUnitCode = "u1", StratumCode = "st3" },
             };
 
             var plotNumber = 1;
 
-            using (var database = new DAL())
+            using (var database = new CruiseDatastore_V3())
             {
                 InitializeDatabase(database, units, strata, unit_strata, null, null, null, null);
 
@@ -352,16 +269,16 @@ namespace FScruiser.Core.Test.Services
 
                 foreach (var st in strata)
                 {
-                    if (st[0] == "st3") { continue; }
+                    if (st.Code == "st3") { continue; }
 
                     database.Execute($"INSERT INTO Plot_Stratum (CuttingUnitCode, PlotNumber, StratumCode) VALUES " +
-                        $"('{units[0]}', {plotNumber}, '{st[0]}');");
+                        $"('{units[0]}', {plotNumber}, '{st.Code}');");
                 }
 
                 foreach (var st in strata)
                 {
-                    var plotStratum = datastore.GetPlot_Stratum(units[0], st[0], plotNumber);
-                    ValidatePlot_Stratum(plotStratum, st[0] != "st3");
+                    var plotStratum = datastore.GetPlot_Stratum(units[0], st.Code, plotNumber);
+                    ValidatePlot_Stratum(plotStratum, st.Code != "st3");
                 }
 
                 var nonExistantPS = datastore.GetPlot_Stratum(units[0], "st3", plotNumber);
@@ -369,7 +286,7 @@ namespace FScruiser.Core.Test.Services
             }
         }
 
-        void ValidatePlot_Stratum(Plot_Stratum ps, bool inCruise)
+        private void ValidatePlot_Stratum(Plot_Stratum ps, bool inCruise)
         {
             ps.CuttingUnitCode.Should().NotBeNullOrWhiteSpace();
             ps.StratumCode.Should().NotBeNullOrWhiteSpace();
@@ -421,18 +338,26 @@ namespace FScruiser.Core.Test.Services
         [InlineData("FIX")]
         [InlineData("PCM")]
         [InlineData("FCM")]
+        [InlineData("FIXCNT")]
+        [InlineData("F3P")]
+        [InlineData("P3P")]
         public void GetPlotStrataProxies(string method)
         {
-            using (var database = CreateDatabase())
+            var units = Units;
+            var unit = units[0];
+            var newStratumCode = "01";
+
+            using (var database = new CruiseDatastore_V3())
             {
                 var datastore = new CuttingUnitDatastore(database);
+                InitializeDatabase(database, units, null, null, null, null, null, null);
 
-                datastore.GetPlotStrataProxies("u1").Should().HaveCount(0);
+                datastore.GetPlotStrataProxies(unit).Should().HaveCount(0);
 
-                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('03', '{method}');");
-                database.Execute("INSERT INTO CuttingUnit_Stratum (CuttingUnitCode, StratumCode) VALUES ('u1', '03')");
+                database.Execute($"INSERT INTO Stratum (Code, Method) VALUES ('{newStratumCode}', '{method}');");
+                database.Execute($"INSERT INTO CuttingUnit_Stratum (CuttingUnitCode, StratumCode) VALUES ('{unit}', '{newStratumCode}')");
 
-                var result = datastore.GetPlotStrataProxies("u1").ToArray();
+                var result = datastore.GetPlotStrataProxies(unit).ToArray();
 
                 result.Should().HaveCount(1);
             }
@@ -510,8 +435,7 @@ namespace FScruiser.Core.Test.Services
                 var aspect = random.Double();
                 plot.Aspect = aspect;
 
-
-                var remarks = random.String(24);
+                var remarks = random.String2(24);
                 plot.Remarks = remarks;
 
                 datastore.UpdatePlot(plot);
@@ -521,6 +445,32 @@ namespace FScruiser.Core.Test.Services
                 plotAgain.Slope.Should().Be(slope);
                 plotAgain.Aspect.Should().Be(aspect);
                 plotAgain.Remarks.Should().Be(remarks);
+            }
+        }
+
+        [Fact]
+        public void UpdatePlotNumber()
+        {
+            var unitCode = Units.First();
+            //var plotNumber = 1;
+
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
+
+                var plotID = datastore.AddNewPlot(unitCode);
+
+                validatePlot(datastore, unitCode, plotID, 1);
+
+                var treeID = datastore.CreatePlotTree(unitCode, 1, "st1", "sg1");
+
+                datastore.UpdatePlotNumber(plotID, 2);
+
+                validatePlot(datastore, unitCode, plotID, 2);
+
+                // verify that plot number updates on tree records
+                var treeAfter = datastore.GetTree(treeID);
+                treeAfter.PlotNumber.Should().Be(2);
             }
         }
 
@@ -588,12 +538,12 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_noPlot(int tallyBySp)
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetPlotTallyPopulationsByUnitCode_PNT_FIX_noPlot(bool tallyBySp)
         {
             var unitCode = "u3";
-            var stCode = "st3";
+            var stCode = "st5";
             var sgCode = "sg4";
 
             var method = CruiseDAL.Schema.CruiseMethods.PNT;
@@ -607,26 +557,27 @@ namespace FScruiser.Core.Test.Services
                     new[] { unitCode },
                     new[]
                     {
-                        new[] {stCode, method},
+                        new dbModels.Stratum {Code = stCode, Method = method},
                     },
                     new[]
                     {
-                        new [] {unitCode, stCode},
+                        new dbModels.CuttingUnit_Stratum { CuttingUnitCode = unitCode, StratumCode = stCode},
                     },
                     new[]
                     {
-                        new {StCode = stCode, SgCode = sgCode, Freq = 101, TallyBySp = tallyBySp}
+                        new dbModels.SampleGroup_V3 {StratumCode = stCode, SampleGroupCode = sgCode, SamplingFrequency = 101, TallyBySubPop = tallyBySp}
                     },
+                    // species
                     new[] { "sp4" },
                     new[]
                     {
-                        new[] {"sp4", "L", "01"},
-                        new[] {"sp4", "D", "01"},
+                        new dbModels.TreeDefaultValue {Species ="sp4", LiveDead = "L", PrimaryProduct = "01"},
+                        new dbModels.TreeDefaultValue {Species = "sp4", LiveDead = "D", PrimaryProduct = "01"},
                     },
                     new[]
                     {
-                        new [] {stCode, sgCode, "sp4", "L" },
-                        new [] {stCode, sgCode, "sp4", "D" },
+                        new dbModels.Subpopulation {StratumCode = stCode, SampleGroupCode = sgCode, Species = "sp4", LiveDead = "L" },
+                        new dbModels.Subpopulation {StratumCode = stCode, SampleGroupCode = sgCode, Species = "sp4", LiveDead = "D" },
                     }
                 );
 
@@ -634,9 +585,9 @@ namespace FScruiser.Core.Test.Services
                     //we are going to check that the tally population returned is vallid for a
                     //tally population with no count tree record associated
                     //it should return one tally pop per sample group in the unit, that is associated with a FIX or PNT stratum
-                    var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode("u3", 1);
+                    var unit3tallyPops = datastore.GetPlotTallyPopulationsByUnitCode(unitCode, 1);
 
-                    if (tallyBySp == 0)
+                    if (tallyBySp == false)
                     {
                         unit3tallyPops.Should().HaveCount(1);
 
@@ -659,11 +610,19 @@ namespace FScruiser.Core.Test.Services
 
                     void ValidateTallyPop(TallyPopulation_Plot tp)
                     {
-                        tp.StratumCode.Should().Be("st3");
-                        tp.SampleGroupCode.Should().Be("sg4");
+                        tp.StratumCode.Should().Be(stCode);
+                        tp.SampleGroupCode.Should().Be(sgCode);
                         tp.InCruise.Should().BeFalse();
                     }
                 }
+            }
+        }
+
+        public void GetTreeCount()
+        {
+            using (var database = CreateDatabase())
+            {
+                var datastore = new CuttingUnitDatastore(database);
             }
         }
 

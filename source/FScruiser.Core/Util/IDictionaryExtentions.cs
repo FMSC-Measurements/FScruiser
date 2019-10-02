@@ -34,5 +34,10 @@ namespace FScruiser.Util
                 @this.Add(key, value);
             }
         }
+
+        public static void ClearValue<TKey, TValue>(this IDictionary<TKey, TValue> @this, TKey key)
+        {
+            @this.Remove(key);
+        }
     }
 }

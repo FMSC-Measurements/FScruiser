@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace FScruiser.Models
 {
-    [EntitySource("CuttingUnit")]
+    [Table("CuttingUnit")]
     public class CuttingUnit : INPC_Base
     {
         [Field("Code")]

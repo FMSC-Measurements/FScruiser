@@ -31,13 +31,13 @@ namespace FScruiser.Services
 
         void UpdatePlot_Stratum(Plot_Stratum stratumPlot);
 
+        void UpdatePlotNumber(string plotID, int plotNumber);
+
         void DeletePlot_Stratum(string cuttingUnitCode, string stratumCode, int plotNumber);
 
         #endregion plot stratum
 
         #region tally populations
-
-        IEnumerable<FixCntTallyPopulation> GetFixCNTTallyPopulations(string stratumCode);
 
         IEnumerable<TallyPopulation_Plot> GetPlotTallyPopulationsByUnitCode(string unitCode, int plotNumber);
 
@@ -58,27 +58,9 @@ namespace FScruiser.Services
             int kpi = 0,
             bool stm = false);
 
-        Tree GetFixCNTTallyTree(string unitCode,
-            int plotNumber,
-            string stratumCode,
-            string sgCode,
-            string species,
-            string liveDead,
-            string fieldName,
-            double value);
+        IEnumerable<TreeStub_Plot> GetPlotTreeProxies(string unitCode, int plotNumber);
 
-        Tree CreateFixCNTTallyTree(string unitCode,
-            int plotNumber,
-            string stratumCode,
-            string sgCode,
-            string species,
-            string liveDead,
-            string fieldName,
-            double value,
-            int treeCount = 0);
-
-        
-
+        int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon);
 
         #endregion tree
 
@@ -95,6 +77,5 @@ namespace FScruiser.Services
         void AddPlotRemark(string cuttingUnitCode, int plotNumber, string remark);
 
         int GetNumTreeRecords(string unitCode, string stratumCode, int plotNumber);
-
     }
 }

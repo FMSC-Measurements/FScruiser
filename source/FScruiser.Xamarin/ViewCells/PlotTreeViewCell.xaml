@@ -3,7 +3,8 @@
                                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                    xmlns:local="clr-namespace:FScruiser.XF.ViewCells"
                                    xmlns:local_views="clr-namespace:FScruiser.XF.Views"
-                                   x:Class="FScruiser.XF.ViewCells.PlotTreeViewCell">
+                                   x:Class="FScruiser.XF.ViewCells.PlotTreeViewCell"
+                                   xmlns:prismxaml="clr-namespace:Prism.Navigation.Xaml;assembly=Prism.Forms">
     <ViewCell.View>
         <ContentView BackgroundColor="Silver">
             <Frame BackgroundColor="#30C1BC"
@@ -17,7 +18,7 @@
                                  Binding="{Binding CountOrMeasure}"
                                  Value="M">
                         <Setter Property="BackgroundColor"
-                                Value="#30C1BC" />
+                                Value="{StaticResource accent}" />
                     </DataTrigger>
 
                     <DataTrigger TargetType="Frame"
@@ -89,21 +90,29 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <ScrollView x:Name="_treeEditScrollView"
                                     Grid.Row="0"
                                     Grid.Column="0"
-                                    Grid.ColumnSpan="3">
+                                    Grid.ColumnSpan="4">
 
                         </ScrollView>
 
                         <Button Grid.Row="1"
                                 Grid.Column="1"
+                                x:Name="_logsButton"
+                                Text="Logs"
+                                Command="{prismxaml:NavigateTo Name='Logs'}"
+                                CommandParameter="{Binding TreeID}" />
+                        
+                        <Button Grid.Row="1"
+                                Grid.Column="2"
                                 x:Name="_editButton"
                                 Text="Edit" />
                         <Button Grid.Row="1"
-                                Grid.Column="2"
+                                Grid.Column="3"
                                 x:Name="_deleteButton"
                                 Text="Delete" />
                     </Grid>

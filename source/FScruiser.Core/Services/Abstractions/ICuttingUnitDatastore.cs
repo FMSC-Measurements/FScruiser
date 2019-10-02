@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace FScruiser.Services
 {
-    public interface ICuttingUnitDatastore : IPlotDatastore, ITreeDatastore
+    public interface ICuttingUnitDatastore : IPlotDatastore, ITreeDatastore, ILogDatastore
     {
         string GetCruisePurpose();
 
@@ -13,6 +13,7 @@ namespace FScruiser.Services
         IEnumerable<CuttingUnit> GetUnits();
 
         #region stratra
+        string GetCruiseMethod(string stratumCode);
 
         IEnumerable<string> GetStratumCodesByUnit(string unitCode);
 
@@ -54,45 +55,19 @@ namespace FScruiser.Services
 
         IEnumerable<PlotError> GetPlotErrorsByUnit(string cuttingUnitCode);
 
-        IEnumerable<LogError> GetLogErrorsByLog(string logID);
-
-        IEnumerable<LogError> GetLogErrorsByTree(string treeID);
-
         //IEnumerable<TreeAuditRule> GetTreeAuditRules(string stratum, string sampleGroup, string species, string livedead);
 
         #endregion validation
 
         #region tree
 
-        int GetNextPlotTreeNumber(string unitCode, string stratumCode, int plotNumber, bool isRecon);
-
         TreeStub GetTreeStub(string tree_GUID);
-
-        IEnumerable<TreeStub_Plot> GetPlotTreeProxies(string unitCode, int plotNumber);
 
         IEnumerable<Tree> GetTreesByUnitCode(string unitCode);
 
         IEnumerable<TreeStub> GetTreeStubsByUnitCode(string unitCode);
 
         #endregion tree
-
-        #region logs
-
-        IEnumerable<Log> GetLogs(string tree_guid);
-
-        Log GetLog(string log_guid);
-
-        Log GetLog(string tree_guid, int logNumber);
-
-        void InsertLog(Log log);
-
-        void UpdateLog(Log log);
-
-        void DeleteLog(string log_guid);
-
-        IEnumerable<LogFieldSetup> GetLogFields(string tree_guid);
-
-        #endregion logs
 
         #region Tally Entries
         TallyEntry GetTallyEntry(string tallyLedgerID);
@@ -101,6 +76,8 @@ namespace FScruiser.Services
         IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber);
 
         TallyEntry InsertTallyAction(TallyAction entry);
+
+        Task<TallyEntry> InsertTallyActionAsync(TallyAction tallyAction);
 
         void InsertTallyLedger(TallyLedger tallyLedger);
 

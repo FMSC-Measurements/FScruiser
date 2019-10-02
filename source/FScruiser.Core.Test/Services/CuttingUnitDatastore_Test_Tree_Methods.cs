@@ -40,7 +40,7 @@ namespace FScruiser.Core.Test.Services
         }
 
         [Fact]
-        public void CreateTree()
+        public void CreateMeasureTree()
         {
             var unitCode = "u1";
             var stratumCode = "st1";
@@ -67,6 +67,10 @@ namespace FScruiser.Core.Test.Services
                 tree.LiveDead.Should().Be(liveDead);
                 //tree.CountOrMeasure.Should().Be(countMeasure);
                 //tree.TreeCount.Should().Be(treeCount);
+
+                var tallyLedger = datastore.GetTallyEntry(treeID);
+                tallyLedger.Should().NotBeNull();
+                tallyLedger.CountOrMeasure.Should().Be("M");
             }
         }
 

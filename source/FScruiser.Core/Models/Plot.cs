@@ -3,12 +3,13 @@ using FScruiser.Util;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Plot")]
+    [Table("Plot_V3")]
     public class Plot : INPC_Base
     {
         private double _slope;
         private double _aspect;
         private string _remarks;
+        private int _plotNumber;
 
         [Field("PlotID")]
         public string PlotID { get; set; }
@@ -17,7 +18,11 @@ namespace FScruiser.Models
         public string CuttingUnitCode { get; set; }
 
         [Field("PlotNumber")]
-        public int PlotNumber { get; set; }
+        public int PlotNumber
+        {
+            get => _plotNumber;
+            set => SetValue(ref _plotNumber, value);
+        }
 
         [Field("Slope")]
         public double Slope

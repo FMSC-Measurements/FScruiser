@@ -18,7 +18,7 @@ namespace FScruiser.XF.ViewModels
         private double _bafOrFps;
         private double _dbh;
         private int _slopePCT;
-        private double _slopeDistance;
+        private double? _slopeDistance;
         private double _limitingDistance;
         private double _azimuth;
         private bool _isToFace = true;
@@ -33,7 +33,7 @@ namespace FScruiser.XF.ViewModels
             get { return _bafOrFps; }
             set
             {
-                SetValue(ref _bafOrFps, value);
+                _bafOrFps = value;
                 Calculate();
             }
         }
@@ -43,7 +43,7 @@ namespace FScruiser.XF.ViewModels
             get { return _dbh; }
             set
             {
-                SetValue(ref _dbh, value);
+                _dbh = value;
                 Calculate();
             }
         }
@@ -53,17 +53,37 @@ namespace FScruiser.XF.ViewModels
             get { return _slopePCT; }
             set
             {
-                SetValue(ref _slopePCT, value);
+                _slopePCT = value;
                 Calculate();
             }
         }
 
-        public double SlopeDistance
+        // HACK xamarin really doesn't like binding to nullible types
+        // so instead we will bind the text box to a property that exposes SlopeDistance as a string.
+        // see: https://forums.xamarin.com/discussion/144704/binding-to-nullable-int 
+        public string SlopeDistanceStr
+        {
+            get => SlopeDistance?.ToString() ?? "";
+            set
+            {
+                if(value != null && double.TryParse(value, out var d))
+                {
+                    SlopeDistance = d;
+                }
+                else
+                {
+                    SlopeDistance = null;
+                }
+            }
+
+        }
+
+        public double? SlopeDistance
         {
             get { return _slopeDistance; }
             set
             {
-                SetValue(ref _slopeDistance, value);
+                _slopeDistance = value;
                 Calculate();
             }
         }
@@ -71,7 +91,10 @@ namespace FScruiser.XF.ViewModels
         public double Azimuth
         {
             get { return _azimuth; }
-            set { SetValue(ref _azimuth, value); }
+            set
+            {
+                _azimuth = value;
+            }
         }
 
         public bool IsToFace
@@ -137,9 +160,9 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public LimitingDistanceViewModel(ICuttingUnitDatastoreProvider datastoreProvider)
+        public LimitingDistanceViewModel(IDataserviceProvider datastoreProvider)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
 
         public override void OnNavigatedFrom(INavigationParameters parameters)
@@ -167,6 +190,8 @@ namespace FScruiser.XF.ViewModels
                 BafOrFps = (isVariableRadious) ? plot.BAF : plot.FPS;
 
                 Plot = plot;
+
+                RaisePropertyChanged(nameof(BafOrFps));
             }
         }
 
@@ -185,8 +210,16 @@ namespace FScruiser.XF.ViewModels
             }
 
             var limitingDistance = LimitingDistance = Logic.CalculateLimitingDistance.Calculate(BafOrFps, DBH, SlopePCT, IsVariableRadius, IsToFace);
+            var slopeDistance = SlopeDistance;
 
-            IsTreeIn = Logic.CalculateLimitingDistance.DeterminTreeInOrOut(SlopeDistance, limitingDistance);
+            if (slopeDistance.HasValue)
+            {
+                IsTreeIn = Logic.CalculateLimitingDistance.DeterminTreeInOrOut(slopeDistance.Value, limitingDistance);
+            }
+            else
+            {
+                IsTreeIn = null;
+            }
         }
 
         protected string GenerateReport()
@@ -195,18 +228,19 @@ namespace FScruiser.XF.ViewModels
 
             if (IsTreeIn.HasValue)
             {
-                return Logic.CalculateLimitingDistance.GenerateReport(TreeStatus, LimitingDistance, SlopeDistance,
-                    SlopePCT, Azimuth, BafOrFps, DBH, SlopePCT, IsVariableRadius, IsToFace);
+                return Logic.CalculateLimitingDistance.GenerateReport(TreeStatus, LimitingDistance, SlopeDistance.Value,
+                    SlopePCT, Azimuth, BafOrFps, DBH, SlopePCT, IsVariableRadius, IsToFace, Plot.StratumCode);
             }
             else { return null; }
         }
 
         public void SaveReport()
         {
+            var plot = Plot;
             var report = GenerateReport();
             if (!string.IsNullOrEmpty(report))
             {
-                Datastore.AddPlotRemark(Plot.CuttingUnitCode, Plot.PlotNumber, report);
+                Datastore.AddPlotRemark(plot.CuttingUnitCode, plot.PlotNumber, report);
             }
         }
     }

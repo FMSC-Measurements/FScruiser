@@ -15,6 +15,8 @@
             <!-- Dodger blue -->
             <Color x:Key="accent">#1E90FF</Color>
             <Color x:Key="accentText">Blue</Color>
+            <Color x:Key="darkText">Black</Color>
+            <Color x:Key="lightText">White</Color>
 
             <!-- these colors provide semi transparent pigments to be used as background coulors or text color. 
             using a semi trasparent color as a font or background color is a good alternative to using greys

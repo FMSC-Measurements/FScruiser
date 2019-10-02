@@ -3,7 +3,7 @@ using FScruiser.Util;
 
 namespace FScruiser.Models
 {
-    [EntitySource("TreeMeasurment")]
+    [Table("TreeMeasurment")]
     public class TreeMeasurment : INPC_Base
     {
         private static readonly string DEFAULT_GRADE = "00";
@@ -223,12 +223,14 @@ namespace FScruiser.Models
             set { SetValue(ref _aspect, value); }
         }
 
+        [IgnoreField]
         public string Remarks
         {
             get => _remarks;
             set => SetValue(ref _remarks, value);
         }
 
+        [IgnoreField]
         public string Initials
         {
             get => _initials;

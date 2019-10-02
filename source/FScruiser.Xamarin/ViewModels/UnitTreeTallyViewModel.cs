@@ -27,6 +27,11 @@ namespace FScruiser.XF.ViewModels
 
         public event EventHandler TallyEntryAdded;
 
+        public string Title
+        {
+            get => _title;
+            set => SetValue(ref _title, value);
+        }
         public IList<TallyEntry> TallyFeed
         {
             get { return _tallyFeed; }
@@ -79,7 +84,14 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public string UnitCode { get; set; }
+        public string UnitCode
+        {
+            get => _unitCode;
+            set
+            {
+                _unitCode = value;
+            }
+        }
 
         #region Commands
 
@@ -88,6 +100,8 @@ namespace FScruiser.XF.ViewModels
         private ICommand _stratumSelectedCommand;
         private ICommand _tallyCommand;
         private ICommand _untallyCommand;
+        private string _title;
+        private string _unitCode;
 
         public ICommand ShowTallyMenuCommand => _showTallyMenuCommand
             ?? (_showTallyMenuCommand = new Command<TallyPopulation>(ShowTallyMenu));
@@ -110,25 +124,27 @@ namespace FScruiser.XF.ViewModels
 
         public IDialogService DialogService { get; }
         public ISampleSelectorDataService SampleSelectorService { get; }
-        public ITallySettingsDataService TallySettings { get; }
+        public ICruisersDataservice CruisersDataService { get; }
         public ISoundService SoundService { get; }
 
         public UnitTreeTallyViewModel(INavigationService navigationService,
-            ICuttingUnitDatastoreProvider datastoreProvider,
+            IDataserviceProvider datastoreProvider,
             IDialogService dialogService,
             ITallySettingsDataService tallySettings,
             ISoundService soundService) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
-            SampleSelectorService = datastoreProvider.SampleSelectorDataService;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
+            SampleSelectorService = datastoreProvider.Get<ISampleSelectorDataService>();
             DialogService = dialogService;
-            TallySettings = tallySettings;
+            CruisersDataService = datastoreProvider.Get<ICruisersDataservice>();
             SoundService = soundService;
         }
 
         protected override void Refresh(INavigationParameters parameters)
         {
             var unitCode = UnitCode = parameters.GetValue<string>("UnitCode");
+
+            Title = $"Unit {unitCode}";
 
             var datastore = Datastore;
 
@@ -170,7 +186,7 @@ namespace FScruiser.XF.ViewModels
             // database will assign tree a tree number if there is a tree
             // action might be null if user dosn't enter kpi or tree count for clicker entry
             if (action == null) { return; }
-            var entry = Datastore.InsertTallyAction(action);
+            var entry = await Datastore.InsertTallyActionAsync(action);
 
             // trigger updates due to tally
             await HandleTally(pop, action, entry);
@@ -202,15 +218,16 @@ namespace FScruiser.XF.ViewModels
                     await SoundService.SignalMeasureTreeAsync();
                 }
 
-                if (TallySettings.EnableCruiserPopup)
-                {
-                    var cruiser = await DialogService.AskCruiserAsync();
-                    if (cruiser != null)
-                    {
-                        Datastore.UpdateTreeInitials(entry.TreeID, cruiser);
-                    }
-                }
-                else if (method != CruiseMethods.H_PCT)
+                //if (CruisersDataService.PromptCruiserOnSample)
+                //{
+                //    var cruiser = await DialogService.AskCruiserAsync();
+                //    if (cruiser != null)
+                //    {
+                //        Datastore.UpdateTreeInitials(entry.TreeID, cruiser);
+                //    }
+                //}
+                //else
+                if (method != CruiseMethods.H_PCT)
                 {
                     var sampleType = (action.IsInsuranceSample) ? "Insurance Tree" : "Measure Tree";
                     await DialogService.ShowMessageAsync("Tree #" + entry.TreeNumber.ToString(), sampleType);

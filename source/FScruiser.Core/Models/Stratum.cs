@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FScruiser.Models
 {
-    [EntitySource("Stratum")]
+    [Table("Stratum")]
     public class Stratum
     {
         [Field(Name = "Code")]

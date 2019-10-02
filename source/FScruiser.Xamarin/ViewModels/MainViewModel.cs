@@ -2,7 +2,6 @@
 using FScruiser.Services;
 using FScruiser.XF.Services;
 using Microsoft.AppCenter.Crashes;
-using Plugin.FilePicker;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
@@ -55,7 +54,7 @@ namespace FScruiser.XF.ViewModels
         {
             get
             {
-                var filePath = DatastoreProvider.Cruise_Path;
+                var filePath = DatastoreProvider.CruisePath;
                 if (string.IsNullOrWhiteSpace(filePath))
                 {
                     return "Open File";
@@ -67,27 +66,37 @@ namespace FScruiser.XF.ViewModels
             }
         }
 
-        public ICuttingUnitDatastoreProvider DatastoreProvider { get; }
+        public IDataserviceProvider DatastoreProvider { get; }
         protected IDialogService DialogService { get; set; }
+
+        protected IFilePickerService FilePickerService { get; }
 
         public MainViewModel(INavigationService navigationService
             , IDialogService dialogService
-            , ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
+            , IDataserviceProvider datastoreProvider,
+            IFilePickerService filePickerService) : base(navigationService)
         {
             DialogService = dialogService;
             DatastoreProvider = datastoreProvider;
+            FilePickerService = filePickerService ?? throw new ArgumentNullException(nameof(filePickerService));
 
             RefreshNavigation(null);
         }
 
         public void RefreshNavigation(CuttingUnit_Ex cuttingUnit)
         {
-            var datastore = DatastoreProvider.CuttingUnitDatastore;
+            var datastore = DatastoreProvider.Get<ICuttingUnitDatastore>();
 
             var navigationItems = new List<NavigationListItem>();
 
             if (datastore != null)
             {
+                navigationItems.Add(new NavigationListItem
+                {
+                    Title = "Sale",
+                    NavigationPath = "Navigation/Sale",
+                });
+
                 navigationItems.Add(new NavigationListItem
                 {
                     Title = "Cutting Units",
@@ -124,11 +133,11 @@ namespace FScruiser.XF.ViewModels
                 }
             }
 
-            navigationItems.Add(new NavigationListItem
-            {
-                Title = "Cruisers",
-                NavigationPath = "Navigation/Cruisers"
-            });
+            //navigationItems.Add(new NavigationListItem
+            //{
+            //    Title = "Cruisers",
+            //    NavigationPath = "Navigation/Cruisers"
+            //});
 
             NavigationListItems = navigationItems;
         }
@@ -147,7 +156,6 @@ namespace FScruiser.XF.ViewModels
                     Debug.WriteLine("ERROR::::" + ex);
                     Crashes.TrackError(ex, new Dictionary<string, string>() { { "nav_path", obj.NavigationPath } });
                 }
-
             }
             catch (Exception ex)
             {
@@ -170,10 +178,13 @@ namespace FScruiser.XF.ViewModels
         {
             try
             {
-                var fileData = await CrossFilePicker.Current.PickFile(new string[] { ".cruise" });
-                if (fileData == null) { return; }//user canceled file picking
+                var filePath = await FilePickerService.PickCruiseFileAsync();
+                if (filePath == null) { return; }
 
-                var filePath = fileData.FilePath;
+                //var fileData = await CrossFilePicker.Current.PickFile(new string[] { ".cruise", ".crz3" });
+                //if (fileData == null) { return; }//user canceled file picking
+
+                //var filePath = fileData.FilePath;
 
                 //Check path exists
                 if (File.Exists(filePath) == false)
@@ -213,7 +224,8 @@ namespace FScruiser.XF.ViewModels
 
         private void MessagingCenter_CuttingUnitSelected(string unit)
         {
-            var cuttingUnit = DatastoreProvider.CuttingUnitDatastore.GetUnit(unit);
+            var datastore = DatastoreProvider.Get<ICuttingUnitDatastore>();
+            var cuttingUnit = datastore.GetUnit(unit);
 
             RefreshNavigation(cuttingUnit);
 

@@ -74,7 +74,7 @@
                                                        HorizontalTextAlignment="Center"
                                                        VerticalOptions="Center" />
 
-                                                <Label Text="{Binding Tree.TreeCount}"
+                                                <Label Text="{Binding TreeCount}"
                                                        HorizontalTextAlignment="Center"
                                                        VerticalOptions="Center" />
 

@@ -44,20 +44,22 @@ namespace FScruiser.XF.ViewModels
 
         public string Tree_GUID { get; private set; }
 
-        public LogsListViewModel(INavigationService navigationService, ICuttingUnitDatastoreProvider datastoreProvider) : base(navigationService)
+        public LogsListViewModel(INavigationService navigationService, IDataserviceProvider datastoreProvider) : base(navigationService)
         {
-            Datastore = datastoreProvider.CuttingUnitDatastore;
+            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
         }
 
         protected override void Refresh(INavigationParameters parameters)
         {
-            var tree_guid = Tree_GUID = parameters.GetValue<string>("Tree_Guid");
+            var tree_guid = Tree_GUID = parameters.GetValue<string>("Tree_Guid")
+                ?? parameters.GetValue<string>(KnownNavigationParameters.XamlParam);
 
             TreeNumber = Datastore.GetTreeStub(tree_guid)?.TreeNumber;
 
             LogFields = Datastore.GetLogFields(tree_guid);
 
-            Logs = Datastore.GetLogs(tree_guid).ToObservableCollection();
+            Logs = Datastore.GetLogs(tree_guid).ToObservableCollection()
+                ?? new ObservableCollection<Log>();
         }
 
         private void ShowAddLogPage(object obj)

@@ -28,12 +28,12 @@
                        HorizontalOptions="FillAndExpand"
                        Margin="10,0,0,0" />
 
-                <Switch  IsToggled="{Binding Data.EnableCruiserPopup}" 
+                <Switch  IsToggled="{Binding PromptCruiserOnSample}" 
                          HorizontalOptions="End" />
                 
             </StackLayout>
 
-            <ListView x:Name="_cruisersListView" Grid.Row="2" ItemsSource="{Binding Data.Cruisers}">
+            <ListView x:Name="_cruisersListView" Grid.Row="2" ItemsSource="{Binding Cruisers}">
 
                 <ListView.ItemTemplate>
 
