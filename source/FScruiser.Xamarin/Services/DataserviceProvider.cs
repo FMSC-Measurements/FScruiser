@@ -1,6 +1,7 @@
 ﻿using CruiseDAL;
 using FScruiser.Data;
 using FScruiser.Services;
+using Prism.Autofac;
 using System;
 using Xamarin.Forms;
 
@@ -22,13 +23,16 @@ namespace FScruiser.XF.Services
         private string _cruisePath;
         ICruisersDataservice _cruisersDataservice;
 
-        public DataserviceProvider(Application application)
+        
+
+        public DataserviceProvider(PrismApplication application)
         {
             Application = application ?? throw new ArgumentNullException(nameof(application));
-
         }
 
-        public Xamarin.Forms.Application Application { get; }
+        protected PrismApplication Application { get; }
+        protected Prism.Ioc.IContainerProvider Container => Application.Container;
+        protected IDeviceInfoService DeviceInfoService => (IDeviceInfoService)Container.Resolve(typeof(IDeviceInfoService));
 
         public ICuttingUnitDatastore CuttingUnitDatastore { get; set; }
         public ISampleSelectorDataService SampleSelectorDataService { get; set; }
@@ -46,8 +50,7 @@ namespace FScruiser.XF.Services
                 {
                     var datastore = new CruiseDatastore_V3(value);
                     CruiseDatastore = datastore;
-                    CuttingUnitDatastore = new CuttingUnitDatastore(datastore);
-                    SampleSelectorDataService = new SampleSelectorRepository(CuttingUnitDatastore);
+                    SampleSelectorDataService = new SampleSelectorRepository((ISampleInfoDataservice) Get(typeof(ISampleInfoDataservice), datastore));
                 }
                 _cruisePath = value;
             }
@@ -60,23 +63,38 @@ namespace FScruiser.XF.Services
 
         public object Get(Type type)
         {
+            return Get(type, CruiseDatastore);
+        }
+
+        private object Get(Type type, CruiseDatastore_V3 cruiseDatastore)
+        {
             if (type.IsAssignableFrom(typeof(ICuttingUnitDatastore)))
-            { return CuttingUnitDatastore; }
+            { return new CuttingUnitDatastore(cruiseDatastore); }
+
             if (type.IsAssignableFrom(typeof(ISampleSelectorDataService)))
             { return SampleSelectorDataService; }
+
             if (type.IsAssignableFrom(typeof(ICruisersDataservice)))
             { return _cruisersDataservice ?? (_cruisersDataservice = new CruisersDataservice(Application)); }
+
             if (type.IsAssignableFrom(typeof(ISaleDataservice)))
-            {
-                return new SaleDataservice(CruisePath);
-            }
+            { return new SaleDataservice(cruiseDatastore); }
+
             if (type.IsAssignableFrom(typeof(IFixCNTDataservice)))
-            {
-                return new FixCNTDataservice(CruisePath);
-            }
+            { return new FixCNTDataservice(cruiseDatastore); }
+
+            if (type.IsAssignableFrom(typeof(ITallyDataservice))
+                || type.IsAssignableFrom(typeof(ISampleInfoDataservice)))
+            { return new TallyDataservice(cruiseDatastore, DeviceInfoService); }
+
+            if (type.IsAssignableFrom(typeof(ITallyPopulationDataservice)))
+            { return new TallyPopulationDataservice(cruiseDatastore); }
+
             else
             { return null; }
         }
+
+        
 
         //public void Register<T>(T instance)
         //{

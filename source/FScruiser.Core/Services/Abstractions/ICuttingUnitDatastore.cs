@@ -37,17 +37,17 @@ namespace FScruiser.Services
 
         SampleGroupProxy GetSampleGroupProxy(string stratumCode, string sampleGroupCode);
 
-        SamplerState GetSamplerState(string stratumCode, string sampleGroupCode);
+        SamplerInfo GetSamplerState(string stratumCode, string sampleGroupCode);
 
-        void UpdateSamplerState(SamplerState samplerState);
+        void UpdateSamplerState(SamplerInfo samplerState);
 
         #endregion sampleGroups
 
         IEnumerable<SubPopulation> GetSubPopulations(string stratumCode, string sampleGroupCode);
 
-        IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode);
+        //IEnumerable<TallyPopulation> GetTallyPopulationsByUnitCode(string unitCode);
 
-        TallyPopulation GetTallyPopulation(string unitCode, string stratumCode, string sampleGroupCode, string species, string liveDead);
+        //TallyPopulation GetTallyPopulation(string unitCode, string stratumCode, string sampleGroupCode, string species, string liveDead);
 
         #region validation
 
@@ -70,18 +70,18 @@ namespace FScruiser.Services
         #endregion tree
 
         #region Tally Entries
-        TallyEntry GetTallyEntry(string tallyLedgerID);
-        IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
+        //TallyEntry GetTallyEntry(string tallyLedgerID);
+        //IEnumerable<TallyEntry> GetTallyEntriesByUnitCode(string unitCode);
 
-        IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber);
+        //IEnumerable<TallyEntry> GetTallyEntries(string unitCode, int plotNumber);
 
-        TallyEntry InsertTallyAction(TallyAction entry);
+        //TallyEntry InsertTallyAction(TallyAction entry);
 
-        Task<TallyEntry> InsertTallyActionAsync(TallyAction tallyAction);
+        //Task<TallyEntry> InsertTallyActionAsync(TallyAction tallyAction);
 
-        void InsertTallyLedger(TallyLedger tallyLedger);
+        //void InsertTallyLedger(TallyLedger tallyLedger);
 
-        void DeleteTallyEntry(string tallyLedgerID);
+        //void DeleteTallyEntry(string tallyLedgerID);
 
         #endregion Tally Entries
 

@@ -1,10 +1,17 @@
 ﻿using CruiseDAL;
+using CruiseDAL.Schema;
 using System;
+using System.Linq;
 
 namespace FScruiser.Data
 {
     public abstract class DataserviceBase
     {
+        protected readonly string PLOT_METHODS = String.Join(", ", CruiseMethods.PLOT_METHODS
+            .Append(CruiseMethods.THREEPPNT)
+            .Append(CruiseMethods.FIXCNT)
+            .Select(x => "'" + x + "'").ToArray());
+
         private CruiseDatastore_V3 _database;
 
         public CruiseDatastore_V3 Database

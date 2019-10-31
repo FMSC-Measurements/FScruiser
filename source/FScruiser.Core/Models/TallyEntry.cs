@@ -18,7 +18,7 @@ namespace FScruiser.Models
             Species = action.Species;
             LiveDead = action.LiveDead;
             EntryType = action.EntryType;
-            CountOrMeasure = action.IsSample ? action.IsInsuranceSample ? "I" : "M" : "C";
+            CountOrMeasure = action.CountOrMeasure.ToString();
         }
 
         [Field("CuttingUnitCode")]

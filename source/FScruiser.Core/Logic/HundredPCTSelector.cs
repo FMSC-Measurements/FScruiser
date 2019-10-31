@@ -1,24 +1,31 @@
 ﻿using FMSC.Sampling;
-using System;
 
 namespace FScruiser.Logic
 {
-    public class HundredPCTSelector : SampleSelecter, IFrequencyBasedSelecter
+    public class HundredPCTSelector : IFrequencyBasedSelecter
     {
         public int Frequency
         {
             get => 1;
-            set => throw new InvalidOperationException();
         }
 
-        public override SampleItem NextItem()
-        {
-            return new boolItem(1, false, true);
-        }
+        public int Count { get; protected set; }
 
-        public override bool Ready(bool throwException)
+        public int ITreeFrequency => 0;
+
+        public bool IsSelectingITrees => false;
+
+        public int InsuranceCounter => 0;
+
+        public int InsuranceIndex => 0;
+
+        public string StratumCode { get; set; }
+        public string SampleGroupCode { get; set; }
+
+        public char Sample()
         {
-            return true;
+            Count++;
+            return 'M';
         }
     }
 }

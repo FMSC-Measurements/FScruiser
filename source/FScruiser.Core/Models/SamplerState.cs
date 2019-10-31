@@ -1,36 +1,56 @@
-﻿using FMSC.ORM.EntityModel.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FMSC.Sampling;
+using FScruiser.Logic;
 
 namespace FScruiser.Models
 {
     public class SamplerState
     {
-        [Field("StratumCode")]
-        public string StratumCode { get; set; }
+        public SamplerState()
+        {
+        }
 
-        [Field("SampleGroupCode")]
+        public SamplerState(ISampleSelector sampler)
+        {
+            SampleSelectorType = sampler.GetType().Name;
+            StratumCode = sampler.StratumCode;
+            SampleGroupCode = sampler.SampleGroupCode;
+            Counter = sampler.Count;
+            InsuranceCounter = sampler.InsuranceCounter;
+            InsuranceIndex = sampler.InsuranceIndex;
+
+            switch (sampler)
+            {
+                case SystematicSelecter s:
+                    {
+                        SystematicIndex = s.HitIndex;
+                        break;
+                    }
+                case BlockSelecter b:
+                    {
+                        BlockState = b.BlockState;
+                        break;
+                    }
+                case ThreePSelecter s:
+                    {
+                        break;
+                    }
+                case S3PSelector s:
+                    {
+                        BlockState = s.BlockState;
+                        break;
+                    }
+            }
+        }
+
+
+        public string StratumCode { get; set; }
         public string SampleGroupCode { get; set; }
 
-        [Field("Method")]
-        public string Method { get; set; }
-
-        [Field("SamplingFrequency")]
-        public int SamplingFrequency { get; set; }
-
-        [Field("InsuranceFrequency")]
-        public int InsuranceFrequency { get; set; }
-
-        [Field("KZ")]
-        public int KZ { get; set; }
-
-        [Field("SampleSelectorState")]
-        public string SampleSelectorState { get; set; }
-
-        [Field("SampleSelectorType")]
         public string SampleSelectorType { get; set; }
+        public string BlockState { get; set; }
+        public int SystematicIndex { get; set; }
+        public int Counter { get; set; }
+        public int InsuranceIndex { get; set; }
+        public int InsuranceCounter { get; set; }
     }
 }

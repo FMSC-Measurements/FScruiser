@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using FScruiser.Data;
 using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.XF.Constants;
@@ -26,11 +27,14 @@ namespace FScruiser.XF.ViewModels
 
         public TreeCountEditViewModel(INavigationService navigationService, IDataserviceProvider datastoreProvider, IDialogService dialogService) : base(navigationService)
         {
-            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
+            TallyDataservice = datastoreProvider.Get<ITallyDataservice>();
+            TallyPopulationDataservice = datastoreProvider.Get<ITallyPopulationDataservice>();
             DialogService = dialogService;
         }
 
-        protected ICuttingUnitDatastore Datastore { get; }
+        protected ITallyPopulationDataservice TallyPopulationDataservice { get; }
+        protected ITallyDataservice TallyDataservice { get; }
+
         protected IDialogService DialogService { get; }
 
         public ICommand SaveTreeCountEditCommand => _saveTreeCountEditCommand ?? (_saveTreeCountEditCommand = new Command(SaveEdit));
@@ -110,13 +114,11 @@ namespace FScruiser.XF.ViewModels
             var species = parameters.GetValue<string>(NavParams.SPECIES);
             var liveDead = parameters.GetValue<string>(NavParams.LIVE_DEAD);
 
-            var datastore = Datastore;
-
-            var tallyPopulation = datastore.GetTallyPopulation(unit, stratum, sampleGroup, species, liveDead);
+            var tallyPopulation = TallyPopulationDataservice.GetTallyPopulation(unit, stratum, sampleGroup, species, liveDead);
             
             TallyPopulation = tallyPopulation;
             UnitCode = unit;
-            CruiseMethod = datastore.GetCruiseMethod(tallyPopulation.StratumCode);
+            CruiseMethod = tallyPopulation.Method;
 
         }
 
@@ -133,7 +135,7 @@ namespace FScruiser.XF.ViewModels
             tallyLedger.Remarks = Remarks;
             tallyLedger.EntryType = TallyLedger.EntryTypeValues.TREECOUNT_EDIT;
 
-            Datastore.InsertTallyLedger(tallyLedger);
+            TallyDataservice.InsertTallyLedger(tallyLedger);
 
             base.NavigationService.GoBackAsync();
         }

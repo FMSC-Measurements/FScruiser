@@ -3,22 +3,30 @@ using System;
 
 namespace FScruiser.Logic
 {
-    public class ZeroFrequencySelecter : SampleSelecter, IFrequencyBasedSelecter
+    public class ZeroFrequencySelecter : IFrequencyBasedSelecter
     {
         public int Frequency
         {
             get => 0;
-            set => throw new InvalidOperationException();
         }
 
-        public override SampleItem NextItem()
-        {
-            return (boolItem)null;
-        }
+        public int Count { get; protected set; }
 
-        public override bool Ready(bool throwException)
+        public int ITreeFrequency => 0;
+
+        public bool IsSelectingITrees => false;
+
+        public int InsuranceCounter => 0;
+
+        public int InsuranceIndex => 0;
+
+        public string StratumCode { get; set; }
+        public string SampleGroupCode { get; set; }
+
+        public char Sample()
         {
-            return true;
+            Count++;
+            return 'C';
         }
     }
 }

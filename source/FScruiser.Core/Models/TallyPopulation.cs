@@ -11,28 +11,22 @@ namespace FScruiser.Models
         int _treeCount;
         int _sumKPI;
 
-        [Field("TreeCount")]
         public int TreeCount
         {
             get { return _treeCount; }
             set { SetValue(ref _treeCount, value); }
         }
 
-        [Field("SumKPI")]
         public int SumKPI
         {
             get { return _sumKPI; }
             set { SetValue(ref _sumKPI, value); }
         }
 
-        [Field("IsClickerTally")]
-        public bool IsClickerTally
-        {
-            get;
-            set;
-        }
+        public bool IsClickerTally { get; set; }
 
-        [Field("Frequency")]
+        public bool UseExternalSampler { get; set; }
+
         public int Frequency { get; set; }
     }
 }

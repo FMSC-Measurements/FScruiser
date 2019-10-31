@@ -9,7 +9,7 @@ namespace FScruiser.Services
 {
     public interface ISampleSelectorDataService
     {
-        IEnumerable<SampleSelecter> GetSamplersBySampleGroupCode(string stratumCode, string sgCode);
+        ISampleSelector GetSamplerBySampleGroupCode(string stratumCode, string sgCode);
 
         void SaveSamplerStates();
     }

@@ -65,7 +65,7 @@ namespace FScruiser.Logic
             string unitCode, int plot,
             ISampleSelectorDataService sampleSelectorRepo)
         {
-            var sampler = sampleSelectorRepo.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
+            var sampler = sampleSelectorRepo.GetSamplerBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode) as IThreePSelector;
 
             if (kpi == -1)  //user entered sure to measure
             {
@@ -73,17 +73,8 @@ namespace FScruiser.Logic
             }
             else
             {
-                ThreePItem item = (ThreePItem)((ThreePSelecter)sampler).NextItem();
-                if (item != null && kpi > item.KPI)
-                {
-                    bool isInsuranceTree = sampler.IsSelectingITrees && sampler.InsuranceCounter.Next();
-
-                    return CreateTree(unitCode, plot, pop, (isInsuranceTree) ? "I" : "M", kpi: kpi);
-                }
-                else
-                {
-                    return CreateTree(unitCode, plot, pop, "C", kpi: kpi);
-                }
+                var result = sampler.Sample(kpi, out var rand);
+                return CreateTree(unitCode, plot, pop, result.ToString(), kpi: kpi);
             }
         }
 
@@ -92,18 +83,10 @@ namespace FScruiser.Logic
         public static TreeStub_Plot TallyStandard(TallyPopulation_Plot pop, string unitCode, int plot,
             ISampleSelectorDataService sampleSelectorRepo)
         {
-            var sampler = sampleSelectorRepo.GetSamplersBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode).First();
-            boolItem item = (boolItem)sampler.NextItem();
+            var sampler = sampleSelectorRepo.GetSamplerBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode) as IFrequencyBasedSelecter;
+            var result = sampler.Sample();
 
-            //If we receive nothing from the sampler, we don't have a sample
-            if (item != null)//&& (item.IsSelected || item.IsInsuranceItem))
-            {
-                return CreateTree(unitCode, plot, pop, (item.IsInsuranceItem) ? "I" : "M");
-            }
-            else
-            {
-                return CreateTree(unitCode, plot, pop, "C");
-            }
+            return CreateTree(unitCode, plot, pop, result.ToString());
         }
     }
 }

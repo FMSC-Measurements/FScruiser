@@ -1,5 +1,6 @@
 ﻿using CruiseDAL;
 using FluentAssertions;
+using FScruiser.Data;
 using FScruiser.Services;
 using System;
 using System.Collections.Generic;
@@ -68,7 +69,9 @@ namespace FScruiser.Core.Test.Services
                 //tree.CountOrMeasure.Should().Be(countMeasure);
                 //tree.TreeCount.Should().Be(treeCount);
 
-                var tallyLedger = datastore.GetTallyEntry(treeID);
+                var tds = new TallyDataservice(database, new TestDeviceInfoService());
+
+                var tallyLedger = tds.GetTallyEntry(treeID);
                 tallyLedger.Should().NotBeNull();
                 tallyLedger.CountOrMeasure.Should().Be("M");
             }

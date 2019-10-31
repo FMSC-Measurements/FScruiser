@@ -93,13 +93,14 @@ namespace FScruiser.Core.Test.Services
             var liveDead = "L";
             var countMeasure = "C";
             var treeCount = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
                 var datastore = new CuttingUnitDatastore(database);
 
                 database.Execute(
-                    $"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ({Guid.Empty.ToString()}, '{unitCode}', {plotNumber});" +
+                    $"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('{plotID}', '{unitCode}', {plotNumber});" +
                     $"INSERT INTO Plot_Stratum (CuttingUnitCode, PlotNumber, StratumCode) VALUES ('{unitCode}', {plotNumber}, '{stratumCode}');");
 
                 var treeID = datastore.CreatePlotTree(unitCode, plotNumber, stratumCode, sgCode, species, liveDead, countMeasure, treeCount);
@@ -128,6 +129,7 @@ namespace FScruiser.Core.Test.Services
         {
             var unitCode = "u1";
             var plotNumber = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -135,7 +137,7 @@ namespace FScruiser.Core.Test.Services
 
                 datastore.GetNextPlotNumber(unitCode).Should().Be(1, "unit with no plots, should return 1 for first plot number");
 
-                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('plotID1', '{unitCode}', {plotNumber});");
+                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('{plotID}', '{unitCode}', {plotNumber});");
 
                 datastore.GetNextPlotNumber(unitCode).Should().Be(plotNumber + 1, "unit with a plot, should return max plot number + 1");
             }
@@ -146,6 +148,7 @@ namespace FScruiser.Core.Test.Services
         {
             var unitCode = "u1";
             var plotNumber = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -153,7 +156,7 @@ namespace FScruiser.Core.Test.Services
 
                 datastore.IsPlotNumberAvalible(unitCode, plotNumber).Should().BeTrue("no plots in unit yet");
 
-                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('plotID1', '{unitCode}', {plotNumber});");
+                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('{plotID}', '{unitCode}', {plotNumber});");
 
                 datastore.IsPlotNumberAvalible(unitCode, plotNumber).Should().BeFalse("we just inserted a plot");
             }
@@ -164,6 +167,7 @@ namespace FScruiser.Core.Test.Services
         {
             var unitCode = "u1";
             var plotNumber = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -171,7 +175,7 @@ namespace FScruiser.Core.Test.Services
 
                 datastore.GetPlotsByUnitCode(unitCode).Should().BeEmpty("we havn't added any plots yet");
 
-                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('plotID1', '{unitCode}', {plotNumber});");
+                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('{plotID}', '{unitCode}', {plotNumber});");
 
                 datastore.GetPlotsByUnitCode(unitCode).Should().ContainSingle();
             }
@@ -212,6 +216,7 @@ namespace FScruiser.Core.Test.Services
             var unitCode = "u1";
             var strata = new string[] { "st1", "st2" };
             var plotNumber = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -219,7 +224,7 @@ namespace FScruiser.Core.Test.Services
 
                 datastore.GetPlotsByUnitCode(unitCode).Should().BeEmpty("we havn't added any plots yet");
 
-                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('plotID1', '{unitCode}', {plotNumber});");
+                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('{plotID}', '{unitCode}', {plotNumber});");
 
                 foreach (var st in strata)
                 {
@@ -256,6 +261,7 @@ namespace FScruiser.Core.Test.Services
             };
 
             var plotNumber = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = new CruiseDatastore_V3())
             {
@@ -265,7 +271,7 @@ namespace FScruiser.Core.Test.Services
 
                 datastore.GetPlotsByUnitCode(units[0]).Should().BeEmpty("we havn't added any plots yet");
 
-                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('plotID1', '{units[0]}', {plotNumber});");
+                database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES ('{plotID}', '{units[0]}', {plotNumber});");
 
                 foreach (var st in strata)
                 {
@@ -299,7 +305,7 @@ namespace FScruiser.Core.Test.Services
         {
             var unitCode = "u1";
             var plotNumber = 1;
-            var plotID = "plotID1";
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -319,7 +325,7 @@ namespace FScruiser.Core.Test.Services
         {
             var unitCode = "u1";
             var plotNumber = 1;
-            var plotID = "plotID1";
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -371,6 +377,7 @@ namespace FScruiser.Core.Test.Services
             var unitCode = "u1";
             var isEmpty = true;
             var kpi = 101;
+            var plotID = Guid.NewGuid().ToString();
             //var remarks = "something";
 
             using (var database = CreateDatabase())
@@ -388,7 +395,7 @@ namespace FScruiser.Core.Test.Services
                 };
 
                 database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES " +
-                    $"('plotID1', '{unitCode}', {plotNumber})");
+                    $"('{plotID}', '{unitCode}', {plotNumber})");
 
                 datastore.InsertPlot_Stratum(stratumPlot);
 
@@ -411,6 +418,7 @@ namespace FScruiser.Core.Test.Services
             var unitCode = "u1";
             var stratumCode = "st1";
             var plotNumber = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -425,7 +433,7 @@ namespace FScruiser.Core.Test.Services
                 };
 
                 database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES " +
-                    $"('plotID1', '{unitCode}', {plotNumber})");
+                    $"('{plotID}', '{unitCode}', {plotNumber})");
 
                 var plot = datastore.GetPlot(unitCode, plotNumber);
 
@@ -480,6 +488,7 @@ namespace FScruiser.Core.Test.Services
             var unitCode = "u1";
             var stratumCode = "st1";
             var plotNumber = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -494,7 +503,7 @@ namespace FScruiser.Core.Test.Services
                 };
 
                 database.Execute($"INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES " +
-                    $"('plotID1', '{unitCode}', {plotNumber})");
+                    $"('{plotID}', '{unitCode}', {plotNumber})");
 
                 datastore.InsertPlot_Stratum(stratumPlot);
 
@@ -513,6 +522,7 @@ namespace FScruiser.Core.Test.Services
             var unitCode = "u1";
             var stratumCode = "st1";
             var plotNumber = 1;
+            var plotID = Guid.NewGuid().ToString();
 
             using (var database = CreateDatabase())
             {
@@ -526,7 +536,7 @@ namespace FScruiser.Core.Test.Services
                 };
 
                 database.Execute("INSERT INTO Plot_V3 (PlotID, CuttingUnitCode, PlotNumber) VALUES " +
-                    $"('plotID1', '{unitCode}', {plotNumber});");
+                    $"('{plotID}', '{unitCode}', {plotNumber});");
 
                 datastore.InsertPlot_Stratum(stratumPlot);
 

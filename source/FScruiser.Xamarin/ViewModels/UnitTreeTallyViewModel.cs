@@ -1,4 +1,5 @@
 ﻿using CruiseDAL.Schema;
+using FScruiser.Data;
 using FScruiser.Logic;
 using FScruiser.Models;
 using FScruiser.Services;
@@ -120,7 +121,8 @@ namespace FScruiser.XF.ViewModels
 
         #endregion Commands
 
-        public ICuttingUnitDatastore Datastore { get; }
+        public ITallyDataservice TallyDataservice { get; }
+        public ITallyPopulationDataservice TallyPopulationDataservice { get; }
 
         public IDialogService DialogService { get; }
         public ISampleSelectorDataService SampleSelectorService { get; }
@@ -128,15 +130,16 @@ namespace FScruiser.XF.ViewModels
         public ISoundService SoundService { get; }
 
         public UnitTreeTallyViewModel(INavigationService navigationService,
-            IDataserviceProvider datastoreProvider,
+            IDataserviceProvider dataserviceProvider,
             IDialogService dialogService,
             ITallySettingsDataService tallySettings,
             ISoundService soundService) : base(navigationService)
         {
-            Datastore = datastoreProvider.Get<ICuttingUnitDatastore>();
-            SampleSelectorService = datastoreProvider.Get<ISampleSelectorDataService>();
+            TallyDataservice = dataserviceProvider.Get<ITallyDataservice>();
+            TallyPopulationDataservice = dataserviceProvider.Get<ITallyPopulationDataservice>();
+            SampleSelectorService = dataserviceProvider.Get<ISampleSelectorDataService>();
             DialogService = dialogService;
-            CruisersDataService = datastoreProvider.Get<ICruisersDataservice>();
+            CruisersDataService = dataserviceProvider.Get<ICruisersDataservice>();
             SoundService = soundService;
         }
 
@@ -146,9 +149,7 @@ namespace FScruiser.XF.ViewModels
 
             Title = $"Unit {unitCode}";
 
-            var datastore = Datastore;
-
-            var tallyPopulations = datastore.GetTallyPopulationsByUnitCode(UnitCode);
+            var tallyPopulations = TallyPopulationDataservice.GetTallyPopulationsByUnitCode(UnitCode);
             var strata = tallyPopulations.Select(x => x.StratumCode)
                 .Distinct()
                 .Append(STRATUM_FILTER_ALL)
@@ -163,7 +164,7 @@ namespace FScruiser.XF.ViewModels
 
             Tallies = tallyPopulations;
 
-            TallyFeed = datastore.GetTallyEntriesByUnitCode(UnitCode).Reverse().ToObservableCollection();
+            TallyFeed = TallyDataservice.GetTallyEntriesByUnitCode(UnitCode).Reverse().ToObservableCollection();
         }
 
         private void ShowTallyMenu(TallyPopulation obj)
@@ -186,7 +187,7 @@ namespace FScruiser.XF.ViewModels
             // database will assign tree a tree number if there is a tree
             // action might be null if user dosn't enter kpi or tree count for clicker entry
             if (action == null) { return; }
-            var entry = await Datastore.InsertTallyActionAsync(action);
+            var entry = await TallyDataservice.InsertTallyActionAsync(action);
 
             // trigger updates due to tally
             await HandleTally(pop, action, entry);
@@ -247,7 +248,7 @@ namespace FScruiser.XF.ViewModels
 
         public void Untally(string tallyLedgerID)
         {
-            Datastore.DeleteTallyEntry(tallyLedgerID);
+            TallyDataservice.DeleteTallyEntry(tallyLedgerID);
 
             var tallyEntry = TallyFeed.First(x => x.TallyLedgerID == tallyLedgerID);
             var tallyPopulation = Tallies.First(x => x.StratumCode == tallyEntry.StratumCode
