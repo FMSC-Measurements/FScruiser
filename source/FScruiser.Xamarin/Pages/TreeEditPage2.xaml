@@ -50,7 +50,11 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        
+        <!--main fields-->
         <FlexLayout Grid.Row="0"
                     Wrap="Wrap"
                     AlignContent="Start"
@@ -179,7 +183,12 @@
             </ScrollView.Resources>
         </ScrollView>
 
-        <StackLayout Grid.Row="1"
+        <StackLayout Grid.Row="2">
+            <Label>Remarks</Label>
+            <Editor HeightRequest="80" Text="{Binding Remarks}" />
+        </StackLayout>
+
+        <StackLayout Grid.Row="3"
                      BindableLayout.ItemsSource="{Binding ErrorsAndWarnings}"
                      VerticalOptions="End">
             <BindableLayout.ItemTemplate>
@@ -187,23 +196,9 @@
                     <Button Style="{StaticResource errorWarningButton}"
                             FontSize="Medium"
                             Command="{Binding BindingContext.ShowEditTreeErrorCommand, Source={Reference _page}}"
-                            CommandParameter="{Binding .}"/>
+                            CommandParameter="{Binding .}" />
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </StackLayout>
-        <!--<ListView Grid.Row="1" ItemsSource="{Binding ErrorsAndWarnings}" VerticalOptions="End">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <StackLayout Orientation="Horizontal" BackgroundColor="Red">
-                            <Label Text="{Binding Level}" />
-                            <Label Text="{Binding Property}" />
-                            <Label Text="{Binding Message}"/>
-                            
-                        </StackLayout>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>-->
     </Grid>
 </ContentPage>

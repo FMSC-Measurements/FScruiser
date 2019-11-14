@@ -208,7 +208,7 @@ namespace FScruiser.Services
                 , stratumCode, sampleGroupCode);
         }
 
-        public Tree GetTree(string treeID)
+        public Tree_Ex GetTree(string treeID)
         {
             return Database.Query<Tree_Ex>(
                 "SELECT t.*, tm.* FROM Tree_V3 AS t " +
@@ -376,6 +376,29 @@ namespace FScruiser.Services
         public Task UpdateTreeAsync(Tree_Ex tree)
         {
             return Task.Run(() => UpdateTree(tree));
+        }
+
+        public void UpdateTreeRemarks(string treeID, string remarks)
+        {
+            //try
+            //{
+            //    var stuff = Database.QueryGeneric($"Select * from TreeMeasurment where treeid = '{treeID}';").ToArray();
+
+                UpdateTreeFieldValue(
+                    new TreeFieldValue
+                    {
+                        TreeID = treeID,
+                        Field = "Remarks",
+                        ValueText = remarks,
+                        DBType = "TEXT",
+                    });
+
+            //    var stuffagain = Database.QueryGeneric($"Select * from TreeMeasurment where treeid = '{treeID}';").ToArray();
+            //}
+            //catch(Exception e)
+            //{
+            //    Logger.Log.E(e);
+            //}
         }
 
         public void UpdateTreeFieldValue(TreeFieldValue treeFieldValue)

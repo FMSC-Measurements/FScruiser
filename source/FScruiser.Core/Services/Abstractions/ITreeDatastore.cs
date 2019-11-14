@@ -10,7 +10,7 @@ namespace FScruiser.Services
             string sampleGroupCode = null, string species = null, string liveDead = "L",
             int treeCount = 1, int kpi = 0, bool stm = false);
 
-        Tree GetTree(string treeID);
+        Tree_Ex GetTree(string treeID);
 
         IEnumerable<TreeFieldValue> GetTreeFieldValues(string treeID);
 
@@ -21,6 +21,8 @@ namespace FScruiser.Services
         void UpsertTreeMeasurments(TreeMeasurment mes);
 
         Task UpdateTreeAsync(Tree_Ex tree);
+
+        void UpdateTreeRemarks(string treeID, string remarks);
 
         void UpdateTreeFieldValue(TreeFieldValue treeFieldValue);
 

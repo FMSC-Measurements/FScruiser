@@ -29,7 +29,7 @@ namespace FScruiser.XF.ViewModels
         private IEnumerable<SubPopulation> _subPopulations;
         private IEnumerable<TreeError> _errorsAndWarnings;
         private IEnumerable<TreeFieldValue> _treeFieldValues;
-        private Tree _tree;
+        private Tree_Ex _tree;
         private bool _hasSampleGroupError;
         private bool _hasSpeciesError;
         private Command<TreeError> _showEditTreeErrorCommand;
@@ -62,7 +62,7 @@ namespace FScruiser.XF.ViewModels
             set => SetValue(ref _treeFieldValues, value);
         }
 
-        public Tree Tree
+        public Tree_Ex Tree
         {
             get { return _tree; }
             protected set
@@ -74,6 +74,7 @@ namespace FScruiser.XF.ViewModels
                 //RaisePropertyChanged(nameof(SubPopulation));
                 RaisePropertyChanged(nameof(Species));
                 RaisePropertyChanged(nameof(LiveDead));
+                RaisePropertyChanged(nameof(Remarks));
             }
         }
 
@@ -81,6 +82,21 @@ namespace FScruiser.XF.ViewModels
         {
             get => _initials;
             set => SetValue(ref _initials, value);
+        }
+
+        public string Remarks
+        {
+            get => Tree?.Remarks;
+            set
+            {
+                var tree = Tree;
+                if (tree == null) { return; }
+                var oldValue = tree.Remarks;
+                if(value != oldValue)
+                {
+                    Datastore.UpdateTreeRemarks(tree.TreeID, value);
+                }
+            }
         }
 
         public bool HasSampleGroupError { get => _hasSampleGroupError; set => SetValue(ref _hasSampleGroupError, value); }
@@ -376,9 +392,9 @@ namespace FScruiser.XF.ViewModels
 
         private void OnSpeciesChanged(Tree tree, string value)
         {
-            RefreshErrorsAndWarnings(tree);
-
             SaveTree(tree);
+
+            RefreshErrorsAndWarnings(tree);
         }
 
         private bool OnSpeciesChanging(string oldValue, string value)
