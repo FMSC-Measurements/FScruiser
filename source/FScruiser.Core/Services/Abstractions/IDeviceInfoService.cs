@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FScruiser.Services
+﻿namespace FScruiser.Services
 {
     public interface IDeviceInfoService
     {
-        string GetDeviceName();
-        string GetUniqueDeviceID();
+        string DeviceID { get; }
+        string DeviceName { get; }
     }
 }

@@ -69,5 +69,45 @@ namespace FScruiser.Core.Test.Data
                 ssAgain.Should().BeEquivalentTo(ss);
             }
         }
+
+        [Fact]
+        public void CopySamplerStates()
+        {
+            var fromDeviceID = "fromDeviceID";
+            var toDeviceID = "toDeviceID";
+
+            var stratum = "st1";
+            var sampleGroup = "sg1";
+
+            using (var database = CreateDatabase())
+            {
+                var ds = new SamplerInfoDataservice(database,
+                    new TestDeviceInfoService(fromDeviceID, "fromDeviceName"));
+
+                var ss = new SamplerState()
+                {
+                    StratumCode = stratum,
+                    SampleGroupCode = sampleGroup,
+                    BlockState = "something",
+                };
+
+                ds.UpsertSamplerState(ss);
+
+                var toDevice = new Device
+                {
+                    DeviceID = toDeviceID,
+                    Name = "toDeviceName",
+                };
+                database.Insert(toDevice);
+
+                ds.CopySamplerStates(fromDeviceID, toDeviceID);
+
+                var ssAgain = ds.GetSamplerState(stratum, sampleGroup, toDeviceID);
+                ssAgain.Should().NotBeNull();
+
+
+                var stuff = database.QueryGeneric("select * from samplerState ;").ToArray();
+            }
+        }
     }
 }

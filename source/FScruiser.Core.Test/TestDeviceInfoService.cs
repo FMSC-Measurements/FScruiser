@@ -1,17 +1,30 @@
 ﻿using FScruiser.Services;
+using System;
 
 namespace FScruiser.Core.Test
 {
     public class TestDeviceInfoService : IDeviceInfoService
     {
-        public string GetDeviceName()
+        public TestDeviceInfoService() : this("testDeviceID", "testDeviceName")
         {
-            return "testDeviceName";
         }
 
-        public string GetUniqueDeviceID()
+        public TestDeviceInfoService(string deviceID, string deviceName)
         {
-            return "testDeviceID";
+            DeviceID = deviceID ?? throw new ArgumentNullException(nameof(deviceID));
+            DeviceName = deviceName ?? throw new ArgumentNullException(nameof(deviceName));
+        }
+
+        public string DeviceID
+        {
+            get;
+            set;
+        }
+
+        public string DeviceName
+        {
+            get;
+            set;
         }
     }
 }

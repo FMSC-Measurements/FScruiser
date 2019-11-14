@@ -1,12 +1,15 @@
 ﻿using CruiseDAL;
+using FScruiser.Data;
 using FScruiser.Services;
 using FScruiser.Util;
+using FScruiser.XF.Events;
 using FScruiser.XF.Pages;
 using FScruiser.XF.Services;
 using FScruiser.XF.Util;
 using Microsoft.AppCenter.Crashes;
 using Plugin.Permissions;
 using Prism;
+using Prism.Events;
 using Prism.Ioc;
 using Prism.Navigation;
 using Prism.Services;
@@ -28,10 +31,14 @@ namespace FScruiser.XF
 
         private string _cruisePath;
         private DataserviceProvider _dataserviceProvider;
+        private CruiseFileSelectedEvent _cruiseFileSelectedEvent;
+        private CruiseFileOpenedEvent _cruiseFileOpenedEvent;
 
         public new INavigationService NavigationService => base.NavigationService;
 
         protected IPageDialogService DialogService => Container?.Resolve<IPageDialogService>();
+
+        protected IDialogService DialogService2 => Container?.Resolve<IDialogService>();
 
         public IDataserviceProvider DataserviceProvider => _dataserviceProvider;
 
@@ -44,7 +51,6 @@ namespace FScruiser.XF
         public App(IPlatformInitializer platformInitializer, string cruisePath) : base(platformInitializer)
         {
             _cruisePath = cruisePath;
-            
         }
 
         protected override async void OnInitialized()
@@ -58,6 +64,15 @@ namespace FScruiser.XF
                 ,typeof(Crashes));
 
 #endif
+
+            //var ea = Container.Resolve<IEventAggregator>();
+
+            // var cruiseFileSelectedEvent = ea.GetEvent<CruiseFileSelectedEvent>().Subscribe(async (path) =>
+            // {
+            //     await LoadCruiseFileAsync(path);
+            // });
+
+            //_cruiseFileOpenedEvent = ea.GetEvent<CruiseFileOpenedEvent>();
 
             MessagingCenter.Subscribe<object, string>(this, Messages.CRUISE_FILE_SELECTED, async (sender, path) =>
             {
@@ -136,6 +151,19 @@ namespace FScruiser.XF
                         Properties.SetValue("cruise_path", path);
 
                         await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
+
+                        var sampleInfoDS = DataserviceProvider.Get<ISampleInfoDataservice>();
+                        if (sampleInfoDS.HasSampleStates() == false)
+                        {
+                            if (sampleInfoDS.HasSampleStateEnvy())
+                            {
+                                var result = await DialogService2.AskYesNoAsync("This file doesn't have any samplers associated with this device. Would you to continue by copying a state from another device?", "Copy samplers from another device?");
+                                if (result)
+                                {
+                                    NavigationService.NavigateAsync("Navigation / SampleStateManagmentOther");
+                                }
+                            }
+                        }
 
                         MessagingCenter.Send<object, string>(this, Messages.CRUISE_FILE_OPENED, path);
                     }
@@ -228,6 +256,8 @@ namespace FScruiser.XF
             containerRegistry.RegisterForNavigation<Pages.PlotEditPage, ViewModels.PlotEditViewModel>("PlotEdit");
             containerRegistry.RegisterForNavigation<Pages.TreeCountEditPage, ViewModels.TreeCountEditViewModel>("TreeCountEdit");
             containerRegistry.RegisterForNavigation<Pages.TreeErrorEditPage, ViewModels.TreeErrorEditViewModel>("TreeErrorEdit");
+            containerRegistry.RegisterForNavigation<Pages.SampleStateManagmentPage, ViewModels.SampleStateManagmentViewModel>("SampleStateManagment");
+            containerRegistry.RegisterForNavigation<Pages.SampleStateManagmentOtherDevicesPage, ViewModels.SampleStateManagmentViewModel>("SampleStateManagmentOther");
 
             containerRegistry.RegisterForNavigation<Pages.ThreePPNTPlotPage, ViewModels.ThreePPNTPlotViewModel>("ThreePPNTPlot");
             containerRegistry.RegisterForNavigation<Pages.ManageCruisersPage, ViewModels.ManageCruisersViewModel>("Cruisers");
@@ -261,5 +291,6 @@ namespace FScruiser.XF
                 await DialogService.DisplayAlertAsync(catigory, ex.ToString(), "Close");
             }
         }
+
     }
 }

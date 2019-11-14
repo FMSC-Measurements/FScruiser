@@ -41,10 +41,8 @@ WHERE sg.StratumCode = @p1
 ;", stratumCode, sampleGroupCode).FirstOrDefault();
         }
 
-        public SamplerState GetSamplerState(string stratumCode, string sampleGroupCode)
+        public SamplerState GetSamplerState(string stratumCode, string sampleGroupCode, string deviceID)
         {
-            var deviceID = DeviceInfo.GetUniqueDeviceID();
-
             return Database.Query<SamplerState>(
 @"SELECT
     ss.*
@@ -54,9 +52,16 @@ WHERE ss.StratumCode = @p1
     AND ss.DeviceID = @p3;", stratumCode, sampleGroupCode, deviceID).FirstOrDefault();
         }
 
+        public SamplerState GetSamplerState(string stratumCode, string sampleGroupCode)
+        {
+            var deviceID = DeviceInfo.DeviceID;
+
+            return GetSamplerState(stratumCode, sampleGroupCode, deviceID);
+        }
+
         public void UpsertSamplerState(SamplerState samplerState)
         {
-            var deviceID = DeviceInfo.GetUniqueDeviceID();
+            var deviceID = DeviceInfo.DeviceID;
 
             Database.Execute2(
 @"INSERT INTO SamplerState (
@@ -106,14 +111,31 @@ UPDATE SET
         public IEnumerable<Device> GetDevices()
         {
             return Database.Query<Device>(
-@"SELECT d.*, max(ss.ModifiedDate) FROM DEVICE
-LEFT JOIN SamplerState AS ss USING (DeviceID)
-GROUP BY DeviceID;");
+@"WITH ssModifiedDate AS (
+SELECT max(ss.ModifiedDate) AS LastModified, DeviceID
+FROM SamplerState AS ss
+GROUP BY ss.DeviceID )
+
+SELECT d.*, ss.LastModified FROM DEVICE AS d
+LEFT JOIN ssModifiedDate AS ss USING (DeviceID);").ToArray();
+        }
+
+        public IEnumerable<Device> GetOtherDevices()
+        {
+            return Database.Query<Device>(
+@"WITH ssModifiedDate AS (
+SELECT max(ss.ModifiedDate) AS LastModified, DeviceID
+FROM SamplerState AS ss
+GROUP BY ss.DeviceID )
+
+SELECT d.*, ss.LastModified FROM DEVICE AS d
+LEFT JOIN ssModifiedDate AS ss USING (DeviceID)
+WHERE d.DeviceID != @p1;", CurrentDevice.DeviceID).ToArray();
         }
 
         protected Device GetCurrentDevice()
         {
-            var deviceID = DeviceInfo.GetUniqueDeviceID();
+            var deviceID = DeviceInfo.DeviceID;
 
             var device = Database.Query<Device>("SELECT * FROM Device WHERE DeviceID = @p1;", deviceID).FirstOrDefault();
 
@@ -122,7 +144,7 @@ GROUP BY DeviceID;");
                 device = new Device
                 {
                     DeviceID = deviceID,
-                    Name = DeviceInfo.GetDeviceName(),
+                    Name = DeviceInfo.DeviceName,
                 };
 
                 Database.Insert(device);
@@ -134,7 +156,7 @@ GROUP BY DeviceID;");
         public void CopySamplerStates(string deviceFrom, string deviceTo)
         {
             Database.Execute(
-@"INSERT INTO SamplerState (
+@"INSERT OR Replace INTO SamplerState (
     DeviceID,
     StratumCode,
     SampleGroupCode,
@@ -155,6 +177,37 @@ GROUP BY DeviceID;");
     ss.InsuranceCounter
     FROM SamplerState AS ss
     WHERE ss.DeviceID = @p1;", deviceFrom, deviceTo);
+        }
+
+        public bool HasSampleStates()
+        {
+            return HasSampleStates(CurrentDevice.DeviceID);
+        }
+
+        public bool HasSampleStates(string currentDeviceID)
+        {
+            var result = Database.ExecuteScalar<int>(
+                @"SELECT count(*) FROM SamplerState WHERE DeviceID = @p1;", currentDeviceID);
+            return result > 0;
+        }
+
+        public bool HasSampleStateEnvy()
+        {
+            return HasSampleStateEnvy(CurrentDevice.DeviceID);
+        }
+
+        public bool HasSampleStateEnvy(string currentDeviceID)
+        {
+            var result = Database.ExecuteScalar<int>(
+@"SELECT count(*)
+FROM (
+    SELECT StratumCode, SampleGroupCode FROM SamplerState
+        WHERE DeviceID != @p1
+    EXCEPT
+    SELECT StratumCode, SampleGroupCode FROM SamplerState
+        WHERE DeviceID = @p1
+);", currentDeviceID);
+            return result > 0;
         }
 
         //public virtual string GetCurrentDeviceName();

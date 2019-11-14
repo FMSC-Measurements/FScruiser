@@ -1,4 +1,5 @@
-﻿using FScruiser.Models;
+﻿using FScruiser.Data;
+using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.XF.Services;
 using Microsoft.AppCenter.Crashes;
@@ -37,12 +38,15 @@ namespace FScruiser.XF.ViewModels
         private Command<NavigationListItem> _navigateCommand;
         private Command _showSettingsCommand;
         private Command _showFeedbackCommand;
+        private Command _showSampleStateManagmentCommand;
 
         public ICommand SelectFileCommand => _selectFileCommand ?? (_selectFileCommand = new Command(SelectFileAsync));
 
         public ICommand ShowSettingsCommand => _showSettingsCommand ?? (_showSettingsCommand = new Command(ShowSettings));
 
         public ICommand ShowFeedbackCommand => _showFeedbackCommand ?? (_showFeedbackCommand = new Command(ShowFeedback));
+
+        public ICommand ShowSampleStateManagmentCommand => _showSampleStateManagmentCommand ?? (_showSampleStateManagmentCommand = new Command(ShowSampleStateManagment));
 
         public ICommand NavigateCommand => _navigateCommand ?? (_navigateCommand = new Command<NavigationListItem>(async (x) => await NavigateToAsync(x)));
 
@@ -67,18 +71,24 @@ namespace FScruiser.XF.ViewModels
         }
 
         public IDataserviceProvider DatastoreProvider { get; }
+        public IAppInfoService AppInfo { get; }
         protected IDialogService DialogService { get; set; }
 
         protected IFilePickerService FilePickerService { get; }
+        public IDeviceInfoService DeviceInfo { get; }
 
         public MainViewModel(INavigationService navigationService
             , IDialogService dialogService
-            , IDataserviceProvider datastoreProvider,
-            IFilePickerService filePickerService) : base(navigationService)
+            , IDataserviceProvider datastoreProvider
+            , IDeviceInfoService deviceInfoService
+            , IAppInfoService appInfo
+            , IFilePickerService filePickerService) : base(navigationService)
         {
+            AppInfo = appInfo ?? throw new ArgumentNullException(nameof(appInfo));
             DialogService = dialogService;
             DatastoreProvider = datastoreProvider;
             FilePickerService = filePickerService ?? throw new ArgumentNullException(nameof(filePickerService));
+            DeviceInfo = deviceInfoService ?? throw new ArgumentNullException(nameof(deviceInfoService));
 
             RefreshNavigation(null);
         }
@@ -131,6 +141,12 @@ namespace FScruiser.XF.ViewModels
                         });
                     }
                 }
+
+                navigationItems.Add(new NavigationListItem
+                {
+                    Title = "Samplers",
+                    NavigationPath = "Navigation/SampleStateManagmentOther"
+                });
             }
 
             //navigationItems.Add(new NavigationListItem
@@ -172,6 +188,11 @@ namespace FScruiser.XF.ViewModels
         public void ShowSettings()
         {
             NavigationService.NavigateAsync("Settings", useModalNavigation: true);
+        }
+
+        public void ShowSampleStateManagment()
+        {
+            NavigationService.NavigateAsync("SampleStateManagment", useModalNavigation: true);
         }
 
         private async void SelectFileAsync(object obj)
@@ -232,7 +253,7 @@ namespace FScruiser.XF.ViewModels
             RaisePropertyChanged(nameof(NavigationListItems));
         }
 
-        private void MessagingCenter_CruiseFileOpened(object sender, string path)
+        private async void MessagingCenter_CruiseFileOpened(object sender, string path)
         {
             SelectedCuttingUnit = null;
 

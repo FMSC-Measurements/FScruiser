@@ -68,14 +68,24 @@ namespace FScruiser.XF.Services
 
         private object Get(Type type, CruiseDatastore_V3 cruiseDatastore)
         {
+            // non cruise file dependant dataservices
+            if (type.IsAssignableFrom(typeof(ICruisersDataservice)))
+            { return _cruisersDataservice ?? (_cruisersDataservice = new CruisersDataservice(Application)); }
+
+            // all dataservices below should return null if cruiseDatastore is null
+            // note: I am skeptical about wheather this method should return null at all
+            //      I think it should throw if the dataservice type can't be found
+            //      I almost think it should throw if the datastore is null, but I also think it should be
+            //      on the classes that relie on the dataservice provider to determin if the dataservice they requested
+            //      is esential and throw if null, or allow for null to be returned and check for it. 
+
+            if(cruiseDatastore == null) { return null; }
+
             if (type.IsAssignableFrom(typeof(ICuttingUnitDatastore)))
             { return new CuttingUnitDatastore(cruiseDatastore); }
 
             if (type.IsAssignableFrom(typeof(ISampleSelectorDataService)))
             { return SampleSelectorDataService; }
-
-            if (type.IsAssignableFrom(typeof(ICruisersDataservice)))
-            { return _cruisersDataservice ?? (_cruisersDataservice = new CruisersDataservice(Application)); }
 
             if (type.IsAssignableFrom(typeof(ISaleDataservice)))
             { return new SaleDataservice(cruiseDatastore); }
@@ -89,6 +99,9 @@ namespace FScruiser.XF.Services
 
             if (type.IsAssignableFrom(typeof(ITallyPopulationDataservice)))
             { return new TallyPopulationDataservice(cruiseDatastore); }
+
+            if (type.IsAssignableFrom(typeof(ISampleInfoDataservice)))
+            { return new SamplerInfoDataservice(cruiseDatastore, DeviceInfoService); }
 
             else
             { return null; }

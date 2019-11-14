@@ -37,19 +37,45 @@
                           ItemsSource="{Binding NavigationListItems}">
                     <ListView.ItemTemplate>
                         <DataTemplate>
+                            <!--<TextCell Text="{Binding Title}"
+                                      TextColor="{StaticResource lightText}" />-->
+
+
                             <ViewCell>
-                                <StackLayout Padding="15,10" HorizontalOptions="FillAndExpand" IsEnabled="{Binding CanShow}">
-                                    <Label  VerticalOptions="FillAndExpand"
-                                            VerticalTextAlignment="Center"
-                                            Text="{Binding Title}"
-                                            FontSize="24"
-                                            TextColor="White"/>
-                                </StackLayout>
+                                <Label  HorizontalOptions="Start"
+                                        Margin="15,7"
+                                        VerticalTextAlignment="Center"
+                                        Text="{Binding Title}"
+                                        FontSize="24"
+                                        TextColor="{StaticResource lightText}" />
+
+                                <!--<StackLayout Padding="15,10" HorizontalOptions="FillAndExpand" IsEnabled="{Binding CanShow}">
+                                    
+                                </StackLayout>-->
                             </ViewCell>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
 
+                <FlexLayout
+                    VerticalOptions="End"
+                    HorizontalOptions="CenterAndExpand"
+                    Wrap="Wrap"
+                    JustifyContent="Center">
+                    <FlexLayout.Resources>
+                        <ResourceDictionary>
+                            <Style TargetType="Label">
+                                <Setter Property="TextColor"
+                                        Value="{StaticResource lightText}" />
+                                <Setter Property="Margin"
+                                        Value="5" />
+                            </Style>
+                        </ResourceDictionary>
+                    </FlexLayout.Resources>
+                    <Label Text="{Binding DeviceInfo.DeviceName}" />
+                    <Label Text="{Binding AppInfo.Version, StringFormat='{}v{0}'}"/>
+                </FlexLayout>
+                
                 <StackLayout 
                     Orientation="Horizontal" 
                     VerticalOptions="End"

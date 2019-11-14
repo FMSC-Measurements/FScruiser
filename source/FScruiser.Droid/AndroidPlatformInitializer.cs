@@ -23,6 +23,7 @@ namespace FScruiser.Droid
             containerRegistry.RegisterInstance<ISoundService>(new AndroidSoundService(HostActivity.ApplicationContext));
             containerRegistry.RegisterInstance<IFilePickerService>(new AndroidFilePickerService(HostActivity));
             containerRegistry.RegisterInstance<IDeviceInfoService>(new AndroidDeviceInfoService());
+            containerRegistry.RegisterInstance<IAppInfoService>(new AndroidAppInfoService());
         }
     }
 }

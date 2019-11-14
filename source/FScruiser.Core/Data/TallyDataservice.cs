@@ -219,7 +219,7 @@ namespace FScruiser.Data
                             atn.Species,
                             atn.LiveDead,
                             tallyEntry.CountOrMeasure,
-                            CreatedBy = DeviceInfo.GetUniqueDeviceID(),
+                            CreatedBy = DeviceInfo.DeviceID,
                         });
                 }
 
@@ -270,7 +270,7 @@ namespace FScruiser.Data
                         atn.STM,
                         atn.ThreePRandomValue,
                         atn.EntryType,
-                        CreatedBy = DeviceInfo.GetUniqueDeviceID(),
+                        CreatedBy = DeviceInfo.DeviceID,
                     });
 
                 var samplerState = atn.SamplerState;

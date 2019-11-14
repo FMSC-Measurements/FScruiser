@@ -41,7 +41,7 @@ namespace FScruiser.Data
 
         public DataserviceBase(CruiseDatastore_V3 database)
         {
-            Database = database;
+            Database = database ?? throw new ArgumentNullException(nameof(database));
         }
     }
 }

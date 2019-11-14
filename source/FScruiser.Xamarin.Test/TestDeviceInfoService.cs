@@ -9,14 +9,8 @@ namespace FScruiser.XF
 {
     public class TestDeviceInfoService : IDeviceInfoService
     {
-        public string GetDeviceName()
-        {
-            return "testDeviceName";
-        }
+        public string DeviceID => "testDeviceID";
 
-        public string GetUniqueDeviceID()
-        {
-            return "testDeviceID";
-        }
+        public string DeviceName => "testDeviceName";
     }
 }
