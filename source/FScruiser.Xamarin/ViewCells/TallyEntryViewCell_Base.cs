@@ -74,7 +74,7 @@ namespace FScruiser.XF.ViewCells
             var parent = RealParent;
             if (parent != null && parent is ListView listView)
             {
-                WireListView(listView);
+                //WireListView(listView);
             }
         }
 
@@ -104,13 +104,15 @@ namespace FScruiser.XF.ViewCells
 
         private void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
-            var myItem = BindingContext;
-            var selectedItem = e.SelectedItem;
+            //if(IsSelected == false)
+            //{ return; }
+            //var myItem = BindingContext;
+            //var selectedItem = e.SelectedItem;
 
-            if (selectedItem == null || object.ReferenceEquals(myItem, selectedItem) == false)
-            {
-                if (IsSelected) { IsSelected = false; }
-            }
+            //if (selectedItem == null || object.ReferenceEquals(myItem, selectedItem) == false)
+            //{
+            //    if (IsSelected) { IsSelected = false; }
+            //}
         }
 
         protected virtual void OnIsSelectedChanged(bool isSelected)
