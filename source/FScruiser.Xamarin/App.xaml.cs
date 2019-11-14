@@ -150,19 +150,16 @@ namespace FScruiser.XF
 
                         Properties.SetValue("cruise_path", path);
 
-                        await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
-
                         var sampleInfoDS = DataserviceProvider.Get<ISampleInfoDataservice>();
-                        if (sampleInfoDS.HasSampleStates() == false)
+                        if (sampleInfoDS.HasSampleStates() == false
+                            && sampleInfoDS.HasSampleStateEnvy()
+                            && await DialogService2.AskYesNoAsync("This file doesn't have any samplers associated with this device. Would you to continue by copying a state from another device?", "Copy samplers from another device?"))
                         {
-                            if (sampleInfoDS.HasSampleStateEnvy())
-                            {
-                                var result = await DialogService2.AskYesNoAsync("This file doesn't have any samplers associated with this device. Would you to continue by copying a state from another device?", "Copy samplers from another device?");
-                                if (result)
-                                {
-                                    NavigationService.NavigateAsync("Navigation / SampleStateManagmentOther");
-                                }
-                            }
+                            await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits/SampleStateManagmentOther");
+                        }
+                        else
+                        {
+                            await NavigationService.NavigateAsync("/Main/Navigation/CuttingUnits");
                         }
 
                         MessagingCenter.Send<object, string>(this, Messages.CRUISE_FILE_OPENED, path);
