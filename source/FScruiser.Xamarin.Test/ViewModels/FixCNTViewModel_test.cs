@@ -1,7 +1,5 @@
 ﻿using CruiseDAL;
-using CruiseDAL.V3.Models;
 using FluentAssertions;
-using FScruiser.Models;
 using FScruiser.Services;
 using FScruiser.XF.Constants;
 using FScruiser.XF.Test;
@@ -114,7 +112,7 @@ namespace FScruiser.XF.ViewModels
                 foreach (var tp in viewModel.TallyPopulations)
                 {
                     tp.Buckets.Should().NotBeEmpty();
-                    foreach(var b in tp.Buckets)
+                    foreach (var b in tp.Buckets)
                     {
                         b.Value.Should().NotBe(0.0);
                     }
