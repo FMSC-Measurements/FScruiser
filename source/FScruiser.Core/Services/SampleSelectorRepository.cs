@@ -1,5 +1,4 @@
-﻿using CruiseDAL.Schema;
-using FMSC.Sampling;
+﻿using FMSC.Sampling;
 using FScruiser.Data;
 using FScruiser.Logic;
 using FScruiser.Models;
@@ -106,6 +105,7 @@ namespace FScruiser.Services
             {
                 return new ThreePSelecter(samplerInfo.KZ,
                     samplerInfo.InsuranceFrequency,
+                    state.Counter,
                     state.InsuranceIndex,
                     state.InsuranceCounter);
             }
@@ -177,7 +177,6 @@ namespace FScruiser.Services
         {
             var state = new SamplerState(sampler);
             Dataservice.UpsertSamplerState(state);
-            
         }
     }
 }
