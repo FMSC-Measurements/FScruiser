@@ -1,0 +1,64 @@
+ # FScruiser quick start slideshow. 
+
+Install
+ - from google play
+ - from apk
+
+Open Cruise File
+
+Navigating Cruise File
+ - select unit
+ - plots 
+ - tally
+
+Tally 
+ - tally screen elements
+ 	- tally feed
+	- tally buttons
+	- strata selectors
+ - tally feed elements
+ 	- tree entry
+ 		- edit tree
+ 	- tally element
+		- untally
+	- tree count entry
+
+Population identifier
+  
+
+
+
+FScruiser, what has changed
+
+ - new cruise file type , crz3
+ 	- fscruiser has the ability to convert older cruise file types, but this ability may be removed because it is recomended to have an end to end setup.
+ - tally history replaced with with full tally history. history displays more that just tallies and samples it includes all changes to the tree count. 
+ - count trees are nolonger being used to represent multiple non-measure trees. count trees in converted files will appear only as tree count edits in the tally feed
+ - users adding or removing tree counts can select from predefined resons for the counts as well as add remarks. 
+ - allow capturing both the device operator and the cruiser taking measurments. 
+ - Plot creation unified. Add plot onece. If unit has multiple plot strata, user can select what strata 
+
+ ## enhancments
+ - cruiser can resolve warnings in the field. 
+ - data is saved in smaller chunks, as close to when the user makes the change, rather than in larger sets. 
+
+
+ # Working with Android
+
+ - setting up accounts
+ - managing accounts on devices
+ 	
+ - options for installing software
+	- play store
+ 	- side loading
+ - transfering data
+	- usb
+	- email
+	- google drive (dropbox and box not allowed?)
+	- file transfer over wifi
+		- 
+ - getting help and providing help
+ 	- AirDroid Remote Support and AirDroid AirMirror - free to low cost option for providing remote support to devices. Also useful for presenting screen for presintations
+
+
+
