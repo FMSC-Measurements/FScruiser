@@ -1,11 +1,7 @@
 ﻿using CruiseDAL.Schema;
 using FMSC.ORM.EntityModel.Attributes;
 using FScruiser.Util;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FScruiser.Models
 {
@@ -33,9 +29,6 @@ namespace FScruiser.Models
 
         [Field("sgMaxKPI")]
         public int MaxKPI { get; set; }
-
-        [Field("SampleGroup_CN")]
-        public int SampleGroup_CN { get; set; }
 
         [Field("Species")]
         public string Species { get; set; }
