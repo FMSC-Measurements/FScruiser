@@ -1,7 +1,8 @@
 # Device Recommendations
 
 ## Device Requirements
-|-----------------------|-----	|
+|						|		|
+|-------				|-----	|
 |Min Android Version	| 5.0 	|
 |Memory					|1.5mb	|
 
