@@ -6,6 +6,7 @@ using Android.Runtime;
 using FScruiser.XF;
 using Plugin.Permissions;
 using Xamarin.Forms.Platform.Android;
+using Android.Views;
 
 namespace FScruiser.Droid
 {
@@ -40,6 +41,22 @@ namespace FScruiser.Droid
 
     public class MainActivity : FormsApplicationActivity
     {
+        public override bool DispatchTouchEvent(MotionEvent ev)
+        {
+            //var device = ev.Device;
+
+            //if (ev.Source.HasFlag(InputSourceType.Stylus))
+            //{
+            //    return base.DispatchTouchEvent(ev);
+            //}
+            //else
+            //{
+            //    return true;
+            //}
+
+            return base.DispatchTouchEvent(ev);
+        }
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             SetTheme(Resource.Style.MyTheme);//set theme to main theme, because it should be set at launch to the splash theme
