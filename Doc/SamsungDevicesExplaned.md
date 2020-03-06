@@ -3,21 +3,27 @@ With Samsung being by far the leading maker of Android devices, it is likely tha
 
 The purpose of this document is enplane the differences between the various product lines and help you understand the names of various models. 
 
+ 
+1. [Phones](#Phones)
+	- [S](##S)
+	- [A](##A)
+	- [J](##J)
+2. [Phablets](#Phablets)
+    - [Note](#Note)
+3. [Tablets](#Tablets)
 
-#Product Lines
 
 #Phones
-Note: there are several other lines not listed below and one off models. But I decided to limit the scope to models currently available in the U.S.
-
-##Note
-Commonly refereed to as "phablets". The note line pushes the upper limits of the size range for smart phones. The screen sizes range from around 5.5in to 6.5in in newer models. These devices also come with a pen which is where the name "note" comes from. The pen can be inserted into the device when not being used. Also the pen uses a electro magnetic field rather than touch to work.   
-
-**Note:** From 2012 to to 2014 Samsung also release several Tablets under the name of Note. Unlike the phone line, the number in the tablet model name refers to the screen size **not** when the model was released. The Galaxy Note 8.0 is a tablet with a 8 inch screen, not to be confused with the Note 8 which is a phone. 
+Note: there are several lines not listed below as well as models not part of any of the main lines. Only devices that are widely available in the U.S. are listed. 
 
 ##S 
-The S line standing for "Super Smart", is Samsung's high-end line of smart phones, typically featuring the latest processor and camera technology for that year. 
+The S line standing for "Super Smart", is Samsung's high-end line of smart phones, featuring top of the line hardware and most memory.
 
 Along with the standard S model Samsung also has multiple variants of the S model. There are a few variants not listed below and a S line for tablets, which I will talk about separately when I discuss tablets. Also it is worth noting the S line moved from using roman numerals to numbers starting with the S4.
+
+The S4 can be updated to Android 5.0.1
+The S5 can be updated to Android 6.0.1
+
 ### Active
 The Active variant offers a water, dust and shock resistant version of the S line and is available for the S6, S7, S8 phones. There is also a Active line for tablets.
 
@@ -40,6 +46,11 @@ For a list of A models and Specifications click [here](https://en.wikipedia.org/
 A discontinued line of low-mid range phones targeted. This line spans from 2015 to 2018. Like the A series, the J series is comprised of multiple tiers ranging from J1 to the J7, where a phone with a higher number after the J does not necessarily mean that phone has newer hardware or a newer version of Android. 
 
 For more information and specifications about the J line refer to this [link](https://en.wikipedia.org/wiki/Samsung_Galaxy_J_series).
+
+##Note
+Between phones and tablets, the note line pushes the upper limits of the size range for smart phones. The screen sizes range from around 5.5in to 6.5in in newer models. These devices also come with a pen which is where the name "note" comes from. The pen can be inserted into the device when not being used. Also the pen uses a electro magnetic field rather than touch to work.   
+
+From 2012 to to 2014 Samsung also release several Tablets under the name of Note. Unlike the phone line, the number in the tablet model name refers to the screen size **not** when the model was released. The Galaxy Note 8.0 is a tablet with a 8 inch screen, not to be confused with the Note 8 which is a phone. 
 
 #Tablets
 There are many different models of Samsung tablet with naming conventions that have changed over the years. The S and A lines match up with the naming in the phones where S indicates that it is a higher end model and A is more budget oriented. Most models come with multiple screen size options denoted by a number with a decimal in their model name indicating the screen size. 
