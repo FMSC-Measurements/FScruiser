@@ -267,6 +267,8 @@ namespace FScruiser.Services
 
         public void UpdateTree(Tree_Ex tree)
         {
+            if(tree == null) { throw new ArgumentNullException(nameof(tree)); }
+
             //if (tree.IsPersisted == false) { throw new InvalidOperationException("tree is not persisted before calling update"); }
             //Database.Update(tree);
 
