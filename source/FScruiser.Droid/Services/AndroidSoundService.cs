@@ -1,18 +1,15 @@
-﻿
-using Android.Content;
+﻿using Android.Content;
 using Android.Media;
+using Android.OS;
+using Android.Support.V4.Media;
 using FScruiser.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FScruiser.Droid.Services
 {
     public class AndroidSoundService : ISoundService
     {
-        SoundPool _soundPool;
+        private SoundPool _soundPool;
         private readonly int _tally;
         private readonly int _measure;
         private readonly int _insurance;
@@ -23,26 +20,26 @@ namespace FScruiser.Droid.Services
 
             var values = assetManager.List("sounds");
 
-            
-            var audioAttrs = new AudioAttributes.Builder()
-                .SetContentType(AudioContentType.Sonification)
-                .SetUsage(AudioUsageKind.AssistanceSonification)
+            var audioAttrs = new AudioAttributesCompat.Builder()
+                .SetContentType(AudioAttributesCompat.ContentTypeSonification)
+                .SetUsage(AudioAttributesCompat.UsageAssistanceSonification)
                 .Build();
 
-            _soundPool = new SoundPool.Builder()
-                .SetAudioAttributes(audioAttrs)
-                .SetMaxStreams(5)
-                .Build();
+            _soundPool = (Build.VERSION.SdkInt < BuildVersionCodes.Lollipop) ?
+                    new SoundPool(5, Stream.Notification, 0) :
+                    new SoundPool.Builder()
+                        .SetAudioAttributes(audioAttrs.Unwrap() as AudioAttributes)
+                        .SetMaxStreams(5)
+                        .Build();
 
             _tally = _soundPool.Load(assetManager.OpenFd("sounds/tally.wav"), 1);
             _measure = _soundPool.Load(assetManager.OpenFd("sounds/measure.wav"), 1);
             _insurance = _soundPool.Load(assetManager.OpenFd("sounds/insurance.wav"), 1);
-
         }
 
         public Task SignalInsuranceTreeAsync()
         {
-            return Task.Run(() => _soundPool.Play(_insurance, 1.0f, 1.0f, 0, 0, 1.0f));            
+            return Task.Run(() => _soundPool.Play(_insurance, 1.0f, 1.0f, 0, 0, 1.0f));
         }
 
         public Task SignalInvalidActionAsync()
@@ -61,6 +58,7 @@ namespace FScruiser.Droid.Services
         }
 
         #region IDisposable Support
+
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -73,8 +71,6 @@ namespace FScruiser.Droid.Services
                     _soundPool = null;
                 }
 
-                
-
                 disposedValue = true;
             }
         }
@@ -85,6 +81,7 @@ namespace FScruiser.Droid.Services
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
-        #endregion
+
+        #endregion IDisposable Support
     }
 }
