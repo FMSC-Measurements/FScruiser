@@ -1,4 +1,5 @@
 ﻿using FMSC.ORM.EntityModel.Attributes;
+using System;
 
 namespace FScruiser.Models
 {
@@ -10,6 +11,8 @@ namespace FScruiser.Models
 
         public TallyEntry(TallyAction action)
         {
+            if(action == null) { throw new ArgumentNullException(nameof(action)); }
+
             CuttingUnitCode = action.CuttingUnitCode;
             PlotNumber = action.PlotNumber;
             StratumCode = action.StratumCode;
@@ -17,7 +20,7 @@ namespace FScruiser.Models
             Species = action.Species;
             LiveDead = action.LiveDead;
             EntryType = action.EntryType;
-            CountOrMeasure = action.CountOrMeasure.ToString();
+            CountOrMeasure = action.SampleResult.ToString();
         }
 
         [Field("CuttingUnitCode")]

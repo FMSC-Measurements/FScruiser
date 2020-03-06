@@ -22,10 +22,10 @@ namespace FScruiser.Logic
         public string StratumCode { get; set; }
         public string SampleGroupCode { get; set; }
 
-        public char Sample()
+        public SampleResult Sample()
         {
             Count++;
-            return 'M';
+            return SampleResult.M;
         }
     }
 }

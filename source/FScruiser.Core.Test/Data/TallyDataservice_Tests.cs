@@ -1,5 +1,6 @@
 ﻿using CruiseDAL;
 using FluentAssertions;
+using FMSC.Sampling;
 using FScruiser.Core.Test.Services;
 using FScruiser.Data;
 using FScruiser.Models;
@@ -58,14 +59,14 @@ namespace FScruiser.Core.Test.Data
         }
 
         [Theory]
-        [InlineData("st4", "sg2", null, null, 'C')]// non sample, null values
-        [InlineData("st4", "sg2", "", "", 'C')]//non sample, not tally by subpop
-        [InlineData("st3", "sg1", "sp1", "L", 'C')]//non sample, tally by subpop
-        [InlineData("st4", "sg2", "", "", 'M')]//sample, not tally by subpop
-        [InlineData("st3", "sg1", "sp1", "L", 'M')]//sample, tally by subpop
-        [InlineData("st4", "sg2", "", "", 'I')]// not tally by subpop - insurance
-        [InlineData("st3", "sg1", "sp1", "L", 'I')]// tally by subpop - insurance
-        public void InsertTallyAction(string stratumCode, string sgCode, string species, string liveDead, char countMeasure)
+        [InlineData("st4", "sg2", null, null, SampleResult.C)]// non sample, null values
+        [InlineData("st4", "sg2", "", "", SampleResult.C)]//non sample, not tally by subpop
+        [InlineData("st3", "sg1", "sp1", "L", SampleResult.C)]//non sample, tally by subpop
+        [InlineData("st4", "sg2", "", "", SampleResult.M)]//sample, not tally by subpop
+        [InlineData("st3", "sg1", "sp1", "L", SampleResult.M)]//sample, tally by subpop
+        [InlineData("st4", "sg2", "", "", SampleResult.I)]// not tally by subpop - insurance
+        [InlineData("st3", "sg1", "sp1", "L", SampleResult.I)]// tally by subpop - insurance
+        public void InsertTallyAction(string stratumCode, string sgCode, string species, string liveDead, SampleResult sampleResult)
         {
             var unitCode = "u1";
             var treeCount = 50;
@@ -85,7 +86,7 @@ namespace FScruiser.Core.Test.Data
 
                 var tallyAction = new TallyAction(unitCode, pop)
                 {
-                    CountOrMeasure = countMeasure,
+                    SampleResult = sampleResult,
                     TreeCount = treeCount,
                 };
 
@@ -93,15 +94,15 @@ namespace FScruiser.Core.Test.Data
 
                 entry.TallyLedgerID.Should().NotBeEmpty();
 
-                ValidateTallyEntry(entry, countMeasure == 'M' || countMeasure == 'I');
+                ValidateTallyEntry(entry, sampleResult == SampleResult.M || sampleResult == SampleResult.I);
 
                 var entryAgain = datastore.GetTallyEntry(entry.TallyLedgerID);
 
-                ValidateTallyEntry(entryAgain, countMeasure == 'M' || countMeasure == 'I');
+                ValidateTallyEntry(entryAgain, sampleResult == SampleResult.M || sampleResult == SampleResult.I);
 
                 //var tree = database.From<Tree>().Where("TreeID = @p1").Query(entry.TreeID).FirstOrDefault();
 
-                if (countMeasure == 'M' || countMeasure == 'I')
+                if (sampleResult == SampleResult.M || sampleResult == SampleResult.I)
                 {
                     var tree = cuds.GetTree(entry.TreeID);
 
@@ -112,7 +113,7 @@ namespace FScruiser.Core.Test.Data
                     tree.SampleGroupCode.Should().Be(sgCode);
                     tree.Species.Should().Be(pop.Species);
                     tree.LiveDead.Should().Be(pop.LiveDead);
-                    tree.CountOrMeasure.Should().Be(countMeasure.ToString());
+                    tree.CountOrMeasure.Should().Be(sampleResult.ToString());
                 }
 
                 var tallyPopulate = tpds.GetTallyPopulationsByUnitCode(unitCode).Where(x => (x.Species ?? "") == (species ?? "")).Single();

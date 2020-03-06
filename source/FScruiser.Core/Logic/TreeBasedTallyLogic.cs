@@ -9,11 +9,12 @@ namespace FScruiser.Logic
     public class TreeBasedTallyLogic
     {
         private static TallyAction CreateTally(string unitCode, TallyPopulation population,
-            char countOrMeasure, int treeCount = 1, int kpi = 0, int threePRandomeValue = 0, bool stm = false)
+            SampleResult sampleResult, int treeCount = 1, int kpi = 0, int threePRandomeValue = 0, bool stm = false)
         {
             var tallyEntry = new TallyAction(unitCode, population)
             {
-                CountOrMeasure = countOrMeasure,
+                SampleResult = sampleResult,
+                //CountOrMeasure = countOrMeasure,
                 TreeCount = treeCount,
                 KPI = kpi,
                 ThreePRandomValue = threePRandomeValue,
@@ -33,7 +34,7 @@ namespace FScruiser.Logic
                 var clickerTallyResult = await dialogService.AskTreeCount(pop.Frequency);
                 if (clickerTallyResult != null && clickerTallyResult.TreeCount.HasValue)
                 {
-                    return CreateTally(unitCode, pop, 'M', treeCount: clickerTallyResult.TreeCount.Value);
+                    return CreateTally(unitCode, pop, SampleResult.M, treeCount: clickerTallyResult.TreeCount.Value);
                 }
                 else
                 {
@@ -78,14 +79,14 @@ namespace FScruiser.Logic
             var sampler = samplerService.GetSamplerBySampleGroupCode(pop.StratumCode, pop.SampleGroupCode) as S3PSelector;
 
             //If we receive nothing from the sampler, we don't have a sample
-            if (sampler.Sample() == 'M')
+            if (sampler.Sample() == SampleResult.M)
             {
                 int? kpi = await dialogService.AskKPIAsync(pop.MaxKPI, pop.MinKPI);
                 if (kpi != null)
                 {
                     if (kpi == -1)  //user entered sure to measure
                     {
-                        return CreateTally(unitCode, pop, 'M', stm: true);
+                        return CreateTally(unitCode, pop, SampleResult.M, stm: true);
                     }
                     else
                     {
@@ -102,7 +103,7 @@ namespace FScruiser.Logic
             }
             else
             {
-                return CreateTally(unitCode, pop, 'C');
+                return CreateTally(unitCode, pop, SampleResult.I);
             }
         }
 
@@ -115,7 +116,7 @@ namespace FScruiser.Logic
         {
             if (kpi == -1)  //user entered sure to measure
             {
-                return CreateTally(unitCode, pop, 'M', stm: true);
+                return CreateTally(unitCode, pop, SampleResult.M, stm: true);
             }
             else
             {

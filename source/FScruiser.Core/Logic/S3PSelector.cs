@@ -36,12 +36,12 @@ namespace FScruiser.Logic
             ThreePSelecter = new ThreePSelecter(kz, 0);
         }
 
-        public char Sample()
+        public SampleResult Sample()
         {
             return BlockSelecter.Sample();
         }
 
-        public char Sample(int kpi, out int rand)
+        public SampleResult Sample(int kpi, out int rand)
         {
             return ThreePSelecter.Sample(kpi, out rand);
         }
